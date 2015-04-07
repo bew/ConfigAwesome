@@ -62,10 +62,10 @@ beautiful.init(path)
 
 -- This is used later as the default terminal and editor to run.
 terminal = "xterm"
-editor = os.getenv("EDITOR") or "vim"
+termEditor = os.getenv("EDITOR") or "vim"
 geditor = "subl3"
-run_in_term_cmd = terminal .. " -hold -e /bin/bash -ilc "
-editor_cmd = run_in_term_cmd .. editor
+run_in_term_cmd = terminal .. " -e /bin/zsh -c "
+editor_cmd = run_in_term_cmd .. termEditor
 
 -- Default modkey.
 -- Usually, Mod4 is the key with a logo between Control and Alt.
@@ -206,6 +206,21 @@ mytaglist.buttons = awful.util.table.join(
 	awful.button({ 			}, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
 )
 
+wEmergencyReload = wibox.widget.textbox("  Reload RC  ")
+wEmergencyReload:buttons(awful.util.table.join(
+	awful.button({}, 1, function ()
+		awesome.restart()
+	end)
+))
+
+wEmergencyEdit = wibox.widget.textbox("  Edit RC  ")
+wEmergencyEdit:buttons(awful.util.table.join(
+	awful.button({}, 1, function ()
+		awful.util.spawn(run_in_term_cmd .. "'cd " .. awful.util.getdir("config") .. " && " .. termEditor .. " " .. "rc.lua" .. "'")
+	end)
+))
+
+
 wTaskList = {}
 wTaskList.buttons = awful.util.table.join(
 	awful.button({ }, 1, function (c)
@@ -284,10 +299,16 @@ foreachScreen(function (s)
 	right_layout:add(wClock)
 	right_layout:add(wLayoutSwitcher[s])
 
+	-- Emergency widgets
+	local layEmergency = wibox.layout.fixed.horizontal()
+	layEmergency:add(wEmergencyReload)
+	layEmergency:add(wEmergencyEdit)
+
 	-- Now bring it all together (with the tasklist in the middle)
 	local layTopbar = wibox.layout.align.horizontal()
 	layTopbar:set_middle(tagsLayout)
 	layTopbar:set_right(right_layout)
+	layTopbar:set_left(layEmergency)
 
 	topbar[s]:set_widget(layTopbar)
 
@@ -310,122 +331,6 @@ root.buttons(awful.util.table.join(
 	awful.button({ }, 5, awful.tag.viewprev)
 ))
 -- }}}
-
-
---[[
-
-inputControl = Event:newList({
-	"M" = modkey,
-	"C" = "Control",
-	"S" = "Shift",
-	"A" = "Mod1" --Alt
-},
-{
-	----##> This will create 2 EventBlock, for the 2 keybinds (and place them in global.EventModule)
-	-- begin block
-	{
-		ctrl = [                             -- (only modkey & Left KEY)   OR   (only ScrollUp MOUSE BUTTON)
-			{ mod = "M", key = "Left" },
-			{ button = "ScrollUp" }
-		],
-		context = root,
-		comment = "View previous tag",
-		hashtags = "#tag #move",
-		callback = awful.tag.viewprev
-	},
-	-- end block
-
-
-
-	{
-		ctrl = { mod = "MS", key = "Left" },     -- modkey + Shift & Left KEY
-		context = root,
-		comment = "Move focused client to previous tag",
-		hashtags = "#client #focus #move",
-		callback = function ()
-			if not client.focus then
-				return
-			end
-			local c = client.focus
-			local idx = awful.tag.getidx()
-			local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
-			awful.client.movetotag(tags[c.screen][new_idx])
-			awful.tag.viewonly(tags[c.screen][new_idx])
-			client.focus = c
-		end
-	},
-
-	---------------
-	---- IDEAS ----
-	---------------
-
-	{
-		ctrl = { mod = "M", key = "" },
-		context = ,
-		comment = "",
-		hashtags = "#",
-		callback = nil --TODO
-	},
-
-	{
-		ctrl = { mod = "M", key = "c" },
-		context = client,
-		comment = "Open client configuration",
-		hashtags = "#client #config",
-		callback = nil --TODO
-	},
-
-	{
-		ctrl = { mod = "M", key = "PageUp" },
-		context = root,
-		comment = "Go to top most workspace",
-		hashtags = "#workspace #move",
-		callback = nil --TODO
-	},
-
-	{
-		ctrl = { mod = "M", key = "Up" },
-		-- context = root,                     -- context not defined, take the last context (root)
-		comment = "Go to previous workspace",
-		hashtags = "#workspace #move",
-		callback = nil --TODO
-	},
-
-	-----------------------------------
-	----- Complete key config ---------
-	-----------------------------------
-	{
-		ctrl = {
-			{ mod = "M", key = "w" },			-- modkey & W
-			{ mod = "CM", key = "h" }, 			-- modkey + ctrl & H
-			{ mod = "AS", button = "Middle" },	-- alt + shift & Mouse Middle
-			{ key = "F4" }						-- only F4
-		},
-		context = client,							-- default context
-		comment = "Mon super <em>Commentaire</em>",	-- short comment of what the keybind is doing
-		hashtags = "#client #multi-bind",			-- Used to filter commands when searching for one
-		callback = function (c, my_data, event) print(my_data.bla) print(event:tostring()) end,
-		raw_data = { bla = "bla from raw_data" },	-- Optionnal raw_data to send to the function
-		enabled = true								-- whatever the keybinding(s) is enabled
-	}
-})
-
-inputControl:apply({ ctrl = "key"})
-inputControl:apply({
-	ctrl = { "key", "mouse" }
-})
-inputControl:apply({ hashtag = "#launch" })
-
-root.buttons(inputControl:get_table({
-	context = root,
-	ctrl = "mouse",
-	hashtag = "#move"
-}))
-
-
-]]
-
-
 
 
 
@@ -516,7 +421,7 @@ globalkeys = awful.util.table.join(
 
 
 	-- Apps spawning
-	awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
+	awful.key({ modkey,           }, "t", function () awful.util.spawn(terminal) end),
 
 
 

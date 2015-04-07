@@ -1,12 +1,15 @@
 -----------------
 -- ThemeLoader --
 -----------------
+-- by Bew78LesellB - 2015
 
 local awful = require("awful")
 local naughty = require("naughty")
 local global = require("global")
 
 confdir = awful.util.getdir("config")
+package.path = package.path .. ";" .. confdir .. "/lib/?.lua;"
+package.path = package.path .. ";" .. confdir .. "/lib/?/init.lua;"
 
 local confList = {
 	{

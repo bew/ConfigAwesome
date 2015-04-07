@@ -140,7 +140,7 @@ wEmergencyReload:buttons(awful.util.table.join(
 wEmergencyEdit = wibox.widget.textbox("  Edit RC  ")
 wEmergencyEdit:buttons(awful.util.table.join(
 	awful.button({}, 1, function ()
-		awful.util.spawn(global.config.apps.rcEditor .. " " .. awful.util.getdir("config"))
+		awful.util.spawn("/home/lesell_b/soft-portable/subl3" .. awful.util.getdir("config"))
 	end)
 ))
 
@@ -168,7 +168,6 @@ foreachScreen(function (s)
 
 	-- Create the wibox
 	topbar[s] = awful.wibox({ position = "top", screen = s })
-
 
 	-- Emergency widgets
 	local layEmergency = wibox.layout.fixed.horizontal()
@@ -506,7 +505,8 @@ for i = 1, 9 do
 								awful.client.toggletag(tag)
 							end
 						end
-					end))
+					end)
+	)
 end
 
 clientbuttons = awful.util.table.join(
