@@ -56,7 +56,7 @@ end
 
 
 loadrc("vars")
-local theme = global.theme.get()
+local theme = global.theme
 local config = global.config
 
 loadrc("wallpaper")
@@ -145,7 +145,6 @@ wEmergencyEdit = wibox.widget.imagebox(theme.icon.rcEdit, true)
 wEmergencyEdit:buttons(awful.util.table.join(
 	awful.button({}, 1, function ()
 		awful.util.spawn(run_in_term_cmd .. "'cd " .. awful.util.getdir("config") .. " && " .. termEditor .. " " .. "rc.lua" .. "'")
-		--awful.util.spawn("/home/lesell_b/soft-portable/subl3" .. awful.util.getdir("config"))
 	end)
 ))
 

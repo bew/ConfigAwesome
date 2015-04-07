@@ -7,7 +7,7 @@ local global = require("global")
 -- Themes define colours, icons, font and wallpapers.
 local path = awful.util.getdir("config") .. "/themes/bew_v2_theme/theme.lua"
 theme.init(path)
-global.theme = theme
+global.theme = theme.get()
 
 -- This is used later as the default terminal and editor to run.
 terminal = "xterm"
