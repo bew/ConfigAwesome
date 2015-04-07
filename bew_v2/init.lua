@@ -6,20 +6,19 @@ require("awful.autofocus")
 -- Widget and layout library
 local wibox = require("wibox")
 -- Theme handling library
-local beautiful = require("beautiful")
+--local theme = require("beautiful")
 -- Notification library
 local naughty = require("naughty")
 local menubar = require("menubar")
 
-
 local lain = require("lain")
-local utils = require("bewlib").utils
+local debug = require("gears.debug").dump_return
+
 
 local global = require("global")
 
-
-local debug = require("gears.debug").dump_return
-
+--[[ My lib ]]--
+local utils = require("bewlib.utils")
 
 -----------------------------------------------------
 -- Simple function to load additional LUA files from rc/ or lib/
@@ -57,6 +56,7 @@ end
 
 
 loadrc("vars")
+local theme = global.theme.get()
 local config = global.config
 
 loadrc("wallpaper")
@@ -68,7 +68,11 @@ tags = {}
 for s = 1, screen.count() do
 	-- Each screen has its own tag table.
 	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
-	tags[s] = awful.tag({ "Web", "Web2", "Web3", "				  ", "Divers", "Divers", "				  ", "Code", "CODE", "Code", "				  ", "Misc", "Misc" }, s, global.layouts[1])
+	tags[s] = awful.tag({
+		"Web", "Web2", "Web3", "				  ",
+		"Divers", "Divers", "				  ",
+		"Code", "CODE", "Code", "				  ",
+		"Misc", "Misc" }, s, global.layouts[1])
 end
 -- }}}
 
@@ -130,17 +134,18 @@ wBattery = lain.widgets.bat({
     end
 })
 
-wEmergencyReload = wibox.widget.textbox("  Reload RC  ")
+wEmergencyReload = wibox.widget.imagebox(theme.icon.rcReload, true)
 wEmergencyReload:buttons(awful.util.table.join(
 	awful.button({}, 1, function ()
 		awesome.restart()
 	end)
 ))
 
-wEmergencyEdit = wibox.widget.textbox("  Edit RC  ")
+wEmergencyEdit = wibox.widget.imagebox(theme.icon.rcEdit, true)
 wEmergencyEdit:buttons(awful.util.table.join(
 	awful.button({}, 1, function ()
-		awful.util.spawn("/home/lesell_b/soft-portable/subl3" .. awful.util.getdir("config"))
+		awful.util.spawn(run_in_term_cmd .. "'cd " .. awful.util.getdir("config") .. " && " .. termEditor .. " " .. "rc.lua" .. "'")
+		--awful.util.spawn("/home/lesell_b/soft-portable/subl3" .. awful.util.getdir("config"))
 	end)
 ))
 
@@ -156,25 +161,22 @@ function foreachScreen(callback)
 end
 
 foreachScreen(function (s)
-	-- Create an imagebox widget which will contains an icon indicating which layout we're using.
+
 	wLayoutSwitcher[s] = awful.widget.layoutbox(s)
 	wLayoutSwitcher[s]:buttons(awful.util.table.join(
 		awful.button({ }, 1, function () awful.layout.inc(global.layouts,  1) end),
 		awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
 	))
 
-	-- Create a taglist widget
 	mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
-
-	-- Create the wibox
-	topbar[s] = awful.wibox({ position = "top", screen = s })
 
 	-- Emergency widgets
 	local layEmergency = wibox.layout.fixed.horizontal()
-	layEmergency:add(wEmergencyReload)
-	layEmergency:add(wEmergencyEdit)
+	layEmergency:add( wibox.widget.textbox("RC: ") )
+	layEmergency:add( wEmergencyReload )
+	layEmergency:add( wEmergencyEdit )
 
-	-- Widgets that are aligned to the left
+	-- Tags layout
 	local tagsLayout = wibox.layout.fixed.horizontal()
 	tagsLayout:add(mytaglist[s])
 
@@ -193,6 +195,7 @@ foreachScreen(function (s)
 	layTopbar:set_right(right_layout)
 	layTopbar:set_left(layEmergency)
 
+	topbar[s] = awful.wibox({ position = "top", screen = s })
 	topbar[s]:set_widget(layTopbar)
 end)
 -- }}}
@@ -620,10 +623,10 @@ client.connect_signal("manage", function (c, startup)
 end)
 
 client.connect_signal("focus", function(c)
-	c.border_color = beautiful.border_focus
+	c.border_color = theme.border_focus
 end)
 client.connect_signal("unfocus", function(c)
-	c.border_color = beautiful.border_normal
+	c.border_color = theme.border_normal
 end)
 -- }}}
 

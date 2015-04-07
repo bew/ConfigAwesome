@@ -1,19 +1,20 @@
 local awful = require("awful")
-local beautiful = require("beautiful")
+local theme = require("beautiful")
 local global = require("global")
 
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
 local path = awful.util.getdir("config") .. "/themes/bew_v2_theme/theme.lua"
-beautiful.init(path)
+theme.init(path)
+global.theme = theme
 
 -- This is used later as the default terminal and editor to run.
 terminal = "xterm"
-editor = os.getenv("EDITOR") or "vim"
+termEditor = os.getenv("EDITOR") or "vim"
 geditor = "subl3"
-run_in_term_cmd = terminal .. " -hold -e /bin/bash -ilc "
-editor_cmd = run_in_term_cmd .. editor
+run_in_term_cmd = terminal .. " -e /bin/zsh -c "
+editor_cmd = run_in_term_cmd .. termEditor
 
 modkey = "Mod4"
 altkey = "Mod1"

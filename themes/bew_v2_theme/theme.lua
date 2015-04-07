@@ -8,6 +8,9 @@
 
 -- {{{ Main
 local theme = {}
+
+theme.name = "bew_v2_theme"
+
 -- theme.wallpaper = "/usr/share/awesome/themes/zenburn/zenburn-background.png"
 theme.wallpaper = "/home/lesell_b/Downloads/wallpaper/archlinux-computer-hd-wallpaper-1920x1080-10102.png"
 -- }}}
@@ -15,6 +18,8 @@ theme.wallpaper = "/home/lesell_b/Downloads/wallpaper/archlinux-computer-hd-wall
 
 
 -- {{{ Local Vars
+local theme_dir = require("awful").util.getdir("config") .. "/themes/" .. theme.name
+
 local bg_theme = "#252525"
 -- }}}
 
@@ -32,6 +37,20 @@ theme.bg_focus   = "#009688"
 theme.bg_urgent  = bg_theme
 theme.bg_systray = theme.bg_normal
 -- }}}
+
+
+
+-- {{{ Icons
+theme.icon = {}
+--TODO: make a routine to add easly icons
+theme.icon.rcEdit = theme_dir .. "/icon/rcEdit.png"
+theme.icon.rcReload = theme_dir .. "/icon/rcReload.png"
+
+
+
+
+
+
 
 -- {{{ Borders
 -- theme.border_width  = 2
