@@ -51,6 +51,8 @@ local first = km.new("Applications")
 first:setModifiers({
 	"M" = modkey,
 	"C" = "Control"
+	-- "S" = "Shift",
+	-- "A" = "Mod1"
 })
 
 first:addBind({
@@ -60,15 +62,8 @@ first:addBind({
 	cmd = "chromium"
 })
 
-first:addBind({ }, "f", {
-	comment = "Fake",
-	cmd = function (keymap)
-		utils.toast("Current Keymap: " .. keymap)
-		awful.utils.spawn("echo bla")
-	end
-})
-
-first:setExitBind({ }, "Escape", {
+first:setExitBind({
+	ctrl = { key = "Escape" },
 	comment = "Exit this keymap",
 	cmd = function (keymap)
 		utils.toast("Exiting from keymap : " .. keymap)
