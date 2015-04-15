@@ -1,7 +1,7 @@
--------------------------------
---  "Zenburn" awesome theme  --
---    By Adrian C. (anrxc)   --
--------------------------------
+--------------------------------
+--  "untitled" awesome theme  --
+--    By Bew78LesellB (bew)   --
+--------------------------------
 
 -- Alternative icon sets and widget icons:
 --  * http://awesome.naquadah.org/wiki/Nice_Icons
@@ -11,7 +11,6 @@ local theme = {}
 
 theme.name = "bew_v2_theme"
 
--- theme.wallpaper = "/usr/share/awesome/themes/zenburn/zenburn-background.png"
 theme.wallpaper = "/home/lesell_b/Downloads/wallpaper/archlinux-computer-hd-wallpaper-1920x1080-10102.png"
 -- }}}
 
@@ -42,9 +41,39 @@ theme.bg_systray = theme.bg_normal
 
 -- {{{ Icons
 theme.icon = {}
---TODO: make a routine to add easly icons
-theme.icon.rcEdit = theme_dir .. "/icon/rcEdit.png"
-theme.icon.rcReload = theme_dir .. "/icon/rcReload.png"
+theme.addIcon = function (folder, name)
+	if name == nil then
+		name = folder
+		folder = nil
+	end
+	local path = theme_dir .. "/icon/" .. (folder and folder .. "/") .. name .. ".png"
+	if folder ~= nil then
+		if theme.icon[folder] == nil then
+			theme.icon[folder] = {}
+		end
+		theme.icon[folder][name] = path
+	else
+		theme.icon[name] = path
+	end
+	return path
+end
+
+theme.getIcon = function (folder, name)
+	if name == nil then
+		name = folder
+		folder = nil
+	end
+	if folder ~= nil and theme.icon[folder] ~= nil then
+		return theme.icon[folder][name]
+	else
+		return theme.icon[name]
+	end
+end
+
+theme.addIcon( "emergency", "rcEdit" )
+theme.addIcon( "emergency", "rcReload" )
+--theme.icon.rcEdit = theme_dir .. "/icon/rcEdit.png"
+--theme.icon.rcReload = theme_dir .. "/icon/rcReload.png"
 
 
 
