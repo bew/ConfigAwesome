@@ -1,12 +1,22 @@
+--[[
+
+		Awesome WM config
+
+	- by Bew78LesellB alias bew -
+
+	Starting date ~ 2015-01
+	Last update Wed Apr 15 16:00:29 CEST 2015
+
+--]]
+
+
 -- Standard awesome library
-local gears = require("gears")
 local awful = require("awful")
 awful.rules = require("awful.rules")
-require("awful.autofocus")
+
 -- Widget and layout library
 local wibox = require("wibox")
--- Theme handling library
---local theme = require("beautiful")
+
 -- Notification library
 local naughty = require("naughty")
 local menubar = require("menubar")
@@ -22,6 +32,7 @@ local utils = require("bewlib.utils")
 
 -----------------------------------------------------
 -- Simple function to load additional LUA files from rc/ or lib/
+--[[
 function loadrc(name, mod)
 	local success
 	local result
@@ -52,14 +63,38 @@ function loadrc(name, mod)
 
 	return result
 end
+--]]
 -----------------------------------------------------
 
 
-loadrc("vars")
+function loadFile(path)
+	local success
+	local result
+
+	-- Which file? In rc/ or in lib/?
+	local path = global.confInfos.path .. "/" .. path .. ".lua"
+
+	-- Execute the file
+	success, result = pcall(function() return dofile(path) end)
+	if not success then
+		naughty.notify({
+			title = "Error while loading file",
+			text = "When loading `" .. name .. "`, got the following error:\n" .. result,
+			preset = naughty.config.presets.critical
+		})
+		return print("E: error loading RC file '" .. name .. "': " .. result)
+	end
+
+	return result
+end
+
+loadFile("loader/vars")
 local theme = global.theme
 local config = global.config
 
-loadrc("wallpaper")
+utils.toast(debug(theme), { timeout = 20 })
+
+loadFile("loader/wallpaper")
 
 
 -- {{{ Tags
@@ -134,14 +169,14 @@ wBattery = lain.widgets.bat({
     end
 })
 
-wEmergencyReload = wibox.widget.imagebox(theme.icon.rcReload, true)
+wEmergencyReload = wibox.widget.imagebox( theme.getIcon( "emergency", "rcReload" ), true)
 wEmergencyReload:buttons(awful.util.table.join(
 	awful.button({}, 1, function ()
 		awesome.restart()
 	end)
 ))
 
-wEmergencyEdit = wibox.widget.imagebox(theme.icon.rcEdit, true)
+wEmergencyEdit = wibox.widget.imagebox( theme.getIcon( "emergency", "rcEdit" ), true)
 wEmergencyEdit:buttons(awful.util.table.join(
 	awful.button({}, 1, function ()
 		awful.util.spawn(run_in_term_cmd .. "'cd " .. awful.util.getdir("config") .. " && " .. termEditor .. " " .. "rc.lua" .. "'")
@@ -232,7 +267,7 @@ end
 
 
 -- for ping:
-local async        = require("lain.asyncshell")
+local async = require("lain.asyncshell")
 
 
 
@@ -361,9 +396,9 @@ globalkeys = awful.util.table.join(
 		end)
 	end),
 
-	----------------------------------------------------------------------
-	------------------ functions keys ------------------------------------
-	----------------------------------------------------------------------
+	---------------------------------------------------------------
+	------------------ FN keys ------------------------------------
+	---------------------------------------------------------------
 	-- ALSA volume control
 	awful.key({  }, "XF86AudioRaiseVolume",
 		function ()
@@ -445,9 +480,9 @@ globalkeys = awful.util.table.join(
 
 
 clientkeys = awful.util.table.join(
-	awful.key({ modkey, "Shift"	}, "c",		function (c) c:kill()								 end),
-	awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle							),
-	awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end),
+	awful.key({ modkey, "Shift"	}, "c",		function (c) c:kill()								end),
+	awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle						),
+	awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster())	end),
 	awful.key({ modkey,			  }, "a",		function (c) c.ontop = not c.ontop				end),
 	awful.key({ modkey,			  }, "m",
 		function (c)
@@ -526,7 +561,7 @@ root.keys(globalkeys)
 
 
 
-loadrc("rules")
+loadFile("rc/rules")
 
 
 
@@ -580,6 +615,7 @@ client.connect_signal("manage", function (c, startup)
 			end)
 		)
 
+		--[[ Titlebar definition ]]
 		-- Widgets that are aligned to the left
 		local left_layout = wibox.layout.fixed.horizontal()
 		left_layout:add(awful.titlebar.widget.iconwidget(c))
@@ -622,4 +658,4 @@ end)
 -- }}}
 
 
-loadrc("run_once")
+loadFile("rc/run_once")
