@@ -9,6 +9,10 @@
 
 --]]
 
+--[[ Grab environnement ]]--
+local capi = {
+	timer = timer
+}
 
 -- Standard awesome library
 local awful = require("awful")
@@ -23,7 +27,10 @@ local menubar = require("menubar")
 
 local lain = require("lain")
 local debug = require("gears.debug").dump_return
+local gears = require("gears")
 
+-- Autofocus (when changing tag/screen/etc or add/delete client/tag)
+require("awful.autofocus")
 
 local global = require("global")
 
@@ -79,10 +86,10 @@ function loadFile(path)
 	if not success then
 		naughty.notify({
 			title = "Error while loading file",
-			text = "When loading `" .. name .. "`, got the following error:\n" .. result,
+			text = "When loading `" .. path .. "`, got the following error:\n" .. result,
 			preset = naughty.config.presets.critical
 		})
-		return print("E: error loading RC file '" .. name .. "': " .. result)
+		return print("E: error loading RC file '" .. path .. "': " .. result)
 	end
 
 	return result
@@ -91,8 +98,6 @@ end
 loadFile("loader/vars")
 local theme = global.theme
 local config = global.config
-
-utils.toast(debug(theme), { timeout = 20 })
 
 loadFile("loader/wallpaper")
 
@@ -113,12 +118,10 @@ end
 
 
 
-
-
-
-
-
-
+-- Edit the config file
+awesome_edit = function ()
+	awful.util.spawn(run_in_term_cmd .. "'cd " .. awful.util.getdir("config") .. " && " .. termEditor .. " " .. "rc.lua" .. "'")
+end
 
 
 
@@ -132,13 +135,6 @@ menubar.geometry = {
 	width = 1500
 }
 -- }}}
-
-
-
-
-
-
-
 
 
 
@@ -162,10 +158,20 @@ mytaglist.buttons = awful.util.table.join(
 	awful.button({ 			}, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
 )
 
+function lockAndSleep()
+	awful.util.spawn("my_i3lock")
+	utils.setTimeout(function()
+		awful.util.spawn("systemctl hybrid-sleep")
+	end, 3)
+end
+
 -- Battery widget
 wBattery = lain.widgets.bat({
     settings = function()
         widget:set_markup(" | " .. bat_now.status .. " | " .. bat_now.perc .. "% | ")
+		if bat_now.perc < 5 then
+			lockAndSleep()
+		end
     end
 })
 
@@ -179,7 +185,7 @@ wEmergencyReload:buttons(awful.util.table.join(
 wEmergencyEdit = wibox.widget.imagebox( theme.getIcon( "emergency", "rcEdit" ), true)
 wEmergencyEdit:buttons(awful.util.table.join(
 	awful.button({}, 1, function ()
-		awful.util.spawn(run_in_term_cmd .. "'cd " .. awful.util.getdir("config") .. " && " .. termEditor .. " " .. "rc.lua" .. "'")
+		awesome_edit()
 	end)
 ))
 
@@ -264,11 +270,23 @@ end
 
 
 
+-- Load radical tests functions
+--loadFile("tests/radical_1")
+
+
+
 
 
 -- for ping:
 local async = require("lain.asyncshell")
 
+
+
+
+local wallpaper_toggle = {
+	state = true,
+	id_notif = nil
+}
 
 
 
@@ -279,37 +297,35 @@ globalkeys = awful.util.table.join(
 	-- Show/Hide test Wibox
 	awful.key({ modkey }, "b", toggle_w),
 
+	-- Show/Hide radical tests
+	awful.key({ modkey }, "r", tests_radical_1),
 
 
 
-	awful.key({ modkey,			}, "Left",	awful.tag.viewprev		 ),
-	awful.key({ modkey,			}, "Right",  awful.tag.viewnext		 ),
-	awful.key({ modkey,			}, "Escape", awful.tag.history.restore),
+	awful.key({ modkey }, "Left", awful.tag.viewprev),
+	awful.key({ modkey }, "Right",  awful.tag.viewnext),
+	awful.key({ modkey }, "Escape", awful.tag.history.restore),
 	awful.key({ modkey, altkey	}, "j", awful.tag.viewprev ),
 	awful.key({ modkey, altkey	}, "k", awful.tag.viewnext ),
 
-	awful.key({ modkey, "Shift" }, "Left",
-		function ()
-			if not client.focus then return; end
-			local c = client.focus
-			local idx = awful.tag.getidx()
-			local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
-			awful.client.movetotag(tags[c.screen][new_idx])
-			awful.tag.viewonly(tags[c.screen][new_idx])
-			client.focus = c
-		end
-	),
-	awful.key({ modkey, "Shift" }, "Right",
-		function ()
-			if not client.focus then return; end
-			local c = client.focus
-			local idx = awful.tag.getidx()
-			local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
-			awful.client.movetotag(tags[c.screen][new_idx])
-			awful.tag.viewonly(tags[c.screen][new_idx])
-			client.focus = c
-		end
-	),
+	awful.key({ modkey, "Shift" }, "Left", function ()
+		if not client.focus then return; end
+		local c = client.focus
+		local idx = awful.tag.getidx()
+		local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
+		awful.client.movetotag(tags[c.screen][new_idx])
+		awful.tag.viewonly(tags[c.screen][new_idx])
+		client.focus = c
+	end),
+	awful.key({ modkey, "Shift" }, "Right", function ()
+		if not client.focus then return; end
+		local c = client.focus
+		local idx = awful.tag.getidx()
+		local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
+		awful.client.movetotag(tags[c.screen][new_idx])
+		awful.tag.viewonly(tags[c.screen][new_idx])
+		client.focus = c
+	end),
 
 
 	-- awesome management
@@ -317,12 +333,10 @@ globalkeys = awful.util.table.join(
 	awful.key({ modkey, "Shift"	}, "q", awesome.quit),
 
 	-- client selection
-	awful.key({ modkey,			  }, "j",
-		function ()
-			awful.client.focus.byidx( 1)
-			if client.focus then client.focus:raise() end
-		end
-	),
+	awful.key({ modkey,			  }, "j", function ()
+		awful.client.focus.byidx( 1)
+		if client.focus then client.focus:raise() end
+	end),
 	awful.key({ modkey,			  }, "k",
 		function ()
 			awful.client.focus.byidx(-1)
@@ -391,10 +405,25 @@ globalkeys = awful.util.table.join(
 		async.request("ping google.fr -c 1 -w 1", function (file_out)
 			local out = file_out:read("*all")
 
-			utils.toast(out, { title = "===== Ping google.fr result =====" })
+			utils.toast(out, { title = "===== Ping google.fr result =====", position = "bottom_left" })
 			file_out:close()
 		end)
 	end),
+
+	-- Wallpaper managment
+	awful.key({ modkey }, "w", function()
+		if wallpaper_toggle.state then
+			wallpaper_toggle.id_notif = utils.toast("Resetting wallpaper", { replaces_id = wallpaper_toggle.id_notif }).id
+			gears.wallpaper.maximized(theme.wallpaper, 1, true)
+		else
+			wallpaper_toggle.id_notif = utils.toast("Changing wallpaper", { replaces_id = wallpaper_toggle.id_notif }).id
+			gears.wallpaper.maximized(theme.wallpaper_dir .. "powered_by_archlinux__yellow_on_black.png", 1, true)
+		end
+		wallpaper_toggle.state = not wallpaper_toggle.state
+	end),
+
+	-- Computer managment
+	awful.key({ modkey }, "p", lockAndSleep),
 
 	---------------------------------------------------------------
 	------------------ FN keys ------------------------------------
@@ -408,8 +437,7 @@ globalkeys = awful.util.table.join(
 				text = "Increasing volume",
 				timeout = 0.5
 			})
-		end
-	),
+		end),
 	awful.key({  }, "XF86AudioLowerVolume",
 		function ()
 			awful.util.spawn("amixer -q set Master 1%-")
@@ -418,8 +446,7 @@ globalkeys = awful.util.table.join(
 				text = "Decreasing Volume",
 				timeout = 0.5
 			})
-		end
-	),
+		end),
 	awful.key({  }, "XF86AudioMute",
 		function ()
 			awful.util.spawn("amixer -q set Master playback toggle")
@@ -428,8 +455,7 @@ globalkeys = awful.util.table.join(
 				text = "Mute / Unmute",
 				timeout = 0.5
 			})
-		end
-	),
+		end),
 
 
 
@@ -441,8 +467,7 @@ globalkeys = awful.util.table.join(
 				text = "Decreasing Brightness",
 				timeout = 0.5
 			})
-		end
-	),
+		end),
 	awful.key({  }, "XF86MonBrightnessUp",
 		function ()
 			awful.util.spawn("xbacklight +10")
@@ -450,8 +475,7 @@ globalkeys = awful.util.table.join(
 				text = "Increasing Brightness",
 				timeout = 0.5
 			})
-		end
-	),
+		end),
 
 
 
@@ -463,8 +487,7 @@ globalkeys = awful.util.table.join(
 				text = "Locking...",
 				timeout = 0.5
 			})
-		end
-	),
+		end),
 	awful.key({  }, "Pause",
 		function ()
 			awful.util.spawn("/home/lesell_b/.bin/my_i3lock")
@@ -472,8 +495,7 @@ globalkeys = awful.util.table.join(
 				text = "Locking...",
 				timeout = 0.5
 			})
-		end
-	)
+		end)
 )
 
 

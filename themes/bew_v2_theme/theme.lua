@@ -11,7 +11,9 @@ local theme = {}
 
 theme.name = "bew_v2_theme"
 
-theme.wallpaper = "/home/lesell_b/Downloads/wallpaper/archlinux-computer-hd-wallpaper-1920x1080-10102.png"
+-- List wallpapers in dir: "find -maxdepth 1 -type f | sort"
+theme.wallpaper_dir = "/home/lesell_b/Downloads/wallpaper/"
+theme.wallpaper = theme.wallpaper_dir .. "powered_by_archlinux__blue_black_on_white.png"
 -- }}}
 
 
