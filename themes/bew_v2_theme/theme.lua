@@ -74,8 +74,6 @@ end
 
 theme.addIcon( "emergency", "rcEdit" )
 theme.addIcon( "emergency", "rcReload" )
---theme.icon.rcEdit = theme_dir .. "/icon/rcEdit.png"
---theme.icon.rcReload = theme_dir .. "/icon/rcReload.png"
 
 
 
@@ -88,9 +86,9 @@ theme.addIcon( "emergency", "rcReload" )
 -- theme.border_normal = "#3F3F3F"
 -- theme.border_focus  = "#6F6F6F"
 -- theme.border_marked = "#CC9393"
-theme.border_width  = 3
+theme.border_width  = 2
 theme.border_normal = bg_theme
--- theme.border_normal = "#111111"
+theme.border_normal = "#00000000"
 theme.border_focus  = "#FF9800"
 theme.border_marked = "#CC9393"
 -- }}}

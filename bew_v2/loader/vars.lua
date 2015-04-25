@@ -46,6 +46,7 @@ config.apps = {
 	term2 = "urxvt",
 	webrowser = "chromium",
 	webrowser2 = "luakit",
+	termEditor = os.getenv("EDITOR") or "vim",
 	rcEditor = "/home/lesell_b/soft-portable/subl3"
 }
 

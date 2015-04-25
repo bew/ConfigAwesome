@@ -1,6 +1,6 @@
 local awful = require("awful")
 awful.rules = require("awful.rules")
-local beautiful = require("beautiful")
+local theme = require("beautiful")
 
 -- {{{ Rules
 awful.rules.rules = {
@@ -8,8 +8,8 @@ awful.rules.rules = {
 	{
 		rule = { },
 		properties = {
-  			border_width = 2,
-			border_color = beautiful.border_normal,
+  			border_width = theme.border_width,
+			border_color = theme.border_focus,
 			focus = true,
 			keys = clientkeys,
 			buttons = clientbuttons
