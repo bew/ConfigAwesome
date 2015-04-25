@@ -14,6 +14,8 @@
 
 
 - network-manager : `wpa_cli`
+- network-checker : check every N min/sec if we are still connected
+
 - volume-manager : `amixer`
 - display-manager : `xrandr` and `xbacklight`
 
@@ -50,6 +52,7 @@ Load all modules but not some module(s) :
 	bew.loadModule({ bew.module.DIALOG }, { invert = true })
 ```
 
+Or for the module selection, use the `require` string system ?
 
 
 ### utils
