@@ -18,7 +18,7 @@ local function add_x_safe_config(tbl)
 end
 
 local to_run = {
-	"wpa_gui -t",
+	--"wpa_gui -t",
 	"QNetSoul",
 	"chromium --no-startup-window"
 }
