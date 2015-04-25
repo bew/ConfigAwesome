@@ -178,7 +178,9 @@ utils.setInterval(function()
 		file_out:close()
 
 		local perc = tonumber(stdout)
-		utils.toast("perc: " .. perc, { title = "Checking battery infos" })
+		if perc < 15 then
+			utils.toast("perc: " .. perc, { title = "Checking battery infos" })
+		end
 		if perc < 5 then
 			asyncshell.request("cat /sys/class/power_supply/" .. battery .. "/status", function(file_out)
 				local status = file_out:read("*line")
@@ -501,8 +503,9 @@ globalkeys = awful.util.table.join(
 		for key, net in pairs(networks) do
 			help_str = help_str .. "[ " .. key .. " ] (id=" .. net.id .. ") - " .. net.name .. "\n"
 		end
+		help_str = help_str .. "\nPress ESCAPE to cancel"
 		local help_notif = utils.toast(help_str, {
-			title = "Select network :",
+			title = "===== Select network =====",
 			timeout = 0,
 			replaces_id = notif_id.net_selector
 		})
