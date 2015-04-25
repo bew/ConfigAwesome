@@ -161,7 +161,7 @@ mytaglist.buttons = awful.util.table.join(
 local lockAndSleeping = false
 function lockAndSleep()
 	if not lockAndSleeping then
-		asyncshell.request("my_i3lock", function(file_out)
+		async.request("my_i3lock", function(file_out)
 			lockAndSleeping = false
 		end)
 		utils.setTimeout(function()
@@ -173,7 +173,7 @@ end
 
 utils.setInterval(function()
 	local battery = "BAT0"
-	asyncshell.request("cat /sys/class/power_supply/" .. battery .. "/capacity", function(file_out)
+	async.request("cat /sys/class/power_supply/" .. battery .. "/capacity", function(file_out)
 		local stdout = file_out:read("*line")
 		file_out:close()
 
@@ -182,7 +182,7 @@ utils.setInterval(function()
 			utils.toast("perc: " .. perc, { title = "Checking battery infos" })
 		end
 		if perc < 5 then
-			asyncshell.request("cat /sys/class/power_supply/" .. battery .. "/status", function(file_out)
+			async.request("cat /sys/class/power_supply/" .. battery .. "/status", function(file_out)
 				local status = file_out:read("*line")
 				file_out:close()
 
@@ -463,13 +463,13 @@ globalkeys = awful.util.table.join(
 	-- Network management
 	--- network infos
 	awful.key({ modkey }, "n", function()
-		asyncshell.request("wpa_cli status", function(file_out)
+		async.request("wpa_cli status", function(file_out)
 			local stdout = file_out:read("*all")
 			file_out:close()
 
 			--utils.toast("[debug] before match")
 			local net_now = {
-				status = string.match(stdout, "wpa_state=(%a*)"),
+				status = string.match(stdout, "wpa_state=([%a_]*)"),
 				ip_addr = string.match(stdout, "ip_address=([%d]+%.[%d]+%.[%d]+%.[%d]+)")
 			}
 			--utils.toast("[debug] after match")
@@ -517,7 +517,7 @@ globalkeys = awful.util.table.join(
 			keygrabber.stop()
 			naughty.destroy(help_notif)
 			if networks[key] then
-				asyncshell.request("wpa_cli select_network " .. networks[key].id, function(file_out)
+				async.request("wpa_cli select_network " .. networks[key].id, function(file_out)
 					file_out:close()
 					notif_id.net_selector = utils.toast("Trying to connect...", {
 						title = "Network '" .. networks[key].name .. "' selected",
@@ -529,6 +529,18 @@ globalkeys = awful.util.table.join(
 		end)
 	end),
 
+	-- network saved list
+	awful.key({ modkey, "Shift" }, "n", function()
+		async.request("wpa_cli list_networks", function(file_out)
+			local stdout = file_out:read("*all")
+			file_out:close()
+			notif_id.net_list = utils.toast(stdout, {
+				title = "===== Networks saved list =====",
+				replaces_id = notif_id.net_list
+			}).id
+		end)
+	end),
+
 	---------------------------------------------------------------
 	------------------ FN keys ------------------------------------
 	---------------------------------------------------------------
@@ -537,7 +549,7 @@ globalkeys = awful.util.table.join(
 		function ()
 			awful.util.spawn("amixer -q set Master 1%+")
 
-			asyncshell.request('amixer get Master', function(file_out)
+			async.request('amixer get Master', function(file_out)
 				local stdout = file_out:read("*all")
 				file_out:close()
 
@@ -554,7 +566,7 @@ globalkeys = awful.util.table.join(
 		function ()
 			awful.util.spawn("amixer -q set Master 1%-")
 
-			asyncshell.request('amixer get Master', function(file_out)
+			async.request('amixer get Master', function(file_out)
 				local stdout = file_out:read("*all")
 				file_out:close()
 
@@ -571,7 +583,7 @@ globalkeys = awful.util.table.join(
 		function ()
 			awful.util.spawn("amixer -q set Master playback toggle")
 
-			asyncshell.request('amixer get Master', function(file_out)
+			async.request('amixer get Master', function(file_out)
 				local stdout = file_out:read("*all")
 				file_out:close()
 
@@ -592,7 +604,7 @@ globalkeys = awful.util.table.join(
 		function ()
 			awful.util.spawn("xbacklight -dec 5 -time 1")
 
-			asyncshell.request('xbacklight -get', function(file_out)
+			async.request('xbacklight -get', function(file_out)
 				local perc = file_out:read("*line")
 				file_out:close()
 
@@ -608,7 +620,7 @@ globalkeys = awful.util.table.join(
 		function ()
 			awful.util.spawn("xbacklight -inc 5 -time 1")
 
-			asyncshell.request('xbacklight -get', function(file_out)
+			async.request('xbacklight -get', function(file_out)
 				local perc = file_out:read("*line")
 				file_out:close()
 
