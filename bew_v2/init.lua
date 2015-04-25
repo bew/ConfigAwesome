@@ -158,20 +158,44 @@ mytaglist.buttons = awful.util.table.join(
 	awful.button({ 			}, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
 )
 
+local lockAndSleeping = false
 function lockAndSleep()
-	awful.util.spawn("my_i3lock")
-	utils.setTimeout(function()
-		awful.util.spawn("systemctl hybrid-sleep")
-	end, 3)
+	if not lockAndSleeping then
+		asyncshell.request("my_i3lock", function(file_out)
+			lockAndSleeping = false
+		end)
+		utils.setTimeout(function()
+			awful.util.spawn("systemctl hybrid-sleep")
+		end, 3)
+		lockAndSleeping = true
+	end
 end
+
+utils.setInterval(function()
+	local battery = "BAT0"
+	asyncshell.request("cat /sys/class/power_supply/" .. battery .. "/capacity", function(file_out)
+		local stdout = file_out:read("*line")
+		file_out:close()
+
+		local perc = tonumber(stdout)
+		utils.toast("perc: " .. perc, { title = "Checking battery infos" })
+		if perc < 5 then
+			asyncshell.request("cat /sys/class/power_supply/" .. battery .. "/status", function(file_out)
+				local status = file_out:read("*line")
+				file_out:close()
+
+				if status == "Charging" then return end
+				utils.toast("need lock and sleep !!!", { title = "Battery status is " .. status })
+				--lockAndSleep()
+			end)
+		end
+	end)
+end, 10)
 
 -- Battery widget
 wBattery = lain.widgets.bat({
     settings = function()
         widget:set_markup(" | " .. bat_now.status .. " | " .. bat_now.perc .. "% | ")
-		if bat_now.perc < 5 then
-			lockAndSleep()
-		end
     end
 })
 
@@ -281,10 +305,12 @@ end
 local async = require("lain.asyncshell")
 
 
+local notif_id = {}
+
 
 
 local wallpaper_toggle = {
-	state = true,
+	state = false,
 	id_notif = nil
 }
 
@@ -401,12 +427,19 @@ globalkeys = awful.util.table.join(
 
 
 	awful.key({ modkey }, "g", function ()
-		utils.toast("Sending 1 packet to google.fr")
+		notif_id.ping = utils.toast("Sending 1 packet to google.fr", {
+			position = "bottom_right",
+			replaces_id = notif_id.ping
+		}).id
 		async.request("ping google.fr -c 1 -w 1", function (file_out)
 			local out = file_out:read("*all")
-
-			utils.toast(out, { title = "===== Ping google.fr result =====", position = "bottom_left" })
 			file_out:close()
+
+			notif_id.ping = utils.toast(out, {
+				title = "===== Ping google.fr result =====",
+				position = "bottom_right",
+				replaces_id = notif_id.ping 
+			}).id
 		end)
 	end),
 
@@ -425,6 +458,74 @@ globalkeys = awful.util.table.join(
 	-- Computer managment
 	awful.key({ modkey }, "p", lockAndSleep),
 
+	-- Network management
+	--- network infos
+	awful.key({ modkey }, "n", function()
+		asyncshell.request("wpa_cli status", function(file_out)
+			local stdout = file_out:read("*all")
+			file_out:close()
+
+			--utils.toast("[debug] before match")
+			local net_now = {
+				status = string.match(stdout, "wpa_state=(%a*)"),
+				ip_addr = string.match(stdout, "ip_address=([%d]+%.[%d]+%.[%d]+%.[%d]+)")
+			}
+			--utils.toast("[debug] after match")
+			notif_id.net_info = utils.toast("\n" .. stdout, {
+				title = net_now.status .. "  -  " .. (net_now.ip_addr and net_now.ip_addr or "NO IP"),
+				--title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+				--position = "bottom_right",
+				replaces_id = notif_id.net_info
+			}).id
+		end)
+	end),
+
+	--- network change (intra / bew's gs4)
+	awful.key({ modkey, "Control" }, "n", function()
+		-- info on networks
+		local networks = {
+			-- keybind is i
+			i = {
+				name = "Intra Epitech",
+				id = 0
+			},
+			-- keybind is b
+			b = {
+				name = "Bew's GS4",
+				id = 2
+			}
+		}
+
+		-- display help
+		local help_str = "\n"
+		for key, net in pairs(networks) do
+			help_str = help_str .. "[ " .. key .. " ] (id=" .. net.id .. ") - " .. net.name .. "\n"
+		end
+		local help_notif = utils.toast(help_str, {
+			title = "Select network :",
+			timeout = 0,
+			replaces_id = notif_id.net_selector
+		})
+		notif_id.net_selector = help_notif.id
+
+		-- grab keys
+		keygrabber.run(function(mod, key, event)
+			if event == "release" then return true end
+			keygrabber.stop()
+			naughty.destroy(help_notif)
+			if networks[key] then
+				asyncshell.request("wpa_cli select_network " .. networks[key].id, function(file_out)
+					file_out:close()
+					notif_id.net_selector = utils.toast("Trying to connect...", {
+						title = "Network '" .. networks[key].name .. "' selected",
+						replaces_id = notif_id.net_selector
+					}).id
+				end)
+			end
+			return true
+		end)
+	end),
+
 	---------------------------------------------------------------
 	------------------ FN keys ------------------------------------
 	---------------------------------------------------------------
@@ -432,29 +533,53 @@ globalkeys = awful.util.table.join(
 	awful.key({  }, "XF86AudioRaiseVolume",
 		function ()
 			awful.util.spawn("amixer -q set Master 1%+")
-			--widget_volume.update()
-			naughty.notify({
-				text = "Increasing volume",
-				timeout = 0.5
-			})
+
+			asyncshell.request('amixer get Master', function(file_out)
+				local stdout = file_out:read("*all")
+				file_out:close()
+
+				local vol_now = {}
+				vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
+				notif_id.volume = utils.toast("Increase", {
+					title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+					position = "bottom_right",
+					replaces_id = notif_id.volume
+				}).id
+			end)
 		end),
 	awful.key({  }, "XF86AudioLowerVolume",
 		function ()
 			awful.util.spawn("amixer -q set Master 1%-")
-			--widget_volume.update()
-			naughty.notify({
-				text = "Decreasing Volume",
-				timeout = 0.5
-			})
+
+			asyncshell.request('amixer get Master', function(file_out)
+				local stdout = file_out:read("*all")
+				file_out:close()
+
+				local vol_now = {}
+				vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
+				notif_id.volume = utils.toast("Decrease", {
+					title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+					position = "bottom_right",
+					replaces_id = notif_id.volume
+				}).id
+			end)
 		end),
 	awful.key({  }, "XF86AudioMute",
 		function ()
 			awful.util.spawn("amixer -q set Master playback toggle")
-			--widget_volume.update()
-			naughty.notify({
-				text = "Mute / Unmute",
-				timeout = 0.5
-			})
+
+			asyncshell.request('amixer get Master', function(file_out)
+				local stdout = file_out:read("*all")
+				file_out:close()
+
+				local vol_now = {}
+				vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
+				notif_id.volume = utils.toast( vol_now.status == "on" and "Unmute" or "Mute", {
+					title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+					position = "bottom_right",
+					replaces_id = notif_id.volume
+				}).id
+			end)
 		end),
 
 
@@ -462,19 +587,35 @@ globalkeys = awful.util.table.join(
 	-- Brightness control
 	awful.key({  }, "XF86MonBrightnessDown",
 		function ()
-			awful.util.spawn("xbacklight -10")
-			naughty.notify({
-				text = "Decreasing Brightness",
-				timeout = 0.5
-			})
+			awful.util.spawn("xbacklight -dec 5 -time 1")
+
+			asyncshell.request('xbacklight -get', function(file_out)
+				local perc = file_out:read("*line")
+				file_out:close()
+
+				perc = string.match(perc, "(%d+)%..*")
+				notif_id.brightness = utils.toast("Decrease", {
+					title = "Brightness " .. perc .. "%",
+					position = "bottom_right",
+					replaces_id = notif_id.brightness
+				}).id
+			end)
 		end),
 	awful.key({  }, "XF86MonBrightnessUp",
 		function ()
-			awful.util.spawn("xbacklight +10")
-			naughty.notify({
-				text = "Increasing Brightness",
-				timeout = 0.5
-			})
+			awful.util.spawn("xbacklight -inc 5 -time 1")
+
+			asyncshell.request('xbacklight -get', function(file_out)
+				local perc = file_out:read("*line")
+				file_out:close()
+
+				perc = string.match(perc, "(%d+)%..*")
+				notif_id.brightness = utils.toast("Increase", {
+					title = "Brightness " .. perc .. "%",
+					position = "bottom_right",
+					replaces_id = notif_id.brightness
+				}).id
+			end)
 		end),
 
 
@@ -520,43 +661,39 @@ clientkeys = awful.util.table.join(
 for i = 1, 9 do
 	globalkeys = awful.util.table.join(globalkeys,
 		-- View tag only.
-		awful.key({ modkey }, "#" .. i + 9,
-					function ()
-						local screen = mouse.screen
-						local tag = awful.tag.gettags(screen)[i]
-						if tag then
-							awful.tag.viewonly(tag)
-						end
-					end),
+		awful.key({ modkey }, "#" .. i + 9, function ()
+			local screen = mouse.screen
+			local tag = awful.tag.gettags(screen)[i]
+			if tag then
+				awful.tag.viewonly(tag)
+			end
+		end),
 		-- Toggle tag.
-		awful.key({ modkey, "Control" }, "#" .. i + 9,
-					function ()
-						local screen = mouse.screen
-						local tag = awful.tag.gettags(screen)[i]
-						if tag then
-							awful.tag.viewtoggle(tag)
-						end
-					end),
+		awful.key({ modkey, "Control" }, "#" .. i + 9, function ()
+			local screen = mouse.screen
+			local tag = awful.tag.gettags(screen)[i]
+			if tag then
+				awful.tag.viewtoggle(tag)
+			end
+		end),
 		-- Move client to tag.
-		awful.key({ modkey, "Shift" }, "#" .. i + 9,
-					function ()
-						if client.focus then
-							local tag = awful.tag.gettags(client.focus.screen)[i]
-							if tag then
-								awful.client.movetotag(tag)
-							end
-						end
-					end),
+		awful.key({ modkey, "Shift" }, "#" .. i + 9, function ()
+			if client.focus then
+				local tag = awful.tag.gettags(client.focus.screen)[i]
+				if tag then
+					awful.client.movetotag(tag)
+				end
+			end
+		end),
 		-- Toggle tag.
-		awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
-					function ()
-						if client.focus then
-							local tag = awful.tag.gettags(client.focus.screen)[i]
-							if tag then
-								awful.client.toggletag(tag)
-							end
-						end
-					end)
+		awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9, function ()
+			if client.focus then
+				local tag = awful.tag.gettags(client.focus.screen)[i]
+				if tag then
+					awful.client.toggletag(tag)
+				end
+			end
+		end)
 	)
 end
 
@@ -564,8 +701,8 @@ clientbuttons = awful.util.table.join(
 	awful.button({			}, 1, function (c)
 		client.focus = c; c:raise()
 	end),
-	awful.button({ modkey	}, 1, awful.mouse.client.move),
-	awful.button({ modkey	}, 3, awful.mouse.client.resize)
+	awful.button({ modkey }, 1, awful.mouse.client.move),
+	awful.button({ modkey }, 3, awful.mouse.client.resize)
 )
 
 -- Set keys
