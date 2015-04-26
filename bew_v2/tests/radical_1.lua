@@ -1,38 +1,47 @@
 local radical = require("radical")
 local wibox = require("wibox")
+local theme = require("beautiful")
 
 
 local utils = require("bewlib.utils")
-local debug = require("gears.debug").dump_return
 
+local menu_style = {
+	style = radical.style.classic,
+	item_style = radical.style.arrow_alt
+}
 
-local menu = radical.context {}
-menu:add_item({ text = "item 1" })
-menu:add_item({ text = "item 2" })
-menu:add_item({
-	text = "Sub menu",
-	sub_menu = function()
-		local smenu = radical.context({})
-		smenu:add_item({ text = "item 3" })
-		smenu:add_item({ text = "item 4" })
-		return smenu
-	end
-})
+local menu = radical.context(menu_style)
+menu:add_item {text="Screen 1", button1 = function(_menu,item,mods) utils.toast("Hello World from radical !") end}
+menu:add_item {text="Screen 9", icon = "/usr/share/awesome/themes/zenburn/layouts/tileleft.png" }
+menu:add_item {text="Sub Menu", sub_menu = function()
+	local smenu = radical.context(menu_style)
+	smenu:add_item{text="item 1"}
+	smenu:add_item{text="item 2"}
+	return smenu
+end}
 
-local w = wibox({
-	x = 400,
-	y = 400,
-	width = 400,
-	height = 400
-})
-utils.toast(debug(w), { timeout = 60, title = "Widget w :" })
---w:set_bg("#03A9F4")
-w:set_menu(menu)
+-- To add the menu to a widget:
+foreachScreen(function(s)
+	mytaglist[s]:set_menu(menu,3) -- 3 = right mouse button, 1 = left mouse button
+end)
 
 
 
-function tests_radical_1()
-	w.visible = not w.visible
-end
+local menu_box = radical.box(menu_style)
 
+menu_box:add_item({ text = "bla" })
+menu_box:add_item({ text = "bla" })
+menu_box:add_item({ text = "bla" })
+menu_box:add_item({ text = "bla" })
+menu_box:add_item({ text = "bla" })
+menu_box:add_item({ text = "bla" })
+menu_box:add_item({ text = "sub bla", sub_menu = function()
+	local sbox = radical.embed(menu_style)
+	sbox:add_item({ text = "blu" })
+	sbox:add_item({ text = "blu" })
+	sbox:add_item({ text = "blu" })
+	return sbox
+end })
 
+wClock:set_menu(menu_box)
+wClock:set_tooltip("this is the date")
