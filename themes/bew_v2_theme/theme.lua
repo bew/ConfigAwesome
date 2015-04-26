@@ -19,7 +19,8 @@ theme.wallpaper = theme.wallpaper_dir .. "powered_by_archlinux__blue_black_on_wh
 
 
 -- {{{ Local Vars
-local theme_dir = require("awful").util.getdir("config") .. "/themes/" .. theme.name
+local path = require("awful").util.getdir("config") .. "/themes/" .. theme.name
+theme.path = path
 
 local bg_theme = "#252525"
 -- }}}
@@ -48,16 +49,16 @@ theme.addIcon = function (folder, name)
 		name = folder
 		folder = nil
 	end
-	local path = theme_dir .. "/icon/" .. (folder and folder .. "/") .. name .. ".png"
+	local ipath = path .. "/icon/" .. (folder and folder .. "/") .. name .. ".png"
 	if folder ~= nil then
 		if theme.icon[folder] == nil then
 			theme.icon[folder] = {}
 		end
-		theme.icon[folder][name] = path
+		theme.icon[folder][name] = ipath
 	else
-		theme.icon[name] = path
+		theme.icon[name] = ipath
 	end
-	return path
+	return ipath
 end
 
 theme.getIcon = function (folder, name)
