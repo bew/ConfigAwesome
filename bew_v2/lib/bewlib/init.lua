@@ -1,4 +1,4 @@
---[[ BewLib (need rename) ]]--
+--[[ bew lib ]]--
 
 return {
 	utils = require("bewlib.utils"),

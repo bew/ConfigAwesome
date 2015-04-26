@@ -14,6 +14,9 @@ local capi = {
 	timer = timer
 }
 
+-- load modif (widget, etc) from radical
+require("radical")
+
 -- Standard awesome library
 local awful = require("awful")
 awful.rules = require("awful.rules")
@@ -28,6 +31,7 @@ local menubar = require("menubar")
 local lain = require("lain")
 local debug = require("gears.debug").dump_return
 local gears = require("gears")
+
 
 -- Autofocus (when changing tag/screen/etc or add/delete client/tag)
 require("awful.autofocus")
@@ -267,6 +271,7 @@ end)
 -- }}}
 
 
+
 --[[ {{{ Mouse bindings
 root.buttons(awful.util.table.join(
 	awful.button({ }, 4, awful.tag.viewnext),
@@ -297,7 +302,7 @@ end
 
 
 -- Load radical tests functions
---loadFile("tests/radical_1")
+--loadFile("tests/radical_1") -- don't work well
 
 
 
@@ -310,6 +315,11 @@ local async = require("lain.asyncshell")
 local notif_id = {}
 
 
+
+-- Network management
+local wpa_cli = {
+	cmd = "wpa_cli -i wlo1 "
+}
 
 local wallpaper_toggle = {
 	state = false,
@@ -324,9 +334,6 @@ globalkeys = awful.util.table.join(
 
 	-- Show/Hide test Wibox
 	awful.key({ modkey }, "b", toggle_w),
-
-	-- Show/Hide radical tests
-	awful.key({ modkey }, "r", tests_radical_1),
 
 
 
@@ -463,7 +470,7 @@ globalkeys = awful.util.table.join(
 	-- Network management
 	--- network infos
 	awful.key({ modkey }, "n", function()
-		async.request("wpa_cli status", function(file_out)
+		async.request(wpa_cli.cmd .. "status", function(file_out)
 			local stdout = file_out:read("*all")
 			file_out:close()
 
@@ -517,7 +524,7 @@ globalkeys = awful.util.table.join(
 			keygrabber.stop()
 			naughty.destroy(help_notif)
 			if networks[key] then
-				async.request("wpa_cli select_network " .. networks[key].id, function(file_out)
+				async.request(wpa_cli.cmd .. "select_network " .. networks[key].id, function(file_out)
 					file_out:close()
 					notif_id.net_selector = utils.toast("Trying to connect...", {
 						title = "Network '" .. networks[key].name .. "' selected",
@@ -529,9 +536,9 @@ globalkeys = awful.util.table.join(
 		end)
 	end),
 
-	-- network saved list
+	--- network saved list
 	awful.key({ modkey, "Shift" }, "n", function()
-		async.request("wpa_cli list_networks", function(file_out)
+		async.request(wpa_cli.cmd .. "list_networks", function(file_out)
 			local stdout = file_out:read("*all")
 			file_out:close()
 			notif_id.net_list = utils.toast(stdout, {
@@ -831,5 +838,7 @@ client.connect_signal("unfocus", function(c)
 end)
 -- }}}
 
+
+--utils.toast(debug(topbar[1]))
 
 loadFile("rc/run_once")

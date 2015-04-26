@@ -1,3 +1,6 @@
+--[[ bewlib.utils ]]--
+
+
 -- Grab environement
 local capi = {
 	timer = timer
@@ -31,5 +34,11 @@ function mod.setInterval(callback, interval)
 	theTimer:start()
 	return theTimer
 end
+
+function mod.readFile(path, nbLine)
+	nbLine = nbLine and nbLine or false
+end
+
+mod.async = require("bewlib.utils.async")
 
 return mod
