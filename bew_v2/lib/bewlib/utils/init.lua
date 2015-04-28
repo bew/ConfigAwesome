@@ -36,7 +36,25 @@ function mod.setInterval(callback, interval)
 end
 
 function mod.readFile(path, nbLine)
-	nbLine = nbLine and nbLine or false
+	nbLine = type(nbLine) == "number" and nbLine or false
+	local f = io.open(path)
+	if not f then return nil end
+	local tab = {}
+	if not nbLine then
+		for line in f:lines() do
+			table.insert(tab, line)
+		end
+	else
+		local i = 1
+		for line in f:lines() do
+			table.insert(tab, line)
+			if nbLine == i then
+				break
+			end
+			i = i + 1
+		end
+	end
+	return tab
 end
 
 mod.async = require("bewlib.utils.async")
