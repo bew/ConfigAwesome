@@ -141,27 +141,6 @@ menubar.geometry = {
 -- }}}
 
 
-
-
--- {{{ Wibox
--- Create a textclock widget
-wClock = awful.widget.textclock()
-
--- Create a wibox for each screen and add it
-topbar = {}
-bottombar = {}
-
-wLayoutSwitcher = {}
-mytaglist = {}
-mytaglist.buttons = awful.util.table.join(
-	awful.button({			}, 1, awful.tag.viewonly),
-	awful.button({ modkey 	}, 1, awful.client.movetotag),
-	awful.button({ 			}, 3, awful.tag.viewtoggle),
-	awful.button({ modkey	}, 3, awful.client.toggletag),
-	awful.button({ 			}, 4, function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end),
-	awful.button({ 			}, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
-)
-
 local lockAndSleeping = false
 function lockAndSleep()
 	if not lockAndSleeping then
@@ -197,6 +176,27 @@ utils.setInterval(function()
 		end
 	end)
 end, 10)
+
+
+
+-- {{{ Wibox
+-- Create a textclock widget
+wClock = awful.widget.textclock()
+
+-- Create a wibox for each screen and add it
+topbar = {}
+bottombar = {}
+
+wLayoutSwitcher = {}
+mytaglist = {}
+mytaglist.buttons = awful.util.table.join(
+	awful.button({			}, 1, awful.tag.viewonly),
+	awful.button({ modkey 	}, 1, awful.client.movetotag),
+	awful.button({ 			}, 3, awful.tag.viewtoggle),
+	awful.button({ modkey	}, 3, awful.client.toggletag),
+	awful.button({ 			}, 4, function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end),
+	awful.button({ 			}, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
+)
 
 -- Battery widget
 wBattery = lain.widgets.bat({
@@ -281,7 +281,6 @@ root.buttons(awful.util.table.join(
 
 
 
-
 local wibox = require("wibox")
 
 local w = wibox({
@@ -302,7 +301,7 @@ end
 
 
 -- Load radical tests functions
---loadFile("tests/radical_1") -- don't work well
+--loadFile("tests/radical_1") -- have weird bugs
 
 
 
@@ -425,7 +424,7 @@ globalkeys = awful.util.table.join(
 
 
 	-- switch layout
-	awful.key({ modkey,			  }, "space", function () awful.layout.inc(global.layouts,  1) end),
+	awful.key({ modkey			}, "space", function () awful.layout.inc(global.layouts,  1) end),
 	awful.key({ modkey, "Shift"	}, "space", function () awful.layout.inc(global.layouts, -1) end),
 
 
@@ -473,6 +472,11 @@ globalkeys = awful.util.table.join(
 		async.request(wpa_cli.cmd .. "status", function(file_out)
 			local stdout = file_out:read("*all")
 			file_out:close()
+
+			if stdout == "" then
+				utils.toast("Please run 'wifi' in a terminal", { title = "Wifi is not ACTIVATED" })
+			end
+
 
 			--utils.toast("[debug] before match")
 			local net_now = {
@@ -838,7 +842,7 @@ client.connect_signal("unfocus", function(c)
 end)
 -- }}}
 
-
+-- make awesome to crash....
 --utils.toast(debug(topbar[1]))
 
 loadFile("rc/run_once")

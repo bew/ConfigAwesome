@@ -1,5 +1,3 @@
--- --stolen from http://www.markurashi.de/dotfiles/awesome/rc.lua
-
 -- failsafe mode
 -- if the current config fail, load the default rc.lua
 
@@ -23,7 +21,7 @@ if themeLoader then
 	end
 end
 
--- Error when loading themes
+-- Load defaut theme when all others fail
 dofile("/etc/xdg/awesome/rc.lua");
 
 if loadError then
