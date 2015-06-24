@@ -327,14 +327,13 @@ local wallpaper_toggle = {
 
 
 
+
 -- {{{ Key bindings
 globalkeys = awful.util.table.join(
 
 
 	-- Show/Hide test Wibox
 	awful.key({ modkey }, "b", toggle_w),
-
-
 
 	awful.key({ modkey }, "Left", awful.tag.viewprev),
 	awful.key({ modkey }, "Right",  awful.tag.viewnext),
@@ -506,6 +505,10 @@ globalkeys = awful.util.table.join(
 			b = {
 				name = "Bew's GS4",
 				id = 2
+			},
+			s = {
+				name = "Schol@Net",
+				id = 1
 			}
 		}
 
@@ -673,7 +676,7 @@ clientkeys = awful.util.table.join(
 	awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle						),
 	awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster())	end),
 	awful.key({ modkey,			  }, "a",		function (c) c.ontop = not c.ontop				end),
-	awful.key({ modkey,			  }, "m",
+	awful.key({ modkey,			  }, "n",
 		function (c)
 			c.maximized_horizontal = not c.maximized_horizontal
 			c.maximized_vertical	= not c.maximized_vertical

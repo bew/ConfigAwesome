@@ -5,7 +5,6 @@
 
 local awful = require("awful")
 local naughty = require("naughty")
-local global = require("global")
 
 local themeLoader = true
 local loadError= nil

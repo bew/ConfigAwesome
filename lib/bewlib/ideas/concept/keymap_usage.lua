@@ -49,8 +49,8 @@ local km = require("bewlib.keymap")
 local first = km.new("Applications")
 
 first:setModifiers({
-	"M" = modkey,
-	"C" = "Control"
+	M = modkey,
+	C = "Control"
 	-- "S" = "Shift",
 	-- "A" = "Mod1"
 })
@@ -84,10 +84,10 @@ first:setExitBind({
 
 
 inputControl = Event:newList({
-	"M" = modkey,
-	"C" = "Control",
-	"S" = "Shift",
-	"A" = "Mod1" --Alt
+	M = modkey,
+	C = "Control",
+	S = "Shift",
+	A = "Mod1" --Alt
 },
 {
 	----##> This will create 2 EventBlock, for the 2 keybinds (and place them in global.EventModule)
@@ -128,13 +128,13 @@ inputControl = Event:newList({
 	---- IDEAS ----
 	---------------
 
-	{
-		ctrl = { mod = "M", key = "" },
-		context = ,
-		comment = "",
-		hashtags = "#",
-		callback = nil --TODO
-	},
+	--{
+		--ctrl = { mod = "M", key = "" },
+		--context = ,
+		--comment = "",
+		--hashtags = "#",
+		--callback = nil --TODO
+	--},
 
 	{
 		ctrl = { mod = "M", key = "c" },

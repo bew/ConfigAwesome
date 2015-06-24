@@ -7,9 +7,7 @@ local awful = require("awful")
 local naughty = require("naughty")
 local global = require("global")
 
-confdir = awful.util.getdir("config")
-package.path = package.path .. ";" .. confdir .. "/lib/?.lua;"
-package.path = package.path .. ";" .. confdir .. "/lib/?/init.lua;"
+local confdir = awful.util.getdir("config")
 
 local confList = {
 	{
@@ -22,8 +20,14 @@ local confList = {
 	}
 }
 
+function addPackagePath(dirPath)
+	package.path = package.path .. ";" .. dirPath .. "/?.lua;"
+	package.path = package.path .. ";" .. dirPath .. "/?/init.lua;"
+end
+
 function loadConf(confpath)
 	local rc, err = loadfile(confpath);
+
 	if rc then
 	    rc, err = pcall(rc);
 	    if rc then
@@ -33,22 +37,27 @@ function loadConf(confpath)
 	return err
 end
 
+
+addPackagePath(confdir .. "/lib/")
+
 local err
-for i=1, #confList do
-	naughty.notify({ text = "Loading theme '" .. confList[i].name .. "'..." })
+for i = 1, #confList do
+	--naughty.notify({ text = "Loading theme '" .. confList[i].name .. "'..." })
 	global.confInfos = confList[i]
 
 	local oldPackagePath = package.path
-	package.path = package.path .. ";" .. confList[i].path .. "/lib/?.lua;"
+	addPackagePath(confList[i].path .. "/lib/")
 	package.path = package.path .. ";" .. confList[i].path .. "/lib/?/init.lua;"
 
 	err = loadConf(confList[i].path .. "/init.lua")
 
 	if not err then
+		-- no error
 		naughty.notify({ text = "Theme '" .. confList[i].name .. "' loaded !", timeout = 10 })
 		return;
 	end
 
+	-- error when loading theme
 	package.path = oldPackagePath
 	naughty.notify({
 		title = "#> Theme '" .. confList[i].name .. "' crashed during startup on " .. os.date("%d/%m/%Y %T"),

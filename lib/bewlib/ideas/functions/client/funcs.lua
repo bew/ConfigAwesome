@@ -14,4 +14,8 @@ client = {
 					-> create new tag
 	]]
 	moveTo = false,
+
+	enterResizeMode = false,
+
 }
+
