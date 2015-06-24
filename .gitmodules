@@ -4,3 +4,6 @@
 [submodule "lib/radical"]
 	path = lib/radical
 	url = https://github.com/Elv13/radical.git
+[submodule "lib/bewlib"]
+	path = lib/bewlib
+	url = git@github.com:Bew78LesellB/AwesomeBewLib.git
