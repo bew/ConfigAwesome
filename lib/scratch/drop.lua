@@ -41,13 +41,14 @@ local dropdown = {}
 
 -- Create a new window for the drop-down application when it doesn't
 -- exist, or toggle between hidden and visible states when it does
-function toggle(prog, vert, horiz, width, height, sticky, screen)
-    vert   = vert   or "top"
-    horiz  = horiz  or "center"
-    width  = width  or 1
-    height = height or 0.25
-    sticky = sticky or false
-    screen = screen or capi.mouse.screen
+--function toggle(prog, vert, horiz, width, height, sticky, screen)
+function toggle(prog, opt)
+    vert   = opt.vert   or "top"
+    horiz  = opt.horiz  or "center"
+    width  = opt.width  or 1
+    height = opt.height or 0.25
+    sticky = opt.sticky or false
+    screen = opt.screen or capi.mouse.screen
 
     -- Determine signal usage in this version of awesome
     local attach_signal = capi.client.connect_signal    or capi.client.add_signal
