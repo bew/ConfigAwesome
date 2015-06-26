@@ -41,7 +41,34 @@ local global = require("global")
 --[[ My lib ]]--
 local utils = require("bewlib.utils")
 local battery = require("bewlib.computer.battery")
-battery.init()
+battery.init({update = 2})
+--[[
+TODO:
+battery.init({
+	update = {
+		status = 2,
+		other = 30
+	}
+})
+
+TODO:
+battery.setUpdate({
+	perc = 15,
+})
+--]]
+battery:on("percentage::changed", function(self, perc)
+	utils.toast("percentage changed !!")
+end)
+
+battery:on("timeLeft::changed", function(self, time)
+	local msg = self.infos.status == "Charging" and "full" or "empty"
+	utils.toast("time to " .. msg .. ": " .. string.gsub(time, "(%d%d):(%d%d)", "%1h %2m"))
+end)
+
+battery:on("status::changed", function(self, status)
+	utils.toast("Status changed !!\n"
+			 .. "==> " .. status)
+end)
 
 function loadFile(path)
 	local success
