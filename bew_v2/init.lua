@@ -9,6 +9,8 @@
 
 --]]
 
+--assert(false, "testing")
+
 --[[ Grab environnement ]]--
 local capi = {
 	timer = timer
@@ -36,45 +38,18 @@ local gears = require("gears")
 -- Autofocus (when changing tag/screen/etc or add/delete client/tag)
 require("awful.autofocus")
 
+local scratch = require("scratch")
+
 local global = require("global")
 
 --[[ My lib ]]--
 local utils = require("bewlib.utils")
-local battery = require("bewlib.computer.battery")
-battery.init({update = 2})
---[[
-TODO:
-battery.init({
-	update = {
-		status = 2,
-		other = 30
-	}
-})
 
-TODO:
-battery.setUpdate({
-	perc = 15,
-})
---]]
-battery:on("percentage::changed", function(self, perc)
-	utils.toast("percentage changed !!")
-end)
-
-battery:on("timeLeft::changed", function(self, time)
-	local msg = self.infos.status == "Charging" and "full" or "empty"
-	utils.toast("time to " .. msg .. ": " .. string.gsub(time, "(%d%d):(%d%d)", "%1h %2m"))
-end)
-
-battery:on("status::changed", function(self, status)
-	utils.toast("Status changed !!\n"
-			 .. "==> " .. status)
-end)
 
 function loadFile(path)
 	local success
 	local result
 
-	-- Which file? In rc/ or in lib/?
 	local path = global.confInfos.path .. "/" .. path .. ".lua"
 
 	-- Execute the file
@@ -96,6 +71,68 @@ local theme = global.theme
 local config = global.config
 
 loadFile("loader/wallpaper")
+
+
+
+
+
+
+-- TESTING BEWLIB
+
+--[[ BATTERY ]]--
+local Battery = require("bewlib.computer.battery")
+Battery.init({update = 2})
+--[[
+TODO:
+Battery.init({
+	update = {
+		status = 2,
+		other = 30
+	}
+})
+
+TODO:
+Battery.setUpdate({
+	perc = 15,
+})
+--]]
+Battery:on("percentage::changed", function(self, perc)
+	utils.toast("percentage changed !!")
+end)
+
+Battery:on("timeLeft::changed", function(self, time)
+	local msg = self.infos.status == "Charging" and "full" or "empty"
+	utils.toast("time to " .. msg .. ": " .. string.gsub(time, "(%d%d):(%d%d)", "%1h %2m"))
+end)
+
+Battery:on("status::changed", function(self, status)
+	utils.toast("Status changed !!\n"
+			 .. "==> " .. status)
+end)
+
+
+
+--[[ KEYMAP ]]--
+local Keymap = require("bewlib.keymap")
+local km = Keymap.new("name")
+
+km:add({
+	ctrl = { mod = "MS", key = "c" },
+	press = function(bind, c)
+		c:kill()
+	end,
+})
+
+utils.toast(debug(km), {
+	title = "============== Keymap ===================",
+	timeout = 20,
+	font = "terminus 10",
+})
+
+
+
+
+
 
 
 -- {{{ Tags
@@ -300,7 +337,7 @@ end
 
 
 -- for ping:
-local async = require("lain.asyncshell")
+local async = require("lain.asyncshell") --TODO: use utils.async
 
 
 local notif_id = {}
@@ -325,7 +362,9 @@ globalkeys = awful.util.table.join(
 
 
 	-- Show/Hide test Wibox
-	awful.key({ modkey }, "b", toggle_w),
+	awful.key({ modkey }, "b", toggle_w, toggle_w),
+
+	awful.key({ modkey }, "y", function() scratch.drop("xterm", {vert = "bottom", sticky = true}) end),
 
 	awful.key({ modkey }, "Left", awful.tag.viewprev),
 	awful.key({ modkey }, "Right",  awful.tag.viewnext),
@@ -466,6 +505,7 @@ globalkeys = awful.util.table.join(
 
 			if stdout == "" then
 				utils.toast("Please run 'wifi' in a terminal", { title = "Wifi is not ACTIVATED" })
+				return
 			end
 
 
@@ -484,7 +524,7 @@ globalkeys = awful.util.table.join(
 		end)
 	end),
 
-	--- network change (intra / bew's gs4)
+	--- network selector
 	awful.key({ modkey, "Control" }, "n", function()
 		-- info on networks
 		local networks = {
