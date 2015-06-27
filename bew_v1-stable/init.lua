@@ -134,7 +134,7 @@ tags = {}
 for s = 1, screen.count() do
 	-- Each screen has its own tag table.
 	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
-	tags[s] = awful.tag({ "Web", "Web2", "Web3", "              ", "Divers", "Divers", "              ", "Code", "CODE", "Code", "              ", "Misc", "Misc" }, s, layouts[1])
+	tags[s] = awful.tag({ "Web", "Web2", "Web3", "              ", "Divers", "Divers", "              ", "Code", "CODE", "Code", "              ", "Misc", "Misc" }, s, layouts[2])
 end
 -- }}}
 
@@ -366,13 +366,28 @@ globalkeys = awful.util.table.join(
 
 
 	awful.key({ modkey }, "d", function ()
-		   local out = awful.util.pread("ls -l")
-		   naughty.notify({
-					text = "================= Out ==============\n" .. out,
-					timeout = 2
-				})
+		local out = awful.util.pread("ls -l")
+		naughty.notify({
+			text = "================= Out ==============\n" .. out,
+			timeout = 2
+		})
 	   end),
 
+
+	awful.key({ modkey }, "g", function ()
+		--local out = awful.util.pread("ping -c1 google.fr")
+		--local out = awful.util.pread("./longtask.sh")
+		local async = require("lain.asyncshell")
+		async.request("./longtask.sh", function (file_out)
+			local stdout = file_out:read("*all")
+			file_out:close()
+
+			naughty.notify({
+				text = "================= Out ==============\n" .. stdout,
+				timeout = 5
+			})
+		end)
+	end),
 
 
 
