@@ -42,7 +42,6 @@ addPackagePath(confdir .. "/lib/")
 
 local err
 for i = 1, #confList do
-	--naughty.notify({ text = "Loading theme '" .. confList[i].name .. "'..." })
 	global.confInfos = confList[i]
 
 	local oldPackagePath = package.path
