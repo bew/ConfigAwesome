@@ -44,6 +44,7 @@ local global = require("global")
 
 --[[ My lib ]]--
 local utils = require("bewlib.utils")
+local Keymap = require("bewlib.keymap")
 
 
 function loadFile(path)
@@ -97,7 +98,7 @@ Battery.setUpdate({
 })
 --]]
 Battery:on("percentage::changed", function(self, perc)
-	utils.toast("percentage changed !!")
+	--utils.toast("percentage changed !!")
 end)
 
 Battery:on("timeLeft::changed", function(self, time)
@@ -109,27 +110,6 @@ Battery:on("status::changed", function(self, status)
 	utils.toast("Status changed !!\n"
 			 .. "==> " .. status)
 end)
-
-
-
---[[ KEYMAP ]]--
-local Keymap = require("bewlib.keymap")
-local km = Keymap.new("name")
-
-km:add({
-	ctrl = { mod = "MS", key = "c" },
-	press = function(bind, c)
-		c:kill()
-	end,
-})
-
-utils.toast(debug(km), {
-	title = "============== Keymap ===================",
-	timeout = 20,
-	font = "terminus 10",
-})
-
-
 
 
 
@@ -153,7 +133,11 @@ end
 
 -- Edit the config file
 awesome_edit = function ()
-	awful.util.spawn(run_in_term_cmd .. "'cd " .. awful.util.getdir("config") .. " && " .. termEditor .. " " .. "rc.lua" .. "'")
+	local function spawnInTerm(cmd)
+		awful.util.spawn(run_in_term_cmd .. "'" .. cmd .. "'")
+	end
+
+	spawnInTerm("cd " .. awful.util.getdir("config") .. " && " .. termEditor .. " " .. "rc.lua")
 end
 
 
@@ -170,6 +154,7 @@ menubar.geometry = {
 -- }}}
 
 
+--TODO: refactor, put it in bewlib managment system, and setup it here
 local lockAndSleeping = false
 function lockAndSleep()
 	if not lockAndSleeping then
@@ -183,29 +168,6 @@ function lockAndSleep()
 	end
 end
 
-utils.setInterval(function()
-	local battery = "BAT0"
-	async.request("cat /sys/class/power_supply/" .. battery .. "/capacity", function(file_out)
-		local stdout = file_out:read("*line")
-		file_out:close()
-
-		local perc = tonumber(stdout)
-		if perc < 15 then
-			utils.toast("perc: " .. perc, { title = "Checking battery infos" })
-		end
-		if perc < 5 then
-			async.request("cat /sys/class/power_supply/" .. battery .. "/status", function(file_out)
-				local status = file_out:read("*line")
-				file_out:close()
-
-				if status == "Charging" then return end
-				utils.toast("need lock and sleep !!!", { title = "Battery status is " .. status })
-				--lockAndSleep()
-			end)
-		end
-	end)
-end, 10)
-
 
 
 -- {{{ Wibox
@@ -217,6 +179,11 @@ topbar = {}
 bottombar = {}
 
 wLayoutSwitcher = {}
+
+
+
+
+-- Tag list config
 mytaglist = {}
 mytaglist.buttons = awful.util.table.join(
 	awful.button({			}, 1, awful.tag.viewonly),
@@ -227,13 +194,34 @@ mytaglist.buttons = awful.util.table.join(
 	awful.button({ 			}, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
 )
 
--- Battery widget
-wBattery = lain.widgets.bat({
-    settings = function()
-        widget:set_markup(" | " .. bat_now.status .. " | " .. bat_now.perc .. "% | ")
-    end
-})
 
+
+
+-- Battery widget
+--wBattery = lain.widgets.bat({
+    --settings = function()
+        --widget:set_markup(" | " .. bat_now.status .. " | " .. bat_now.perc .. "% | ")
+    --end
+--})
+wBattery = wibox.widget.textbox()
+Battery:on("percentage::changed", function(self, perc)
+	wBattery:set_text(" | " .. self.infos.status .. " | " .. perc .. "% | ")
+end)
+Battery:emit("percentage::changed", Battery.infos.perc)
+
+wBatteryGraph = awful.widget.graph({})
+wBatteryGraph:set_color("#424242")
+wBatteryGraph:set_max_value(100)
+utils.setInterval(function()
+	wBatteryGraph:add_value(Battery.infos.perc)
+	wBatteryGraph:add_value(Battery.infos.perc)
+end, 60, true)
+
+
+
+
+-- Emergency widgets
+-- >> Reload
 wEmergencyReload = wibox.widget.imagebox( theme.getIcon( "emergency", "rcReload" ), true)
 wEmergencyReload:buttons(awful.util.table.join(
 	awful.button({}, 1, function ()
@@ -241,12 +229,17 @@ wEmergencyReload:buttons(awful.util.table.join(
 	end)
 ))
 
+-- >> Edit
 wEmergencyEdit = wibox.widget.imagebox( theme.getIcon( "emergency", "rcEdit" ), true)
 wEmergencyEdit:buttons(awful.util.table.join(
 	awful.button({}, 1, function ()
 		awesome_edit()
 	end)
 ))
+
+
+
+
 
 function foreachScreen(callback)
 	if callback == nil then
@@ -285,10 +278,10 @@ foreachScreen(function (s)
 		right_layout:add(wibox.widget.systray())
 	end
 	right_layout:add(wClock)
+	right_layout:add(wBatteryGraph)
 	right_layout:add(wBattery)
 	right_layout:add(wLayoutSwitcher[s])
 
-	-- Now bring it all together (with the tasklist in the middle)
 	local layTopbar = wibox.layout.align.horizontal()
 	layTopbar:set_middle(tagsLayout)
 	layTopbar:set_right(right_layout)
@@ -301,20 +294,12 @@ end)
 
 
 
---[[ {{{ Mouse bindings
-root.buttons(awful.util.table.join(
-	awful.button({ }, 4, awful.tag.viewnext),
-	awful.button({ }, 5, awful.tag.viewprev)
-))
--- }}} ]]
-
-
 
 local wibox = require("wibox")
 
 local w = wibox({
-	width = 200,
-	height = 300,
+	width = 500,
+	height = 500,
 	x = 300,
 	y = 100,
 	ontop = true,
@@ -325,6 +310,36 @@ w:set_bg("#03A9F4")
 function toggle_w()
 	w.visible = not w.visible
 end
+
+-- populate w's wibox content
+do
+	layMain = wibox.layout.align.vertical()
+
+	layHeader = wibox.layout.align.horizontal()
+	-- Header
+	do -- Title
+		local text = wibox.widget.textbox("Battery infos")
+		layHeader:set_middle(text)
+	end
+	do -- battery level
+		local text = wibox.widget.textbox(Battery.infos.perc .. "%")
+		layHeader:set_right(text)
+
+		Battery:on("percentage::changed", function(self, perc)
+			text:set_text(Battery.infos.perc .. "%")
+		end)
+	end
+	layMain:set_top(layHeader)
+
+
+
+
+	w:set_widget(layMain)
+end
+
+
+
+
 
 
 
@@ -372,6 +387,7 @@ globalkeys = awful.util.table.join(
 	awful.key({ modkey, altkey	}, "j", awful.tag.viewprev ),
 	awful.key({ modkey, altkey	}, "k", awful.tag.viewnext ),
 
+	-- Move client on tag Left/Right
 	awful.key({ modkey, "Shift" }, "Left", function ()
 		if not client.focus then return; end
 		local c = client.focus
@@ -703,18 +719,43 @@ globalkeys = awful.util.table.join(
 
 
 
+--[[
 clientkeys = awful.util.table.join(
 	awful.key({ modkey, "Shift"	}, "c",		function (c) c:kill()								end),
 	awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle						),
 	awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster())	end),
 	awful.key({ modkey,			  }, "a",		function (c) c.ontop = not c.ontop				end),
-	awful.key({ modkey,			  }, "n",
+	awful.key({ modkey,			  }, "m",
 		function (c)
 			c.maximized_horizontal = not c.maximized_horizontal
 			c.maximized_vertical	= not c.maximized_vertical
 		end
 	)
 )
+]]
+--local kmClient = Keymap.new("client")
+--kmClient:add({
+
+Keymap.new("client"):add({
+	ctrl = { mod = "MS", key = "c" },
+	press = function(c)
+		c:kill()
+	end,
+}):add({
+	ctrl = { mod = "M", key = "a" },
+	press = function(c)
+		c.ontop = not c.ontop
+	end
+}):add({
+	ctrl = { mod = "M", key = "m" },
+	press = function (c)
+		c.maximized_horizontal = not c.maximized_horizontal
+		c.maximized_vertical	= not c.maximized_vertical
+	end
+})
+
+
+
 
 -- Bind all key numbers to tags.
 -- Be careful: we use keycodes to make it works on any keyboard layout.
