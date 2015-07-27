@@ -1,6 +1,7 @@
 local awful = require("awful")
 awful.rules = require("awful.rules")
 local theme = require("beautiful")
+local Keymap = require("bewlib.keymap")
 
 -- {{{ Rules
 awful.rules.rules = {
@@ -11,7 +12,7 @@ awful.rules.rules = {
   			border_width = theme.border_width,
 			border_color = theme.border_focus,
 			focus = true,
-			keys = clientkeys,
+			keys = Keymap.apply("client"),
 			buttons = clientbuttons
 		}
 	},
@@ -46,10 +47,6 @@ awful.rules.rules = {
 				width	= 350,
 				height	= 370
 			})
-			-- naughty.notify({
-			-- 	text = "Setting pos & geometry\nof " .. c.name,
-			-- 	timeout = 2
-			-- })
 		end
 	}
 }
