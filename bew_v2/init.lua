@@ -112,6 +112,10 @@ Battery:on("status::changed", function(self, status)
 end)
 
 
+--[[ COMMAND ]]--
+local Command = require("bewlib.command")
+
+--Command.test()
 
 
 
@@ -122,7 +126,7 @@ for s = 1, screen.count() do
 	-- Each screen has its own tag table.
 	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
 	tags[s] = awful.tag({
-		"Web", "Web2", "Web3", "				  ",
+		"Web", "Web", "Web", "				  ",
 		"Divers", "Divers", "				  ",
 		"Code", "CODE", "Code", "				  ",
 		"Misc", "Misc" }, s, global.layouts[1])
