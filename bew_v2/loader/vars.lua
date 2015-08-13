@@ -11,10 +11,8 @@ global.theme = theme.get()
 
 -- This is used later as the default terminal and editor to run.
 terminal = "xterm"
-termEditor = os.getenv("EDITOR") or "vim"
 geditor = "subl3"
 run_in_term_cmd = terminal .. " -e /bin/zsh -c "
-editor_cmd = run_in_term_cmd .. termEditor
 
 modkey = "Mod4"
 altkey = "Mod1"
@@ -48,6 +46,14 @@ config.apps = {
 	webrowser2 = "luakit",
 	termEditor = os.getenv("EDITOR") or "vim",
 	rcEditor = os.getenv("HOME") .. "/soft-portable/subl3"
+}
+
+const = {
+	mouseLeft = 1,
+	mouseRight = 2,
+	mouseMiddle = 3,
+	mouseScrollUp = 4,
+	mouseScrollDown = 5,
 }
 
 -- }}}
