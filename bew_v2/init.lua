@@ -16,12 +16,8 @@ local capi = {
 	timer = timer
 }
 
--- load modif (widget, etc) from radical
-require("radical")
-
 -- Standard awesome library
 local awful = require("awful")
-awful.rules = require("awful.rules")
 
 -- Widget and layout library
 local wibox = require("wibox")
@@ -74,29 +70,11 @@ local config = global.config
 loadFile("loader/wallpaper")
 
 
-
-
-
-
--- TESTING BEWLIB
+--[[ === BEWLIB === ]]--
 
 --[[ BATTERY ]]--
 local Battery = require("bewlib.computer.battery")
 Battery.init({update = 2})
---[[
-TODO:
-Battery.init({
-	update = {
-		status = 2,
-		other = 30
-	}
-})
-
-TODO:
-Battery.setUpdate({
-	perc = 15,
-})
---]]
 Battery:on("percentage::changed", function(self, perc)
 	--utils.toast("percentage changed !!")
 end)
@@ -110,7 +88,6 @@ Battery:on("status::changed", function(self, status)
 	utils.toast("Status changed !!\n"
 			 .. "==> " .. status)
 end)
-
 
 --[[ COMMAND ]]--
 local Command = require("bewlib.command")
@@ -141,7 +118,7 @@ awesome_edit = function ()
 		awful.util.spawn(run_in_term_cmd .. "'" .. cmd .. "'")
 	end
 
-	spawnInTerm("cd " .. awful.util.getdir("config") .. " && " .. termEditor .. " " .. "rc.lua")
+	spawnInTerm("cd " .. awful.util.getdir("config") .. " && " .. config.apps.termEditor .. " " .. "rc.lua")
 end
 
 
@@ -202,16 +179,16 @@ mytaglist.buttons = awful.util.table.join(
 
 
 -- Battery widget
---wBattery = lain.widgets.bat({
-    --settings = function()
-        --widget:set_markup(" | " .. bat_now.status .. " | " .. bat_now.perc .. "% | ")
-    --end
---})
 wBattery = wibox.widget.textbox()
-Battery:on("percentage::changed", function(self, perc)
-	wBattery:set_text(" | " .. self.infos.status .. " | " .. perc .. "% | ")
+
+Command.register("widget.updateBatteryStatus", function()
+	wBattery:set_text(" | " .. Battery.infos.status .. " | " .. Battery.infos.perc .. "% | ")
 end)
-Battery:emit("percentage::changed", Battery.infos.perc)
+
+Battery:on("percentage::changed", function()
+	Command.run("widget.updateBatteryStatus")
+end)
+Command.run("widget.updateBatteryStatus")
 
 wBatteryGraph = awful.widget.graph({})
 wBatteryGraph:set_color("#424242")
@@ -311,8 +288,14 @@ local w = wibox({
 })
 w:set_bg("#03A9F4")
 
+local txtContent = wibox.widget.textbox("Content loading...") --degeuuuuuu
+local txtFooter = wibox.widget.textbox("Date loading...") --degeuuuuuu
 function toggle_w()
 	w.visible = not w.visible
+	utils.async.getAll("acpi -b", function(stdout)
+		txtContent:set_text(stdout)
+	end)
+	txtFooter:set_text(os.date())
 end
 
 -- populate w's wibox content
@@ -323,10 +306,12 @@ do
 	-- Header
 	do -- Title
 		local text = wibox.widget.textbox("Battery infos")
+		text:set_font("terminux 18")
 		layHeader:set_middle(text)
 	end
 	do -- battery level
 		local text = wibox.widget.textbox(Battery.infos.perc .. "%")
+		text:set_font("terminux 18")
 		layHeader:set_right(text)
 
 		Battery:on("percentage::changed", function(self, perc)
@@ -336,7 +321,14 @@ do
 	layMain:set_top(layHeader)
 
 
+	txtContent:set_align("center")
+	txtContent:set_font("terminux 18")
+	layMain:set_middle(txtContent)
 
+
+	txtFooter:set_align("center")
+	txtFooter:set_font("terminux 18")
+	layMain:set_bottom(txtFooter)
 
 	w:set_widget(layMain)
 end
@@ -374,6 +366,7 @@ local wallpaper_toggle = {
 }
 
 
+utils.toast.warning("Here is a test warning")
 
 
 -- {{{ Key bindings
@@ -383,8 +376,14 @@ globalkeys = awful.util.table.join(
 	-- Show/Hide test Wibox
 	awful.key({ modkey }, "b", toggle_w, toggle_w),
 
+
+
+
+
+
 	awful.key({ modkey }, "y", function() scratch.drop("xterm", {vert = "bottom", sticky = true}) end),
 
+	-- Tag navigaton
 	awful.key({ modkey }, "Left", awful.tag.viewprev),
 	awful.key({ modkey }, "Right",  awful.tag.viewnext),
 	awful.key({ modkey }, "Escape", awful.tag.history.restore),
@@ -393,19 +392,21 @@ globalkeys = awful.util.table.join(
 
 	-- Move client on tag Left/Right
 	awful.key({ modkey, "Shift" }, "Left", function ()
-		if not client.focus then return; end
+		if not client.focus then return end
 		local c = client.focus
 		local idx = awful.tag.getidx()
 		local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
+
 		awful.client.movetotag(tags[c.screen][new_idx])
 		awful.tag.viewonly(tags[c.screen][new_idx])
 		client.focus = c
 	end),
 	awful.key({ modkey, "Shift" }, "Right", function ()
-		if not client.focus then return; end
+		if not client.focus then return end
 		local c = client.focus
 		local idx = awful.tag.getidx()
 		local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
+
 		awful.client.movetotag(tags[c.screen][new_idx])
 		awful.tag.viewonly(tags[c.screen][new_idx])
 		client.focus = c
