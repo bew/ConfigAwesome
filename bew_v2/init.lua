@@ -370,28 +370,48 @@ utils.toast.warning("Here is a test warning")
 
 
 -- {{{ Key bindings
-globalkeys = awful.util.table.join(
+local km = Keymap.new("global")
+km:add({
+	ctrl = { mod = "M", key = "b" },
+	press = toggle_w,
+	release = toggle_w,
+}):add({
+	ctrl = { mod = "M", key = "y" },
+	press = function()
+		scratch.drop("xterm", {vert = "bottom", sticky = true})
+	end
+})
 
+-- Tag navigaton
+km:add({
+	ctrl = { mod = "M", key = "Left" },
+	press = awful.tag.viewprev,
+})
 
-	-- Show/Hide test Wibox
-	awful.key({ modkey }, "b", toggle_w, toggle_w),
+km:add({
+	ctrl = { mod = "M", key = "Right" },
+	press = awful.tag.viewnext,
+})
 
+km:add({
+	ctrl = { mod = "MA", key = "j" },
+	press = awful.tag.viewprev,
+})
 
+km:add({
+	ctrl = { mod = "MA", key = "k" },
+	press = awful.tag.viewnext,
+})
 
+km:add({
+	ctrl = { mod = "M", key = "Escape" },
+	press = awful.tag.history.restore,
+})
 
-
-
-	awful.key({ modkey }, "y", function() scratch.drop("xterm", {vert = "bottom", sticky = true}) end),
-
-	-- Tag navigaton
-	awful.key({ modkey }, "Left", awful.tag.viewprev),
-	awful.key({ modkey }, "Right",  awful.tag.viewnext),
-	awful.key({ modkey }, "Escape", awful.tag.history.restore),
-	awful.key({ modkey, altkey	}, "j", awful.tag.viewprev ),
-	awful.key({ modkey, altkey	}, "k", awful.tag.viewnext ),
-
-	-- Move client on tag Left/Right
-	awful.key({ modkey, "Shift" }, "Left", function ()
+-- Move client on tag Left/Right
+km:add({
+	ctrl = { mod = "MS", key = "Left" },
+	press = function ()
 		if not client.focus then return end
 		local c = client.focus
 		local idx = awful.tag.getidx()
@@ -400,110 +420,147 @@ globalkeys = awful.util.table.join(
 		awful.client.movetotag(tags[c.screen][new_idx])
 		awful.tag.viewonly(tags[c.screen][new_idx])
 		client.focus = c
-	end),
-	awful.key({ modkey, "Shift" }, "Right", function ()
+	end,
+})
+
+km:add({
+	ctrl = { mod = "MS", key = "Right" },
+	press = function ()
 		if not client.focus then return end
 		local c = client.focus
 		local idx = awful.tag.getidx()
-		local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
+		local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
 
 		awful.client.movetotag(tags[c.screen][new_idx])
 		awful.tag.viewonly(tags[c.screen][new_idx])
 		client.focus = c
-	end),
+	end,
+})
 
 
-	-- awesome management
-	awful.key({ modkey, "Control" }, "r", awesome.restart),
-	awful.key({ modkey, "Shift"	}, "q", awesome.quit),
+-- awesome management
+km:add({
+	ctrl = { mod = "MC", key = "r" },
+	press = awesome.restart,
+})
+km:add({
+	ctrl = { mod = "MC", key = "q" },
+	press = awesome.quit,
+})
 
-	-- client selection
-	awful.key({ modkey,			  }, "j", function ()
+
+-- client selection
+km:add({
+	ctrl = { mod = "M", key = "j" },
+	press = function ()
 		awful.client.focus.byidx( 1)
 		if client.focus then client.focus:raise() end
-	end),
-	awful.key({ modkey,			  }, "k",
-		function ()
-			awful.client.focus.byidx(-1)
-			if client.focus then client.focus:raise() end
+	end,
+})
+km:add({
+	ctrl = { mod = "M", key = "k" },
+	press = function ()
+		awful.client.focus.byidx(-1)
+		if client.focus then client.focus:raise() end
+	end,
+})
+km:add({ -- select last
+	ctrl = { mod = "M", key = "Tab" },
+	press = function ()
+		awful.client.focus.history.previous()
+		if client.focus then
+			client.focus:raise()
 		end
-	),
+	end,
+})
+
+
+-- Layout manipulation
+km:add({
+	ctrl = { mod = "MS", key = "j" },
+	press = function()
+		awful.client.swap.byidx( 1)
+	end,
+})
+km:add({
+	ctrl = { mod = "MS", key = "k" },
+	press = function()
+		awful.client.swap.byidx(-1)
+	end,
+})
+
+-- Goto client
+km:add({
+	ctrl = { mod = "M", key = "u" },
+	press = awful.client.urgent.jumpto,
+})
+
+
+-- Apps spawning
+km:add({
+	ctrl = { mod = "M", key = "t" },
+	press = function () awful.util.spawn(global.config.apps.term) end,
+})
+km:add({
+	ctrl = { mod = "MA", key = "t" },
+	press = function () awful.util.spawn(global.config.apps.term2) end,
+})
 
 
 
-	-- Layout manipulation
-	awful.key({ modkey, "Shift"		}, "j",	function () awful.client.swap.byidx( 1) end),
-	awful.key({ modkey, "Shift"		}, "k",	function () awful.client.swap.byidx(-1) end),
+-- Clients resize/move
+km:add({
+	ctrl = { mod = "M", key = "l" },
+	press = function () awful.tag.incmwfact( 0.05) end,
+})
+km:add({
+	ctrl = { mod = "M", key = "h" },
+	press = function () awful.tag.incmwfact(-0.05) end,
+})
 
-	awful.key({ modkey, "Control"	}, "j",	function () awful.screen.focus_relative( 1) end),
-	awful.key({ modkey, "Control"	}, "k",	function () awful.screen.focus_relative(-1) end),
+km:add({
+	ctrl = { mod = "MS", key = "h" },
+	press = function () awful.tag.incnmaster( 1) end,
+})
+km:add({
+	ctrl = { mod = "MS", key = "l" },
+	press = function () awful.tag.incnmaster(-1) end,
+})
 
-	awful.key({ modkey }, "u",
-		awful.client.urgent.jumpto
-	),
-
-	awful.key({ modkey }, "Tab",
-		function ()
-			awful.client.focus.history.previous()
-			if client.focus then
-				client.focus:raise()
-			end
-		end
-	),
-
-
-
-	-- Apps spawning
-	awful.key({ modkey,				}, "t", function () awful.util.spawn(global.config.apps.term) end),
-	awful.key({ modkey, altkey		}, "t", function () awful.util.spawn(global.config.apps.term2) end),
-
-
-
-	-- Standard program
-	awful.key({ modkey,			  }, "l",	  function () awful.tag.incmwfact( 0.05) end),
-	awful.key({ modkey,			  }, "h",	  function () awful.tag.incmwfact(-0.05) end),
-
-	awful.key({ modkey, "Shift"	}, "h",	  function () awful.tag.incnmaster( 1) end),
-	awful.key({ modkey, "Shift"	}, "l",	  function () awful.tag.incnmaster(-1) end),
-
-	awful.key({ modkey, "Control" }, "h",	  function () awful.tag.incncol( 1) end),
-	awful.key({ modkey, "Control" }, "l",	  function () awful.tag.incncol(-1) end),
-	awful.key({ modkey, "Control" }, "n",
-		awful.client.restore
-	),
+km:add({
+	ctrl = { mod = "MC", key = "h" },
+	press = function () awful.tag.incncol( 1) end,
+})
+km:add({
+	ctrl = { mod = "MC", key = "l" },
+	press = function () awful.tag.incncol(-1) end,
+})
 
 
 
-	-- switch layout
-	awful.key({ modkey			}, "space", function () awful.layout.inc(global.layouts,  1) end),
-	awful.key({ modkey, "Shift"	}, "space", function () awful.layout.inc(global.layouts, -1) end),
+-- switch layout
+km:add({
+	ctrl = { mod = "M", key = "Space" },
+	press = function () awful.layout.inc(global.layouts,  1) end,
+})
+km:add({
+	ctrl = { mod = "MS", key = "Space" },
+	press = function () awful.layout.inc(global.layouts, -1) end,
+})
 
 
 
-	-- Menubar
-	awful.key({ modkey }, "x", function() menubar.show() end),
+-- Menubar
+km:add({
+	ctrl = { mod = "M", key = "x" },
+	press = menubar.show,
+})
 
 
-
-	awful.key({ modkey }, "g", function ()
-		notif_id.ping = utils.toast("Sending 1 packet to google.fr", {
-			position = "bottom_right",
-			replaces_id = notif_id.ping
-		}).id
-		async.request("ping google.fr -c 1 -w 1", function (file_out)
-			local out = file_out:read("*all")
-			file_out:close()
-
-			notif_id.ping = utils.toast(out, {
-				title = "===== Ping google.fr result =====",
-				position = "bottom_right",
-				replaces_id = notif_id.ping 
-			}).id
-		end)
-	end),
-
-	-- Wallpaper managment
-	awful.key({ modkey }, "w", function()
+-- Wallpaper managment
+km:add({
+	ctrl = { mod = "M", key = "w" },
+	press = function()
 		if wallpaper_toggle.state then
 			wallpaper_toggle.id_notif = utils.toast("Resetting wallpaper", { replaces_id = wallpaper_toggle.id_notif }).id
 			gears.wallpaper.maximized(theme.wallpaper, 1, true)
@@ -512,41 +569,66 @@ globalkeys = awful.util.table.join(
 			gears.wallpaper.maximized(theme.wallpaper_dir .. "powered_by_archlinux__yellow_on_black.png", 1, true)
 		end
 		wallpaper_toggle.state = not wallpaper_toggle.state
-	end),
+	end,
+})
 
-	-- Computer managment
-	awful.key({ modkey }, "p", lockAndSleep),
+-- Computer managment
+km:add({
+	ctrl = { mod = "M", key = "p" },
+	press = lockAndSleep,
+})
 
-	-- Network management
-	--- network infos
-	awful.key({ modkey }, "n", function()
-		async.request(wpa_cli.cmd .. "status", function(file_out)
-			local stdout = file_out:read("*all")
-			file_out:close()
 
-			if stdout == "" then
+--##############################
+--##### Network management #####
+--##############################
+
+--- network checker
+km:add({
+	ctrl = { mod = "M", key = "g" },
+	press = function()
+		notif_id.ping = utils.toast("Sending 1 packet to google.fr", {
+			position = "bottom_right",
+			replaces_id = notif_id.ping
+		}).id
+		utils.async.getAll("ping google.fr -c 1 -w 1", function(stdout)
+			notif_id.ping = utils.toast(stdout, {
+				title = "===== Ping google.fr result =====",
+				position = "bottom_right",
+				replaces_id = notif_id.ping 
+			}).id
+		end)
+	end,
+})
+
+--- network infos
+km:add({
+	ctrl = { mod = "M", key = "n" },
+	press = function()
+		utils.async.getAll(wpa_cli.cmd .. "status", function(stdout)
+
+			if not stdout or stdout == "" then
 				utils.toast("Please run 'wifi' in a terminal", { title = "Wifi is not ACTIVATED" })
 				return
 			end
 
-
-			--utils.toast("[debug] before match")
 			local net_now = {
 				status = string.match(stdout, "wpa_state=([%a_]*)"),
 				ip_addr = string.match(stdout, "ip_address=([%d]+%.[%d]+%.[%d]+%.[%d]+)")
 			}
-			--utils.toast("[debug] after match")
 			notif_id.net_info = utils.toast("\n" .. stdout, {
 				title = net_now.status .. "  -  " .. (net_now.ip_addr and net_now.ip_addr or "NO IP"),
-				--title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
-				--position = "bottom_right",
 				replaces_id = notif_id.net_info
 			}).id
 		end)
-	end),
+	end,
+})
 
-	--- network selector
-	awful.key({ modkey, "Control" }, "n", function()
+--- network selector
+km:add({
+	ctrl = { mod = "MC", key = "n" },
+	press = function()
+
 		-- info on networks
 		local networks = {
 			-- keybind is i
@@ -584,8 +666,7 @@ globalkeys = awful.util.table.join(
 			keygrabber.stop()
 			naughty.destroy(help_notif)
 			if networks[key] then
-				async.request(wpa_cli.cmd .. "select_network " .. networks[key].id, function(file_out)
-					file_out:close()
+				utils.async.justExec(wpa_cli.cmd .. "select_network " .. networks[key].id, function()
 					notif_id.net_selector = utils.toast("Trying to connect...", {
 						title = "Network '" .. networks[key].name .. "' selected",
 						replaces_id = notif_id.net_selector
@@ -594,153 +675,132 @@ globalkeys = awful.util.table.join(
 			end
 			return true
 		end)
-	end),
+	end,
+})
 
-	--- network saved list
-	awful.key({ modkey, "Shift" }, "n", function()
-		async.request(wpa_cli.cmd .. "list_networks", function(file_out)
-			local stdout = file_out:read("*all")
-			file_out:close()
+--- network saved list
+km:add({
+	ctrl = { mod = "MS", key = "n" },
+	press = function()
+		utils.async.getAll(wpa_cli.cmd .. "list_networks", function(stdout)
 			notif_id.net_list = utils.toast(stdout, {
 				title = "===== Networks saved list =====",
 				replaces_id = notif_id.net_list
 			}).id
 		end)
-	end),
+	end,
+})
 
-	---------------------------------------------------------------
-	------------------ FN keys ------------------------------------
-	---------------------------------------------------------------
-	-- ALSA volume control
-	awful.key({  }, "XF86AudioRaiseVolume",
-		function ()
-			awful.util.spawn("amixer -q set Master 1%+")
+---------------------------------------------------------------
+------------------ FN keys ------------------------------------
+---------------------------------------------------------------
+-- ALSA volume control
+km:add({
+	ctrl = { key = "XF86AudioRaiseVolume" },
+	press = function ()
+		awful.util.spawn("amixer -q set Master 1%+")
 
-			async.request('amixer get Master', function(file_out)
-				local stdout = file_out:read("*all")
-				file_out:close()
+		utils.async.getAll('amixer get Master', function(stdout)
+			local vol_now = {}
 
-				local vol_now = {}
-				vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
-				notif_id.volume = utils.toast("Increase", {
-					title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
-					position = "bottom_right",
-					replaces_id = notif_id.volume
-				}).id
-			end)
-		end),
-	awful.key({  }, "XF86AudioLowerVolume",
-		function ()
-			awful.util.spawn("amixer -q set Master 1%-")
-
-			async.request('amixer get Master', function(file_out)
-				local stdout = file_out:read("*all")
-				file_out:close()
-
-				local vol_now = {}
-				vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
-				notif_id.volume = utils.toast("Decrease", {
-					title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
-					position = "bottom_right",
-					replaces_id = notif_id.volume
-				}).id
-			end)
-		end),
-	awful.key({  }, "XF86AudioMute",
-		function ()
-			awful.util.spawn("amixer -q set Master playback toggle")
-
-			async.request('amixer get Master', function(file_out)
-				local stdout = file_out:read("*all")
-				file_out:close()
-
-				local vol_now = {}
-				vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
-				notif_id.volume = utils.toast( vol_now.status == "on" and "Unmute" or "Mute", {
-					title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
-					position = "bottom_right",
-					replaces_id = notif_id.volume
-				}).id
-			end)
-		end),
-
-
-
-	-- Brightness control
-	awful.key({  }, "XF86MonBrightnessDown",
-		function ()
-			awful.util.spawn("xbacklight -dec 5 -time 1")
-
-			async.request('xbacklight -get', function(file_out)
-				local perc = file_out:read("*line")
-				file_out:close()
-
-				perc = string.match(perc, "(%d+)%..*")
-				notif_id.brightness = utils.toast("Decrease", {
-					title = "Brightness " .. perc .. "%",
-					position = "bottom_right",
-					replaces_id = notif_id.brightness
-				}).id
-			end)
-		end),
-	awful.key({  }, "XF86MonBrightnessUp",
-		function ()
-			awful.util.spawn("xbacklight -inc 5 -time 1")
-
-			async.request('xbacklight -get', function(file_out)
-				local perc = file_out:read("*line")
-				file_out:close()
-
-				perc = string.match(perc, "(%d+)%..*")
-				notif_id.brightness = utils.toast("Increase", {
-					title = "Brightness " .. perc .. "%",
-					position = "bottom_right",
-					replaces_id = notif_id.brightness
-				}).id
-			end)
-		end),
-
-
-
-	-- Lock screen control
-	awful.key({  }, "XF86Sleep",
-		function ()
-			awful.util.spawn(os.getenv("HOME") .. "/.bin/my_i3lock")
-			naughty.notify({
-				text = "Locking...",
-				timeout = 0.5
-			})
-		end),
-	awful.key({  }, "Pause",
-		function ()
-			awful.util.spawn(os.getenv("HOME") .. "/.bin/my_i3lock")
-			naughty.notify({
-				text = "Locking...",
-				timeout = 0.5
-			})
+			vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
+			notif_id.volume = utils.toast("Increase", {
+				title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+				position = "bottom_right",
+				replaces_id = notif_id.volume
+			}).id
 		end)
-)
+	end,
+})
+km:add({
+	ctrl = { key = "XF86AudioLowerVolume" },
+	press = function ()
+		awful.util.spawn("amixer -q set Master 1%-")
+
+		utils.async.getAll('amixer get Master', function(stdout)
+			local vol_now = {}
+
+			vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
+			notif_id.volume = utils.toast("Increase", {
+				title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+				position = "bottom_right",
+				replaces_id = notif_id.volume
+			}).id
+		end)
+	end,
+})
+km:add({
+	ctrl = { key = "XF86AudioMute" },
+	press = function ()
+		awful.util.spawn("amixer -q set Master playback toggle")
+
+		utils.async.getAll('amixer get Master', function(stdout)
+			local vol_now = {}
+
+			vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
+			notif_id.volume = utils.toast( vol_now.status == "on" and "Unmute" or "Mute", {
+				title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+				position = "bottom_right",
+				replaces_id = notif_id.volume
+			}).id
+		end)
+	end,
+})
 
 
+-- Brightness control
+km:add({
+	ctrl = { key = "XF86MonBrightnessDown" },
+	press = function ()
+		awful.util.spawn("xbacklight -dec 5 -time 1")
+
+		utils.async.getFirstLine('xbacklight -get', function(stdout)
+			local perc = string.match(stdout, "(%d+)%..*")
+
+			notif_id.brightness = utils.toast("Decrease", {
+				title = "Brightness " .. perc .. "%",
+				position = "bottom_right",
+				replaces_id = notif_id.brightness
+			}).id
+		end)
+	end,
+})
+km:add({
+	ctrl = { key = "XF86MonBrightnessUp" },
+	press = function ()
+		awful.util.spawn("xbacklight -inc 5 -time 1")
+
+		utils.async.getFirstLine('xbacklight -get', function(stdout)
+			local perc = string.match(stdout, "(%d+)%..*")
+
+			notif_id.brightness = utils.toast("Increase", {
+				title = "Brightness " .. perc .. "%",
+				position = "bottom_right",
+				replaces_id = notif_id.brightness
+			}).id
+		end)
+	end,
+})
 
 
---[[
-clientkeys = awful.util.table.join(
-	awful.key({ modkey, "Shift"	}, "c",		function (c) c:kill()								end),
-	awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle						),
-	awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster())	end),
-	awful.key({ modkey,			  }, "a",		function (c) c.ontop = not c.ontop				end),
-	awful.key({ modkey,			  }, "m",
-		function (c)
-			c.maximized_horizontal = not c.maximized_horizontal
-			c.maximized_vertical	= not c.maximized_vertical
-		end
-	)
-)
-]]
---local kmClient = Keymap.new("client")
---kmClient:add({
+-- Lock screen control
+km:add({
+	ctrl = { key = "Pause" },
+	press = function ()
+		awful.util.spawn("/home/lesell_b/.bin/my_i3lock")
+		naughty.notify({
+			text = "Locking...",
+			timeout = 0.5
+		})
+	end,
+})
+-- End of definition of 'global' Keymap
+km = nil
 
+root.keys(Keymap.apply("global"))
+
+
+-- Base keymap for clients
 Keymap.new("client"):add({
 	ctrl = { mod = "MS", key = "c" },
 	press = function(c)
@@ -762,47 +822,6 @@ Keymap.new("client"):add({
 
 
 
--- Bind all key numbers to tags.
--- Be careful: we use keycodes to make it works on any keyboard layout.
--- This should map on the top row of your keyboard, usually 1 to 9.
-for i = 1, 9 do
-	globalkeys = awful.util.table.join(globalkeys,
-		-- View tag only.
-		awful.key({ modkey }, "#" .. i + 9, function ()
-			local screen = mouse.screen
-			local tag = awful.tag.gettags(screen)[i]
-			if tag then
-				awful.tag.viewonly(tag)
-			end
-		end),
-		-- Toggle tag.
-		awful.key({ modkey, "Control" }, "#" .. i + 9, function ()
-			local screen = mouse.screen
-			local tag = awful.tag.gettags(screen)[i]
-			if tag then
-				awful.tag.viewtoggle(tag)
-			end
-		end),
-		-- Move client to tag.
-		awful.key({ modkey, "Shift" }, "#" .. i + 9, function ()
-			if client.focus then
-				local tag = awful.tag.gettags(client.focus.screen)[i]
-				if tag then
-					awful.client.movetotag(tag)
-				end
-			end
-		end),
-		-- Toggle tag.
-		awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9, function ()
-			if client.focus then
-				local tag = awful.tag.gettags(client.focus.screen)[i]
-				if tag then
-					awful.client.toggletag(tag)
-				end
-			end
-		end)
-	)
-end
 
 clientbuttons = awful.util.table.join(
 	awful.button({			}, 1, function (c)
@@ -812,9 +831,6 @@ clientbuttons = awful.util.table.join(
 	awful.button({ modkey }, 3, awful.mouse.client.resize)
 )
 
--- Set keys
-root.keys(globalkeys)
--- }}}
 
 
 
