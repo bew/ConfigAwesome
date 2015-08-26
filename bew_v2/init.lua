@@ -338,15 +338,6 @@ end
 
 
 
-
-
--- Load radical tests functions
---loadFile("tests/radical_1") -- have weird bugs
-
-
-
-
-
 -- for ping:
 local async = require("lain.asyncshell") --TODO: use utils.async
 
@@ -379,7 +370,7 @@ km:add({
 	ctrl = { mod = "M", key = "y" },
 	press = function()
 		scratch.drop("xterm", {vert = "bottom", sticky = true})
-	end
+	end,
 })
 
 -- Tag navigaton
@@ -429,7 +420,7 @@ km:add({
 		if not client.focus then return end
 		local c = client.focus
 		local idx = awful.tag.getidx()
-		local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
+		local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
 
 		awful.client.movetotag(tags[c.screen][new_idx])
 		awful.tag.viewonly(tags[c.screen][new_idx])
@@ -540,11 +531,11 @@ km:add({
 
 -- switch layout
 km:add({
-	ctrl = { mod = "M", key = "Space" },
+	ctrl = { mod = "M", key = "space" },
 	press = function () awful.layout.inc(global.layouts,  1) end,
 })
 km:add({
-	ctrl = { mod = "MS", key = "Space" },
+	ctrl = { mod = "MS", key = "space" },
 	press = function () awful.layout.inc(global.layouts, -1) end,
 })
 
