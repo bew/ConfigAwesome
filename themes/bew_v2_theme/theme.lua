@@ -83,15 +83,13 @@ theme.addIcon( "emergency", "rcReload" )
 
 
 -- {{{ Borders
--- theme.border_width  = 2
--- theme.border_normal = "#3F3F3F"
--- theme.border_focus  = "#6F6F6F"
--- theme.border_marked = "#CC9393"
 theme.border_width  = 2
 theme.border_normal = bg_theme
 theme.border_normal = "#00000000"
 theme.border_focus  = "#FF9800"
 theme.border_marked = "#CC9393"
+
+--theme.useless_gaps = "30"
 -- }}}
 
 -- {{{ Titlebars
@@ -140,24 +138,21 @@ theme.taglist_squares_unsel = "/usr/share/awesome/themes/zenburn/taglist/squarez
 --theme.taglist_squares_resize = "false"
 -- }}}
 
--- {{{ Misc
-theme.awesome_icon           = "/usr/share/awesome/themes/zenburn/awesome-icon.png"
-theme.menu_submenu_icon      = "/usr/share/awesome/themes/default/submenu.png"
--- }}}
-
 -- {{{ Layout
-theme.layout_tile       = "/usr/share/awesome/themes/zenburn/layouts/tile.png"
-theme.layout_tileleft   = "/usr/share/awesome/themes/zenburn/layouts/tileleft.png"
-theme.layout_tilebottom = "/usr/share/awesome/themes/zenburn/layouts/tilebottom.png"
-theme.layout_tiletop    = "/usr/share/awesome/themes/zenburn/layouts/tiletop.png"
-theme.layout_fairv      = "/usr/share/awesome/themes/zenburn/layouts/fairv.png"
-theme.layout_fairh      = "/usr/share/awesome/themes/zenburn/layouts/fairh.png"
-theme.layout_spiral     = "/usr/share/awesome/themes/zenburn/layouts/spiral.png"
-theme.layout_dwindle    = "/usr/share/awesome/themes/zenburn/layouts/dwindle.png"
-theme.layout_max        = "/usr/share/awesome/themes/zenburn/layouts/max.png"
-theme.layout_fullscreen = "/usr/share/awesome/themes/zenburn/layouts/fullscreen.png"
-theme.layout_magnifier  = "/usr/share/awesome/themes/zenburn/layouts/magnifier.png"
-theme.layout_floating   = "/usr/share/awesome/themes/zenburn/layouts/floating.png"
+theme.layout_tile       = theme.addIcon("layouts", "tile")
+theme.layout_tileleft   = theme.addIcon("layouts", "tileleft")
+theme.layout_tilebottom = theme.addIcon("layouts", "tilebottom")
+theme.layout_tiletop    = theme.addIcon("layouts", "tiletop")
+theme.layout_fairv      = theme.addIcon("layouts", "fairv")
+theme.layout_fairh      = theme.addIcon("layouts", "fairh")
+theme.layout_spiral     = theme.addIcon("layouts", "spiral")
+theme.layout_dwindle    = theme.addIcon("layouts", "dwindle")
+theme.layout_max        = theme.addIcon("layouts", "max")
+theme.layout_fullscreen = theme.addIcon("layouts", "fullscreen")
+theme.layout_magnifier  = theme.addIcon("layouts", "magnifier")
+theme.layout_floating   = theme.addIcon("layouts", "floating")
+
+theme.layout_treesome   = theme.addIcon("layouts", "treesome")
 -- }}}
 
 -- {{{ Titlebar
