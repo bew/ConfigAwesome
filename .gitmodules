@@ -7,3 +7,6 @@
 [submodule "lib/bewlib"]
 	path = lib/bewlib
 	url = git@github.com:Bew78LesellB/AwesomeBewLib.git
+[submodule "lib/treesome"]
+	path = lib/treesome
+	url = http://github.com/RobSis/treesome.git
