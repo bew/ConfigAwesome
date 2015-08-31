@@ -12,8 +12,6 @@ local path = awful.util.getdir("config") .. "/themes/bew_v2_theme/theme.lua"
 theme.init(path)
 global.theme = theme.get()
 
-utils.toast.debug(global.theme.layout_treesome)
-
 -- This is used later as the default terminal and editor to run.
 terminal = "xterm"
 geditor = "subl3"
