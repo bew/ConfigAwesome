@@ -42,6 +42,7 @@ local global = require("global")
 --[[ My lib ]]--
 local utils = require("bewlib.utils")
 local Keymap = require("bewlib.keymap")
+local Const = require("bewlib.const")
 
 
 function loadFile(path)
@@ -182,11 +183,11 @@ Command.register("widget.updateBatteryStatus", function()
 	wBattery:set_text(" | " .. Battery.infos.status .. " | " .. Battery.infos.perc .. "% | ")
 end)
 
-Battery:on("percentage::changed", function()
-	Command.run("widget.updateBatteryStatus")
-end)
+Battery:on("percentage::changed", Command.getFunction("widget.updateBatteryStatus"))
+Battery:on("status::changed", Command.getFunction("widget.updateBatteryStatus"))
 Command.run("widget.updateBatteryStatus")
 
+-- TODO: recode a graph widget
 wBatteryGraph = awful.widget.graph({})
 wBatteryGraph:set_color("#424242")
 wBatteryGraph:set_max_value(100)
@@ -202,17 +203,17 @@ end, 60, true)
 -- >> Reload
 wEmergencyReload = wibox.widget.imagebox( theme.getIcon( "emergency", "rcReload" ), true)
 wEmergencyReload:buttons(awful.util.table.join(
-	awful.button({}, 1, function ()
-		awesome.restart()
-	end)
+awful.button({}, 1, function ()
+	awesome.restart()
+end)
 ))
 
 -- >> Edit
 wEmergencyEdit = wibox.widget.imagebox( theme.getIcon( "emergency", "rcEdit" ), true)
 wEmergencyEdit:buttons(awful.util.table.join(
-	awful.button({}, 1, function ()
-		awesome_edit()
-	end)
+awful.button({}, 1, function ()
+	awesome_edit()
+end)
 ))
 
 
@@ -234,8 +235,8 @@ foreachScreen(function (s)
 
 	wLayoutSwitcher[s] = awful.widget.layoutbox(s)
 	wLayoutSwitcher[s]:buttons(awful.util.table.join(
-		awful.button({ }, 1, function () awful.layout.inc(global.layouts,  1) end),
-		awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
+	awful.button({ }, 1, function () awful.layout.inc(global.layouts,  1) end),
+	awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
 	))
 
 	mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
@@ -359,11 +360,15 @@ utils.toast.warning("Here is a test warning")
 
 -- {{{ Key bindings
 local km = Keymap.new("global")
+-- :battery info
 km:add({
 	ctrl = { mod = "M", key = "b" },
 	press = toggle_w,
 	release = toggle_w,
-}):add({
+})
+
+-- :quake
+km:add({
 	ctrl = { mod = "M", key = "y" },
 	press = function()
 		scratch.drop("xterm", {vert = "bottom", sticky = true})
@@ -371,32 +376,64 @@ km:add({
 })
 
 -- Tag navigaton
+
+-- :goto tag prev
+-- :goto tag previous
+-- :gtp
 km:add({
 	ctrl = { mod = "M", key = "Left" },
-	press = awful.tag.viewprev,
+	press = function()
+		Command.run("goto.tag", {
+			which = Const.PREVIOUS,
+		})
+	end
 })
-
-km:add({
-	ctrl = { mod = "M", key = "Right" },
-	press = awful.tag.viewnext,
-})
-
 km:add({
 	ctrl = { mod = "MA", key = "j" },
-	press = awful.tag.viewprev,
+	press = function()
+		Command.run("goto.tag", {
+			which = Const.PREVIOUS,
+		})
+	end
 })
 
+utils.toast.debug(Command.getFunction("goto.tag"))
+
+-- :goto tag next
+-- :gtn
+km:add({
+	ctrl = { mod = "M", key = "Right" },
+	press = function()
+		Command.run("goto.tag", {
+			which = Const.NEXT,
+		})
+	end
+})
 km:add({
 	ctrl = { mod = "MA", key = "k" },
-	press = awful.tag.viewnext,
+	press = function()
+		Command.run("goto.tag", {
+			which = Const.NEXT,
+		})
+	end
 })
 
+-- :goto tag
+-- :goto tag last
+-- :gt
+-- :gtll
 km:add({
 	ctrl = { mod = "M", key = "Escape" },
-	press = awful.tag.history.restore,
+	press = function()
+		Command.run("goto.tag", { args = {
+			which = Const.LAST,
+		}})
+	end
 })
 
 -- Move client on tag Left/Right
+-- :move client tag left
+-- :%mctl
 km:add({
 	ctrl = { mod = "MS", key = "Left" },
 	press = function ()
@@ -411,6 +448,8 @@ km:add({
 	end,
 })
 
+-- :move client tag right
+-- :%mctr
 km:add({
 	ctrl = { mod = "MS", key = "Right" },
 	press = function ()
@@ -427,10 +466,16 @@ km:add({
 
 
 -- awesome management
+
+-- :awesome restart
+-- :ar
 km:add({
 	ctrl = { mod = "MC", key = "r" },
 	press = awesome.restart,
 })
+
+-- :awesome quit
+-- :aq
 km:add({
 	ctrl = { mod = "MC", key = "q" },
 	press = awesome.quit,
@@ -438,6 +483,7 @@ km:add({
 
 
 -- client selection
+-- :select client next
 km:add({
 	ctrl = { mod = "M", key = "j" },
 	press = function ()
@@ -445,6 +491,7 @@ km:add({
 		if client.focus then client.focus:raise() end
 	end,
 })
+-- :select client previous
 km:add({
 	ctrl = { mod = "M", key = "k" },
 	press = function ()
@@ -452,7 +499,10 @@ km:add({
 		if client.focus then client.focus:raise() end
 	end,
 })
-km:add({ -- select last
+-- select last
+-- :select client last
+-- :select client
+km:add({
 	ctrl = { mod = "M", key = "Tab" },
 	press = function ()
 		awful.client.focus.history.previous()
@@ -463,7 +513,10 @@ km:add({ -- select last
 })
 
 
--- Layout manipulation
+-- In Layout Clients movement
+
+-- :move client			(then use hjkl to move the client)
+-- :mc
 km:add({
 	ctrl = { mod = "MS", key = "j" },
 	press = function()
@@ -478,6 +531,8 @@ km:add({
 })
 
 -- Goto client
+-- :goto client urgent
+-- :gcu
 km:add({
 	ctrl = { mod = "M", key = "u" },
 	press = awful.client.urgent.jumpto,
@@ -485,10 +540,12 @@ km:add({
 
 
 -- Apps spawning
+-- :spawn term
 km:add({
 	ctrl = { mod = "M", key = "t" },
 	press = function () awful.util.spawn(global.config.apps.term) end,
 })
+-- :spawn term2
 km:add({
 	ctrl = { mod = "MA", key = "t" },
 	press = function () awful.util.spawn(global.config.apps.term2) end,
@@ -497,6 +554,11 @@ km:add({
 
 
 -- Clients resize/move
+
+-- :resize <what> <which>
+-- :resize client current
+-- :resize client mark		or		:resize mark client			????TODO
+-- :resize			(default=client)
 km:add({
 	ctrl = { mod = "M", key = "l" },
 	press = function () awful.tag.incmwfact( 0.05) end,
@@ -527,10 +589,13 @@ km:add({
 
 
 -- switch layout
+
+-- :layout next
 km:add({
 	ctrl = { mod = "M", key = "space" },
 	press = function () awful.layout.inc(global.layouts,  1) end,
 })
+-- :layout previous
 km:add({
 	ctrl = { mod = "MS", key = "space" },
 	press = function () awful.layout.inc(global.layouts, -1) end,
@@ -561,6 +626,7 @@ km:add({
 })
 
 -- Computer managment
+-- :lock
 km:add({
 	ctrl = { mod = "M", key = "p" },
 	press = lockAndSleep,
@@ -570,8 +636,15 @@ km:add({
 --##############################
 --##### Network management #####
 --##############################
+-- Main Commands:
+-- :wifi		(on)
+-- :nowifi		(off)
+-- :network <args>
+-- :wifi <args>
 
 --- network checker
+-- :network check
+-- :ping		(alias ?)
 km:add({
 	ctrl = { mod = "M", key = "g" },
 	press = function()
@@ -590,6 +663,8 @@ km:add({
 })
 
 --- network infos
+-- :network info
+-- :wifi info
 km:add({
 	ctrl = { mod = "M", key = "n" },
 	press = function()
@@ -613,6 +688,7 @@ km:add({
 })
 
 --- network selector
+-- :wifi connect
 km:add({
 	ctrl = { mod = "MC", key = "n" },
 	press = function()
@@ -667,6 +743,7 @@ km:add({
 })
 
 --- network saved list
+-- :wifi list
 km:add({
 	ctrl = { mod = "MS", key = "n" },
 	press = function()
@@ -683,6 +760,7 @@ km:add({
 ------------------ FN keys ------------------------------------
 ---------------------------------------------------------------
 -- ALSA volume control
+-- :audio +
 km:add({
 	ctrl = { key = "XF86AudioRaiseVolume" },
 	press = function ()
@@ -700,6 +778,7 @@ km:add({
 		end)
 	end,
 })
+-- :audio -
 km:add({
 	ctrl = { key = "XF86AudioLowerVolume" },
 	press = function ()
@@ -717,6 +796,7 @@ km:add({
 		end)
 	end,
 })
+-- :audio x
 km:add({
 	ctrl = { key = "XF86AudioMute" },
 	press = function ()
@@ -737,6 +817,7 @@ km:add({
 
 
 -- Brightness control
+-- :brightness +
 km:add({
 	ctrl = { key = "XF86MonBrightnessDown" },
 	press = function ()
@@ -753,6 +834,7 @@ km:add({
 		end)
 	end,
 })
+-- :brightness -
 km:add({
 	ctrl = { key = "XF86MonBrightnessUp" },
 	press = function ()
@@ -772,6 +854,7 @@ km:add({
 
 
 -- Lock screen control
+-- :lock
 km:add({
 	ctrl = { key = "Pause" },
 	press = function ()
@@ -800,6 +883,11 @@ Keymap.new("client"):add({
 		c.ontop = not c.ontop
 	end
 }):add({
+	ctrl = { mod = "M", key = "f" },
+	press = function(c)
+		awful.client.floating.toggle(c)
+	end
+}):add({
 	ctrl = { mod = "M", key = "m" },
 	press = function (c)
 		c.maximized_horizontal = not c.maximized_horizontal
@@ -812,11 +900,11 @@ Keymap.new("client"):add({
 
 
 clientbuttons = awful.util.table.join(
-	awful.button({			}, 1, function (c)
-		client.focus = c; c:raise()
-	end),
-	awful.button({ modkey }, 1, awful.mouse.client.move),
-	awful.button({ modkey }, 3, awful.mouse.client.resize)
+awful.button({			}, 1, function (c)
+	client.focus = c; c:raise()
+end),
+awful.button({ modkey }, 1, awful.mouse.client.move),
+awful.button({ modkey }, 3, awful.mouse.client.resize)
 )
 
 
@@ -873,16 +961,16 @@ client.connect_signal("manage", function (c, startup)
 	if c.type == "normal" or c.type == "dialog" then
 		-- buttons for the titlebar
 		local buttons = awful.util.table.join(
-			awful.button({ }, 1, function()
-				client.focus = c
-				c:raise()
-				awful.mouse.client.move(c)
-			end),
-			awful.button({ }, 3, function()
-				client.focus = c
-				c:raise()
-				awful.mouse.client.resize(c)
-			end)
+		awful.button({ }, 1, function()
+			client.focus = c
+			c:raise()
+			awful.mouse.client.move(c)
+		end),
+		awful.button({ }, 3, function()
+			client.focus = c
+			c:raise()
+			awful.mouse.client.resize(c)
+		end)
 		)
 
 		--[[ Titlebar definition ]]
@@ -926,8 +1014,5 @@ client.connect_signal("unfocus", function(c)
 	c.border_color = theme.border_normal
 end)
 -- }}}
-
--- make awesome to crash....
---utils.toast(debug(topbar[1]))
 
 loadFile("rc/run_once")
