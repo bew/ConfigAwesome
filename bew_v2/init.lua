@@ -1,11 +1,11 @@
 --[[
 
-		Awesome WM config
+Awesome WM config
 
-	- by Bew78LesellB alias bew -
+- by Bew78LesellB alias bew -
 
-	Starting date ~ 2015-01
-	Last update Wed Apr 15 16:00:29 CEST 2015
+Starting date ~ 2015-01
+Last update Wed Apr 15 16:00:29 CEST 2015
 
 --]]
 
@@ -13,7 +13,8 @@
 
 --[[ Grab environnement ]]--
 local capi = {
-	timer = timer
+	timer = timer,
+	client = client
 }
 
 -- Standard awesome library
@@ -86,28 +87,29 @@ end)
 
 Battery:on("status::changed", function(self, status)
 	utils.toast("Status changed !!\n"
-			 .. "==> " .. status)
+	.. "==> " .. status)
 end)
 
 --[[ COMMAND ]]--
 local Command = require("bewlib.command")
 
 --Command.test()
+-- Load some commands
+loadFile("cmds/goto")
 
 
 
 -- {{{ Tags
 -- Define a tag table which hold all screen tags.
 tags = {}
-for s = 1, screen.count() do
-	-- Each screen has its own tag table.
-	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
-	tags[s] = awful.tag({
-		"Web", "Web", "Web", "				  ",
-		"Divers", "Divers", "				  ",
-		"Code", "CODE", "Code", "				  ",
-		"Misc", "Misc" }, s, global.layouts[1])
-end
+-- Each screen has its own tag table.
+-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
+tags[1] = awful.tag({
+	"Web", "Web", "Web", "				  ",
+	"Divers", "Divers", "				  ",
+	"Code", "CODE", "Code", "				  ",
+	"Misc", "Misc"
+}, s, global.layouts[1])
 -- }}}
 
 
@@ -166,14 +168,9 @@ wLayoutSwitcher = {}
 
 -- Tag list config
 mytaglist = {}
-mytaglist.buttons = awful.util.table.join(
+mytaglist.buttons = {
 	awful.button({			}, 1, awful.tag.viewonly),
-	awful.button({ modkey 	}, 1, awful.client.movetotag),
-	awful.button({ 			}, 3, awful.tag.viewtoggle),
-	awful.button({ modkey	}, 3, awful.client.toggletag),
-	awful.button({ 			}, 4, function(t) awful.tag.viewnext(awful.tag.getscreen(t)) end),
-	awful.button({ 			}, 5, function(t) awful.tag.viewprev(awful.tag.getscreen(t)) end)
-)
+}
 
 
 
