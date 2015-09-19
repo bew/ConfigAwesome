@@ -139,6 +139,7 @@ menubar.geometry = {
 
 
 --TODO: refactor, put it in bewlib managment system, and setup it here
+--[[ (disabled)
 local lockAndSleeping = false
 function lockAndSleep()
 	if not lockAndSleeping then
@@ -151,7 +152,7 @@ function lockAndSleep()
 		lockAndSleeping = true
 	end
 end
-
+--]]
 
 
 -- {{{ Wibox
@@ -645,12 +646,14 @@ km:add({
 	end,
 })
 
--- Computer managment
+-- Computer managment (disabled
 -- :lock
+--[[
 km:add({
 	ctrl = { mod = "M", key = "p" },
 	press = lockAndSleep,
 })
+--]]
 
 
 --##############################
