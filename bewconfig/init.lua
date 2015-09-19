@@ -757,7 +757,9 @@ km:add({
 -- Menubar
 km:add({
 	ctrl = { mod = "M", key = "x" },
-	press = menubar.show,
+	press = function()
+		menubar.show()
+	end,
 })
 
 
