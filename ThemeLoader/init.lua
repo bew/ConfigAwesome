@@ -11,12 +11,12 @@ local confdir = awful.util.getdir("config")
 
 local confList = {
 	{
-		name = "Bew v2 - dev",
-		path = confdir .. "/bew_v2"
+		name = "Bew Config",
+		path = confdir .. "/bewconfig"
 	},
 	{
-		name = "Bew v1 - stable",
-		path = confdir .. "/bew_v1-stable"
+		name = "Stable config",
+		path = confdir .. "/stable-config"
 	}
 }
 
@@ -52,14 +52,14 @@ for i = 1, #confList do
 
 	if not err then
 		-- no error
-		naughty.notify({ text = "Theme '" .. confList[i].name .. "' loaded !", timeout = 10 })
+		naughty.notify({ text = "Theme '" .. confList[i].name .. "' loaded !", timeout = 5 })
 		return;
 	end
 
 	-- error when loading theme
 	package.path = oldPackagePath
 	naughty.notify({
-		title = "#> Theme '" .. confList[i].name .. "' crashed during startup on " .. os.date("%d/%m/%Y %T"),
+		title = "#> ThemeLoader : Theme '" .. confList[i].name .. "' crashed during startup on " .. os.date("%d/%m/%Y %T"),
 		text = "Theme path: " .. confList[i].path .. "/init.lua\n"
 			.. "Error:\n\n" .. err .. "\n",
 		timeout = 0
@@ -67,4 +67,4 @@ for i = 1, #confList do
 end
 
 -- all themes crashed
-assert(false, "\n#### Cannot load themes ####\n\nError:\n" .. err) --trigger error
+assert(false, "\n#### ThemeLoader : Cannot load themes ####\n\nError:\n" .. err) --trigger error

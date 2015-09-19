@@ -9,7 +9,7 @@
 -- {{{ Main
 local theme = {}
 
-theme.name = "bew_v2_theme"
+theme.name = "bewconfig"
 
 -- List wallpapers in dir: "find -maxdepth 1 -type f | sort"
 theme.wallpaper_dir = "/home/lesell_b/Downloads/wallpaper/"
@@ -174,6 +174,7 @@ theme.layout_treesome   = theme.addIcon("layouts", "treesome")
 -- }}}
 
 -- {{{ Titlebar
+--[[
 theme.titlebar_close_button_focus  = "/usr/share/awesome/themes/zenburn/titlebar/close_focus.png"
 theme.titlebar_close_button_normal = "/usr/share/awesome/themes/zenburn/titlebar/close_normal.png"
 
@@ -196,6 +197,7 @@ theme.titlebar_maximized_button_focus_active  = "/usr/share/awesome/themes/zenbu
 theme.titlebar_maximized_button_normal_active = "/usr/share/awesome/themes/zenburn/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_inactive  = "/usr/share/awesome/themes/zenburn/titlebar/maximized_focus_inactive.png"
 theme.titlebar_maximized_button_normal_inactive = "/usr/share/awesome/themes/zenburn/titlebar/maximized_normal_inactive.png"
+--]]
 -- }}}
 -- }}}
 

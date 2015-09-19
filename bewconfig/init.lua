@@ -378,6 +378,14 @@ km:add({
 
 -- Tag navigaton
 
+-- Enter in Tag management Mode
+-- :mode manage tag
+-- :mmt
+km:add({
+	ctrl = { mod = "MC", key = "t" },
+	press = Command.getFunction("mode.manage.tag")
+})
+
 -- :goto tag prev
 -- :goto tag previous
 -- :gtp
@@ -429,6 +437,9 @@ km:add({
 		})
 	end
 })
+
+
+
 
 -- Move client on tag Left/Right
 -- :move client tag left

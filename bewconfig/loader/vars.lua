@@ -8,7 +8,7 @@ local utils = require("bewlib.utils")
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
-local path = awful.util.getdir("config") .. "/themes/bew_v2_theme/theme.lua"
+local path = awful.util.getdir("config") .. "/themes/bewconfig/theme.lua"
 theme.init(path)
 global.theme = theme.get()
 
