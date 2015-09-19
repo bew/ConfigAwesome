@@ -1109,22 +1109,22 @@ root.keys(Keymap.apply("global"))
 -- Base keymap for clients
 Keymap.new("client"):add({
 	ctrl = { mod = "MS", key = "c" },
-	press = function(c)
+	press = function(self, c)
 		c:kill()
 	end,
 }):add({
 	ctrl = { mod = "M", key = "a" },
-	press = function(c)
+	press = function(self, c)
 		c.ontop = not c.ontop
 	end
 }):add({
 	ctrl = { mod = "M", key = "f" },
-	press = function(c)
+	press = function(self, c)
 		awful.client.floating.toggle(c)
 	end
 }):add({
 	ctrl = { mod = "M", key = "m" },
-	press = function (c)
+	press = function(self, c)
 		c.maximized_horizontal = not c.maximized_horizontal
 		c.maximized_vertical	= not c.maximized_vertical
 		c.raise()
