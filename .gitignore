@@ -1,2 +1,6 @@
-# ignore vimsession
-*.vimsession
+# ignore tags file
+tags
+
+# ignore log files
+logs
+*.log
