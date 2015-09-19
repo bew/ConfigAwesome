@@ -106,10 +106,10 @@ tags = {}
 -- Each screen has its own tag table.
 -- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
 tags[1] = awful.tag({
-	"Web", "Web", "Web", "				  ",
-	"Divers", "Divers", "				  ",
-	"Code", "CODE", "Code", "				  ",
-	"Misc", "Misc"
+	"| no name |",
+	"| no name |",
+	"| no name |",
+	"| no name |",
 }, s, global.layouts[1])
 -- }}}
 
@@ -397,8 +397,6 @@ km:add({
 	end
 })
 
-utils.toast.debug(Command.getFunction("goto.tag"))
-
 -- :goto tag next
 -- :gtn
 km:add({
@@ -425,9 +423,9 @@ km:add({
 km:add({
 	ctrl = { mod = "M", key = "Escape" },
 	press = function()
-		Command.run("goto.tag", { args = {
+		Command.run("goto.tag", {
 			which = Const.LAST,
-		}})
+		})
 	end
 })
 
@@ -447,11 +445,37 @@ km:add({
 		client.focus = c
 	end,
 })
+km:add({
+	ctrl = { mod = "MAS", key = "j" },
+	press = function ()
+		if not client.focus then return end
+		local c = client.focus
+		local idx = awful.tag.getidx()
+		local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
+
+		awful.client.movetotag(tags[c.screen][new_idx])
+		awful.tag.viewonly(tags[c.screen][new_idx])
+		client.focus = c
+	end,
+})
 
 -- :move client tag right
 -- :%mctr
 km:add({
 	ctrl = { mod = "MS", key = "Right" },
+	press = function ()
+		if not client.focus then return end
+		local c = client.focus
+		local idx = awful.tag.getidx()
+		local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
+
+		awful.client.movetotag(tags[c.screen][new_idx])
+		awful.tag.viewonly(tags[c.screen][new_idx])
+		client.focus = c
+	end,
+})
+km:add({
+	ctrl = { mod = "MAS", key = "k" },
 	press = function ()
 		if not client.focus then return end
 		local c = client.focus
@@ -611,17 +635,13 @@ km:add({
 
 
 -- Wallpaper managment
+local wallpaper_id = 1;
 km:add({
 	ctrl = { mod = "M", key = "w" },
 	press = function()
-		if wallpaper_toggle.state then
-			wallpaper_toggle.id_notif = utils.toast("Resetting wallpaper", { replaces_id = wallpaper_toggle.id_notif }).id
-			gears.wallpaper.maximized(theme.wallpaper, 1, true)
-		else
-			wallpaper_toggle.id_notif = utils.toast("Changing wallpaper", { replaces_id = wallpaper_toggle.id_notif }).id
-			gears.wallpaper.maximized(theme.wallpaper_dir .. "powered_by_archlinux__yellow_on_black.png", 1, true)
-		end
-		wallpaper_toggle.state = not wallpaper_toggle.state
+		wallpaper_id = awful.util.cycle(#theme.wallpapers, wallpaper_id + 1)
+		gears.wallpaper.maximized(theme.wallpaper_dir .. theme.wallpapers[wallpaper_id], 1, true)
+		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. wallpaper_id .. ")", { replaces_id = notif_id.wallpaper }).id
 	end,
 })
 

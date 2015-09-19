@@ -13,7 +13,25 @@ theme.name = "bew_v2_theme"
 
 -- List wallpapers in dir: "find -maxdepth 1 -type f | sort"
 theme.wallpaper_dir = "/home/lesell_b/Downloads/wallpaper/"
-theme.wallpaper = theme.wallpaper_dir .. "powered_by_archlinux__blue_black_on_white.png"
+
+theme.wallpapers = {
+	"powered_by_archlinux__blue_black_on_white.png",
+	"powered_by_archlinux__yellow_on_black.png",
+
+	"15324-define-yourself-1920x1080-typography-wallpaper.jpg",
+	"28493-archlinux-1920x1080-computer-wallpaper.jpg",
+	"arch-linux-15396.jpg",
+	"archunivers.jpg",
+	"1364217.jpg",
+	"1451438.png",
+	"1591008.jpg",
+	"1663036.jpg",
+	"1799740.jpg",
+	"1799766.jpg",
+	"1866705.png",
+	"1930615.jpg",
+}
+theme.wallpaper = theme.wallpapers[1]
 -- }}}
 
 

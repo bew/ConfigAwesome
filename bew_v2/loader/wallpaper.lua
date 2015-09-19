@@ -5,7 +5,7 @@ local gears = require("gears")
 -- {{{ Wallpaper
 if theme.wallpaper then
 	for s = 1, screen.count() do
-		gears.wallpaper.maximized(theme.wallpaper, s, true)
+		gears.wallpaper.maximized(theme.wallpaper_dir .. theme.wallpaper, s, true)
 	end
 end
 -- }}}
