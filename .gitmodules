@@ -1,12 +1,13 @@
+[submodule "lib/bewlib"]
+	path = lib/bewlib
+	url = git@github.com:Bew78LesellB/AwesomeBewLib.git
+	ignore = all
 [submodule "lib/lain"]
 	path = lib/lain
 	url = https://github.com/copycat-killer/lain.git
 [submodule "lib/radical"]
 	path = lib/radical
 	url = https://github.com/Elv13/radical.git
-[submodule "lib/bewlib"]
-	path = lib/bewlib
-	url = git@github.com:Bew78LesellB/AwesomeBewLib.git
 [submodule "lib/treesome"]
 	path = lib/treesome
 	url = http://github.com/RobSis/treesome.git
