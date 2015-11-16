@@ -9,6 +9,10 @@ function run_once(cmd)
 	awful.util.spawn_with_shell("pgrep -u $USER -x " .. findme .. " > /dev/null || (" .. cmd .. ")")
 end
 
+function just_run(cmd)
+	awful.util.spawn_with_shell(cmd)
+end
+
 local function add_x_safe_config(tbl)
 	return awful.util.table.join(tbl, {
 		"xset r rate 500",
@@ -19,8 +23,9 @@ end
 
 local to_run = {
 	--"wpa_gui -t",
-	"QNetSoul",
-	"chromium --no-startup-window"
+	--"QNetSoul",
+	"chromium --no-startup-window",
+	"amixer set Master 20%",
 }
 
 
@@ -30,3 +35,4 @@ to_run = add_x_safe_config(to_run)
 for i=1, #to_run do
 	run_once(to_run[i])
 end
+

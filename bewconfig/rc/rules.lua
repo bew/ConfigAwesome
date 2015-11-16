@@ -21,7 +21,8 @@ awful.rules.rules = {
 			class = "QNetSoul"
 		},
 		properties = {
-			floating = true
+			floating = true,
+			ontop = true,
 		},
 		callback = function(c)
 			c:geometry({
@@ -38,7 +39,8 @@ awful.rules.rules = {
 			class = "Wpa_gui"
 		},
 		properties = {
-			floating = true
+			floating = true,
+			ontop = true,
 		},
 		callback = function(c)
 			c:geometry({

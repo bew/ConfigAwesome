@@ -14,7 +14,11 @@ Last update Wed Apr 15 16:00:29 CEST 2015
 --[[ Grab environnement ]]--
 local capi = {
 	timer = timer,
-	client = client
+	client = client,
+	awesome = awesome,
+	key = key,
+	mouse = mouse,
+	screen = screen,
 }
 
 -- Standard awesome library
@@ -107,16 +111,23 @@ tags = {}
 -- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
 tags[1] = awful.tag({
 	"| no name |",
+	"           ",
 	"| no name |",
+	"           ",
 	"| no name |",
+	"           ",
+	"| no name |",
+	"           ",
+	"| no name |",
+	"           ",
+	"| no name |",
+	"           ",
 	"| no name |",
 }, s, global.layouts[1])
 -- }}}
 
-
-
 -- Edit the config file
-awesome_edit = function ()
+function awesome_edit()
 	local function spawnInTerm(cmd)
 		awful.util.spawn(run_in_term_cmd .. "'" .. cmd .. "'")
 	end
@@ -138,22 +149,6 @@ menubar.geometry = {
 -- }}}
 
 
---TODO: refactor, put it in bewlib managment system, and setup it here
---[[ (disabled)
-local lockAndSleeping = false
-function lockAndSleep()
-	if not lockAndSleeping then
-		async.request("my_i3lock", function(file_out)
-			lockAndSleeping = false
-		end)
-		utils.setTimeout(function()
-			awful.util.spawn("systemctl hybrid-sleep")
-		end, 3)
-		lockAndSleeping = true
-	end
-end
---]]
-
 
 -- {{{ Wibox
 -- Create a textclock widget
@@ -170,23 +165,70 @@ wLayoutSwitcher = {}
 
 -- Tag list config
 mytaglist = {}
-mytaglist.buttons = {
-	awful.button({			}, 1, awful.tag.viewonly),
-}
+mytaglist.buttons = awful.util.table.join(
+awful.button({			}, 1, awful.tag.viewonly),
+awful.button({ modkey 	}, 1, awful.client.movetotag)
+)
 
 
 
 
--- Battery widget
-wBattery = wibox.widget.textbox()
+-- Battery widget (in statusbar)
+local wBattery
+do
+	wBattery = wibox.widget.textbox()
+	Command.register("widget.updateBatteryStatus", function()
+		wBattery:set_text(" | " .. Battery.infos.status .. " | " .. Battery.infos.perc .. "% | ")
+	end)
 
-Command.register("widget.updateBatteryStatus", function()
-	wBattery:set_text(" | " .. Battery.infos.status .. " | " .. Battery.infos.perc .. "% | ")
-end)
 
-Battery:on("percentage::changed", Command.getFunction("widget.updateBatteryStatus"))
-Battery:on("status::changed", Command.getFunction("widget.updateBatteryStatus"))
-Command.run("widget.updateBatteryStatus")
+	Battery:on("percentage::changed", Command.getFunction("widget.updateBatteryStatus"))
+	Battery:on("status::changed", Command.getFunction("widget.updateBatteryStatus"))
+	Command.run("widget.updateBatteryStatus")
+end
+
+
+-- Battery Low widget (on top) (TODO: movable, like clients)
+do
+	-- Define widget
+
+	local screen_geom = capi.screen[capi.mouse.screen].geometry
+	local wBatteryLow = wibox({
+		width = 300,
+		height = 50,
+		x = screen_geom.width / 2 - 100,
+		y = screen_geom.height - 50,
+		ontop = true,
+		opacity = 1
+	});
+	wBatteryLow:set_bg("#FF6565")
+	local wBatteryLowText = wibox.widget.textbox("BATTERY LOW") --pas beau...
+	wBatteryLowText:set_align("center")
+	wBatteryLowText:set_font("terminux 18")
+	wBatteryLow:set_widget(wBatteryLowText)
+
+	-- Add event reactions
+
+	Battery:on("percentage::changed", function()
+		local perc = Battery.infos.perc
+		local status = Battery.infos.status
+
+		if perc <= 10 and status == "Discharging" then
+			wBatteryLow.visible = true
+			wBatteryLowText:set_text("BATTERY LOW (" .. perc .. "%)")
+		else
+			wBatteryLow.visible = false
+		end
+	end)
+
+	Battery:on("status::changed", function()
+		local status = Battery.infos.status
+
+		if status == "Charging" then
+			wBatteryLow.visible = false
+		end
+	end)
+end
 
 -- TODO: recode a graph widget
 wBatteryGraph = awful.widget.graph({})
@@ -202,7 +244,7 @@ end, 60, true)
 
 -- Emergency widgets
 -- >> Reload
-wEmergencyReload = wibox.widget.imagebox( theme.getIcon( "emergency", "rcReload" ), true)
+local wEmergencyReload = wibox.widget.imagebox( theme.getIcon( "emergency", "rcReload" ), true)
 wEmergencyReload:buttons(awful.util.table.join(
 awful.button({}, 1, function ()
 	awesome.restart()
@@ -210,7 +252,7 @@ end)
 ))
 
 -- >> Edit
-wEmergencyEdit = wibox.widget.imagebox( theme.getIcon( "emergency", "rcEdit" ), true)
+local wEmergencyEdit = wibox.widget.imagebox( theme.getIcon( "emergency", "rcEdit" ), true)
 wEmergencyEdit:buttons(awful.util.table.join(
 awful.button({}, 1, function ()
 	awesome_edit()
@@ -232,6 +274,11 @@ function foreachScreen(callback)
 	end
 end
 
+--temp
+mypromptbox = {}
+
+-- TODO: This should be per workspace definition,
+-- or this should define the look of the default workspace
 foreachScreen(function (s)
 
 	wLayoutSwitcher[s] = awful.widget.layoutbox(s)
@@ -241,6 +288,7 @@ foreachScreen(function (s)
 	))
 
 	mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
+	mypromptbox[s] = awful.widget.prompt()
 
 	-- Emergency widgets
 	local layEmergency = wibox.layout.fixed.horizontal()
@@ -251,6 +299,8 @@ foreachScreen(function (s)
 	-- Tags layout
 	local tagsLayout = wibox.layout.fixed.horizontal()
 	tagsLayout:add(mytaglist[s])
+
+	tagsLayout:add(mypromptbox[s]) --temp
 
 	-- Widgets that are aligned to the right
 	local right_layout = wibox.layout.fixed.horizontal()
@@ -291,17 +341,19 @@ local txtContent = wibox.widget.textbox("Content loading...") --degeuuuuuu
 local txtFooter = wibox.widget.textbox("Date loading...") --degeuuuuuu
 function toggle_w()
 	w.visible = not w.visible
-	utils.async.getAll("acpi -b", function(stdout)
-		txtContent:set_text(stdout)
-	end)
-	txtFooter:set_text(os.date())
+	if w.visible then
+		utils.async.getAll("acpi -b", function(stdout)
+			txtContent:set_text(stdout)
+		end)
+		txtFooter:set_text(os.date())
+	end
 end
 
 -- populate w's wibox content
 do
-	layMain = wibox.layout.align.vertical()
+	local layMain = wibox.layout.align.vertical()
 
-	layHeader = wibox.layout.align.horizontal()
+	local layHeader = wibox.layout.align.horizontal()
 	-- Header
 	do -- Title
 		local text = wibox.widget.textbox("Battery infos")
@@ -336,18 +388,13 @@ end
 
 
 
-
--- for ping:
-local async = require("lain.asyncshell") --TODO: use utils.async
-
-
 local notif_id = {}
 
 
 
 -- Network management
-local wpa_cli = {
-	cmd = "wpa_cli -i wlo1 "
+local wpa_cli = { --TODO: Network.Wrapper.Wpa
+cmd = "wpa_cli -i wlo1 "
 }
 
 local wallpaper_toggle = {
@@ -372,6 +419,7 @@ km:add({
 km:add({
 	ctrl = { mod = "M", key = "y" },
 	press = function()
+		-- TODO: more customization on scratch drop, and persistance between restart
 		scratch.drop("xterm", {vert = "bottom", sticky = true})
 	end,
 })
@@ -391,7 +439,7 @@ km:add({
 -- :gtp
 km:add({
 	ctrl = { mod = "M", key = "Left" },
-	press = function()
+	press = function() -- TODO: Command.getFunction("goto.tag", { which = Const.PREVIOUS, })
 		Command.run("goto.tag", {
 			which = Const.PREVIOUS,
 		})
@@ -441,63 +489,74 @@ km:add({
 
 
 
+--TODO: move this command
+Command.register("rename.tag", function()
+	local tag = awful.tag.selected(mouse.screen)
+	awful.prompt.run({ prompt="Rename tag: " }, mypromptbox[mouse.screen].widget,
+	function(text)
+		if text:len() > 0 then
+			tag.name = " " .. text .. " "
+		end
+	end)
+end)
+
+-- :rename tag
+-- :rename tag "My Tag"
+-- :rename tag current "My Tag"
+-- :rt
+-- :rt "My Tag"
+-- :rtc "My Tag"
+km:add({
+	ctrl = { mod = "MA", key = "r" },
+	press = Command.getFunction("rename.tag"),
+})
+
+
+--TODO: move theses commands
+Command.register("move.client.left", function()
+	if not client.focus then return end
+	local c = client.focus
+	local idx = awful.tag.getidx()
+	local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
+
+	awful.client.movetotag(tags[c.screen][new_idx])
+	awful.tag.viewonly(tags[c.screen][new_idx])
+	client.focus = c
+end)
+
+Command.register("move.client.right", function()
+	if not client.focus then return end
+	local c = client.focus
+	local idx = awful.tag.getidx()
+	local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
+
+	awful.client.movetotag(tags[c.screen][new_idx])
+	awful.tag.viewonly(tags[c.screen][new_idx])
+	client.focus = c
+end)
+
+
 -- Move client on tag Left/Right
 -- :move client tag left
 -- :%mctl
 km:add({
 	ctrl = { mod = "MS", key = "Left" },
-	press = function ()
-		if not client.focus then return end
-		local c = client.focus
-		local idx = awful.tag.getidx()
-		local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
-
-		awful.client.movetotag(tags[c.screen][new_idx])
-		awful.tag.viewonly(tags[c.screen][new_idx])
-		client.focus = c
-	end,
+	press = Command.getFunction("move.client.left"),
 })
 km:add({
 	ctrl = { mod = "MAS", key = "j" },
-	press = function ()
-		if not client.focus then return end
-		local c = client.focus
-		local idx = awful.tag.getidx()
-		local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
-
-		awful.client.movetotag(tags[c.screen][new_idx])
-		awful.tag.viewonly(tags[c.screen][new_idx])
-		client.focus = c
-	end,
+	press = Command.getFunction("move.client.left"),
 })
 
 -- :move client tag right
 -- :%mctr
 km:add({
 	ctrl = { mod = "MS", key = "Right" },
-	press = function ()
-		if not client.focus then return end
-		local c = client.focus
-		local idx = awful.tag.getidx()
-		local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
-
-		awful.client.movetotag(tags[c.screen][new_idx])
-		awful.tag.viewonly(tags[c.screen][new_idx])
-		client.focus = c
-	end,
+	press = Command.getFunction("move.client.right"),
 })
 km:add({
 	ctrl = { mod = "MAS", key = "k" },
-	press = function ()
-		if not client.focus then return end
-		local c = client.focus
-		local idx = awful.tag.getidx()
-		local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
-
-		awful.client.movetotag(tags[c.screen][new_idx])
-		awful.tag.viewonly(tags[c.screen][new_idx])
-		client.focus = c
-	end,
+	press = Command.getFunction("move.client.right"),
 })
 
 
@@ -514,8 +573,26 @@ km:add({
 -- :aq
 km:add({
 	ctrl = { mod = "MC", key = "q" },
-	press = awesome.quit,
+	press = function()
+		local zenity = 'zenity --question --text="Are you sure you want to quit Awesome ?" --ok-label="Quit" --cancel-label="Stay here" '
+		local cmd = zenity .. " && echo ok || echo cancel"
+
+		utils.async.getFirstLine(cmd, function(stdout)
+			utils.toast.debug(stdout)
+			if stdout == "ok" then
+				utils.toast.debug("QUIT !!!!!!!")
+				awesome.quit()
+			else
+				--utils.toast.info("Awesome Quit canceled")
+				utils.toast.debug("Awesome Quit canceled (TODO: toast.info)")
+			end
+		end)
+	end,
 })
+
+--TODO:
+-- :awesome quit force
+-- => no confirmation dialog (and no short command form)
 
 
 -- client selection
@@ -535,9 +612,8 @@ km:add({
 		if client.focus then client.focus:raise() end
 	end,
 })
--- select last
 -- :select client last
--- :select client
+-- :select client    --this command will call :find client
 km:add({
 	ctrl = { mod = "M", key = "Tab" },
 	press = function ()
@@ -790,6 +866,37 @@ km:add({
 	end,
 })
 
+--- Music infos
+-- :musik status
+-- :musik infos
+-- :ms
+-- :mi
+km:add({
+	ctrl = { mod = "MA", key = "m" },
+	press = function()
+		utils.async.getAll("mpc status", function(stdout)
+			notif_id.music_info = utils.toast(stdout, {
+				title = "==== Current Track Status ====",
+				position = "bottom_left",
+				replaces_id = notif_id.music_info
+			}).id
+		end)
+	end,
+})
+
+km:add({
+	ctrl = { mod = "m", key = "m" },
+	press = function()
+		utils.async.getAll("mpc status", function(stdout)
+			notif_id.music_info = utils.toast(stdout, {
+				title = "==== Current Track Status ====",
+				position = "bottom_left",
+				replaces_id = notif_id.music_info
+			}).id
+		end)
+	end,
+})
+
 ---------------------------------------------------------------
 ------------------ FN keys ------------------------------------
 ---------------------------------------------------------------
@@ -926,6 +1033,7 @@ Keymap.new("client"):add({
 	press = function (c)
 		c.maximized_horizontal = not c.maximized_horizontal
 		c.maximized_vertical	= not c.maximized_vertical
+		c.raise()
 	end
 })
 
@@ -943,27 +1051,7 @@ awful.button({ modkey }, 3, awful.mouse.client.resize)
 
 
 
-
-
-
-
-
-
-
-
-
-
 loadFile("rc/rules")
-
-
-
-
-
-
-
-
-
-
 
 
 
