@@ -1047,6 +1047,73 @@ km:add({
 		})
 	end,
 })
+
+--for testing
+km:add({
+	ctrl = { mod = "M", key = "r" },
+	press = function ()
+		awful.prompt.run({ prompt = "   >>> Run Lua code: " },
+		mypromptbox[mouse.screen].widget,
+		function(...)
+			local ret = awful.util.eval(...)
+			utils.toast.debug(ret, {title = "Lua code result :"})
+		end, nil,
+		awful.util.getdir("cache") .. "/history_eval")
+	end,
+})
+
+--TODO: remove this
+-- Test keygrabber
+km:add({
+	ctrl = { mod = "MC", key = "k" },
+	press = function()
+		utils.toast("starting keygrabber tester")
+		local globAlphaNum
+		globAlphaNum = awful.keygrabber.run(function(mod, key, event)
+			--if event == "release" then return end -- no need to handle press & release simultaneously
+			if key == "Escape" then
+				awful.keygrabber.stop(globAlphaNum)
+				utils.toast("Exiting keygrabber tester")
+			end
+
+			if key == "a" then
+				utils.toast.warning("starting nested keygrabber tester")
+				local numberOfKeyGrabbed
+				local specialKeys
+				specialKeys = awful.keygrabber.run(function(mod, key, event)
+					if not numberOfKeyGrabbed then
+						numberOfKeyGrabbed = 1
+					else
+						numberOfKeyGrabbed = numberOfKeyGrabbed + 1
+					end
+
+					if event == "release" and key == "q" then
+						awful.keygrabber.stop(specialKeys)
+						utils.toast.warning("Exiting nested keygrabber tester")
+					end
+
+					local args = {mod, key, event}
+					utils.toast.debug(args, { title = "============= " .. tostring(numberOfKeyGrabbed) .. " =============" })
+
+					if key == "b" then
+						return false
+					end
+				end)
+			end
+
+			local args = {mod, key, event}
+			utils.toast.debug(args)
+		end)
+
+	end,
+})
+--km:add({
+--	ctrl = { mod = "any", key = "Super_L" }, --TODO: handle modifier = "any"
+--	press = function()
+--		utils.toast.debug("Modkey pressed")
+--	end,
+--})
+
 -- End of definition of 'global' Keymap
 km = nil
 
@@ -1177,5 +1244,49 @@ client.connect_signal("unfocus", function(c)
 	c.border_color = theme.border_normal
 end)
 -- }}}
+
+
+
+
+
+-- DEBUGING SIGNALS
+local function debugSignal(base, sigName, isMethod)
+	local func = function(...)
+		local str = debug({...})
+		utils.toast.debug(str, { title = sigName })
+	end
+	local function show()
+		utils.toast.debug(nil, { title = sigName, position = "top_left" })
+	end
+	if isMethod then
+		base:connect_signal(sigName, func)
+		base:connect_signal(sigName, show)
+	else
+		base.connect_signal(sigName, func)
+		base.connect_signal(sigName, show)
+	end
+end
+
+--debugSignal(capi.awesome, "spawn::initiated")
+--debugSignal(capi.awesome, "spawn::canceled")
+--debugSignal(capi.awesome, "spawn::completed")
+--debugSignal(capi.awesome, "spawn::timeout")
+debugSignal(capi.awesome, "exit")
+
+--debugSignal(client, "list")
+--debugSignal(client, "manage")
+--debugSignal(client, "unmanage")
+
+local keyobj = capi.key({ modifiers = {modkey}, key = "e" })
+root.keys(awful.util.table.join(root.keys(), { keyobj }))
+debugSignal(keyobj, "press", true)
+debugSignal(keyobj, "release", true)
+
+
+
+
+
+
+
 
 loadFile("rc/run_once")
