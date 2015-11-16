@@ -101,10 +101,12 @@ theme.addIcon( "emergency", "rcReload" )
 
 
 -- {{{ Borders
-theme.border_width  = 2
+theme.border_width  = 5
 theme.border_normal = bg_theme
-theme.border_normal = "#00000000"
-theme.border_focus  = "#FF9800"
+theme.border_normal = "#424242"
+
+--theme.border_focus  = "#FF9800" -- light orange
+theme.border_focus  = "#FF5722" -- Deep orange (500)
 theme.border_marked = "#CC9393"
 
 --theme.useless_gaps = "30"
