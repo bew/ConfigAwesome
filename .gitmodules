@@ -11,3 +11,9 @@
 [submodule "lib/treesome"]
 	path = lib/treesome
 	url = http://github.com/RobSis/treesome.git
+[submodule "lib/redflat"]
+	path = lib/redflat
+	url = git@github.com:worron/redflat.git
+[submodule "study/awesompd"]
+	path = study/awesompd
+	url = git@github.com:alexander-yakushev/awesompd.git
