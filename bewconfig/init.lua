@@ -624,23 +624,57 @@ km:add({
 	end,
 })
 
+--TODO: interactive finder (fuzzy ?) (with visual feedback as we type by marking matching client ?)
+-- :find <what> <filter>
+-- :find client
+-- :find client all      -- same as above
+-- :find client visible
+-- :find client tiled
+-- :find client floating
+-- etc...
+
 
 -- In Layout Clients movement
 
--- :move client			(then use hjkl to move the client)
+-- :move client			(interactive mode: use hjkl to move the client)
 -- :mc
+
+-- :move client down
 km:add({
 	ctrl = { mod = "MS", key = "j" },
 	press = function()
-		awful.client.swap.byidx( 1)
+		awful.client.swap.bydirection("down")
 	end,
 })
+-- :move client up
 km:add({
 	ctrl = { mod = "MS", key = "k" },
 	press = function()
-		awful.client.swap.byidx(-1)
+		awful.client.swap.bydirection("up")
 	end,
 })
+-- :move client left
+km:add({
+	ctrl = { mod = "MS", key = "h" },
+	press = function()
+		awful.client.swap.bydirection("left")
+	end,
+})
+-- :move client right
+km:add({
+	ctrl = { mod = "MS", key = "l" },
+	press = function()
+		awful.client.swap.bydirection("right")
+	end,
+})
+--TODO: others
+-- :move client first
+-- :move client last
+
+--TODO: swap :
+-- :swap client 3
+-- :swap client current 3  --same
+-- :swap client 3 current  --same
 
 -- Goto client
 -- :goto client urgent
@@ -649,6 +683,10 @@ km:add({
 	ctrl = { mod = "M", key = "u" },
 	press = awful.client.urgent.jumpto,
 })
+
+--TODO
+-- :goto client 3
+-- :gc3
 
 
 -- Apps spawning
@@ -669,8 +707,9 @@ km:add({
 
 -- :resize <what> <which>
 -- :resize client current
--- :resize client mark		or		:resize mark client			????TODO
+-- :resize client mark
 -- :resize			(default=client)
+
 km:add({
 	ctrl = { mod = "M", key = "l" },
 	press = function () awful.tag.incmwfact( 0.05) end,
@@ -680,14 +719,15 @@ km:add({
 	press = function () awful.tag.incmwfact(-0.05) end,
 })
 
-km:add({
-	ctrl = { mod = "MS", key = "h" },
-	press = function () awful.tag.incnmaster( 1) end,
-})
-km:add({
-	ctrl = { mod = "MS", key = "l" },
-	press = function () awful.tag.incnmaster(-1) end,
-})
+-- See :move client
+--km:add({
+--	ctrl = { mod = "MS", key = "h" },
+--	press = function () awful.tag.incnmaster( 1) end,
+--})
+--km:add({
+--	ctrl = { mod = "MS", key = "l" },
+--	press = function () awful.tag.incnmaster(-1) end,
+--})
 
 km:add({
 	ctrl = { mod = "MC", key = "h" },
@@ -727,18 +767,19 @@ local wallpaper_id = 1;
 km:add({
 	ctrl = { mod = "M", key = "w" },
 	press = function()
+		notif_id.wallpaper = utils.toast("Going to change wallpaper...", { replaces_id = notif_id.wallpaper }).id
 		wallpaper_id = awful.util.cycle(#theme.wallpapers, wallpaper_id + 1)
 		gears.wallpaper.maximized(theme.wallpaper_dir .. theme.wallpapers[wallpaper_id], 1, true)
 		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. wallpaper_id .. ")", { replaces_id = notif_id.wallpaper }).id
 	end,
 })
 
--- Computer managment (disabled
+-- Computer managment (disabled)
 -- :lock
 --[[
 km:add({
-	ctrl = { mod = "M", key = "p" },
-	press = lockAndSleep,
+ctrl = { mod = "M", key = "p" },
+press = lockAndSleep,
 })
 --]]
 
