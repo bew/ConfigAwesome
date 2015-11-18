@@ -925,19 +925,6 @@ km:add({
 	end,
 })
 
-km:add({
-	ctrl = { mod = "m", key = "m" },
-	press = function()
-		utils.async.getAll("mpc status", function(stdout)
-			notif_id.music_info = utils.toast(stdout, {
-				title = "==== Current Track Status ====",
-				position = "bottom_left",
-				replaces_id = notif_id.music_info
-			}).id
-		end)
-	end,
-})
-
 ---------------------------------------------------------------
 ------------------ FN keys ------------------------------------
 ---------------------------------------------------------------
