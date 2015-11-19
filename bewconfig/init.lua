@@ -12,6 +12,10 @@ Last update Wed Apr 15 16:00:29 CEST 2015
 --assert(false, "testing")
 
 --[[ Grab environnement ]]--
+local std = {
+	debug = debug,
+}
+
 local capi = {
 	timer = timer,
 	client = client,
@@ -32,7 +36,6 @@ local naughty = require("naughty")
 local menubar = require("menubar")
 
 local lain = require("lain")
-local debug = require("gears.debug").dump_return
 local gears = require("gears")
 
 
@@ -56,17 +59,17 @@ function loadFile(path)
 	local path = global.confInfos.path .. "/" .. path .. ".lua"
 
 	-- Execute the file
-	success, result = pcall(function() return dofile(path) end)
+	local success, err = pcall(function() return dofile(path) end)
 	if not success then
 		naughty.notify({
 			title = "Error while loading file",
-			text = "When loading `" .. path .. "`, got the following error:\n" .. result,
+			text = "When loading `" .. path .. "`, got the following error:\n" .. err,
 			preset = naughty.config.presets.critical
 		})
-		return print("E: error loading RC file '" .. path .. "': " .. result)
+		return print("E: error loading RC file '" .. path .. "': " .. err)
 	end
 
-	return result
+	return err
 end
 
 loadFile("loader/vars")
@@ -393,18 +396,15 @@ local notif_id = {}
 
 
 -- Network management
-local wpa_cli = { --TODO: Network.Wrapper.Wpa
-cmd = "wpa_cli -i wlo1 "
+--TODO: Network.Wrapper.Wpa
+local wpa_cli = {
+	cmd = "wpa_cli -i wlo1 "
 }
 
 local wallpaper_toggle = {
 	state = false,
 	id_notif = nil
 }
-
-
-utils.toast.warning("Here is a test warning")
-
 
 -- {{{ Key bindings
 local km = Keymap.new("global")
@@ -431,7 +431,7 @@ km:add({
 -- :mmt
 km:add({
 	ctrl = { mod = "MC", key = "t" },
-	press = Command.getFunction("mode.manage.tag")
+	--press = Command.getFunction("mode.manage.tag")
 })
 
 -- :goto tag prev
@@ -534,7 +534,6 @@ Command.register("move.client.right", function()
 	awful.tag.viewonly(tags[c.screen][new_idx])
 	client.focus = c
 end)
-
 
 -- Move client on tag Left/Right
 -- :move client tag left
@@ -1239,8 +1238,7 @@ end)
 -- DEBUGING SIGNALS
 local function debugSignal(base, sigName, isMethod)
 	local func = function(...)
-		local str = debug({...})
-		utils.toast.debug(str, { title = sigName })
+		utils.toast.debug({...}, { title = sigName })
 	end
 	local function show()
 		utils.toast.debug(nil, { title = sigName, position = "top_left" })
