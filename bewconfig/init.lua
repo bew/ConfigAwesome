@@ -50,7 +50,8 @@ local global = require("global")
 local utils = require("bewlib.utils")
 local Keymap = require("bewlib.keymap")
 local Const = require("bewlib.const")
-
+local Command = require("bewlib.command")
+local Eventemitter = require("bewlib.eventemitter")
 
 function loadFile(path)
 	local success
@@ -98,8 +99,27 @@ Battery:on("status::changed", function(self, status)
 	.. "==> " .. status)
 end)
 
---[[ COMMAND ]]--
-local Command = require("bewlib.command")
+
+
+
+
+--[[ REMOTE ]]--
+
+--local Remote = require("bewlib.remote")
+
+--Remote.init("socket")
+
+local Eventemitter = require("bewlib.eventemitter")
+
+Eventemitter.on("socket", function(event, args)
+	utils.toast.debug("get event socket")
+	utils.toast.debug(args)
+end)
+
+--[[ END REMOTE ]]--
+
+
+
 
 --Command.test()
 -- Load some commands
@@ -1095,6 +1115,7 @@ km:add({
 
 	end,
 })
+
 --km:add({
 --	ctrl = { mod = "any", key = "Super_L" }, --TODO: handle modifier = "any"
 --	press = function()
@@ -1273,7 +1294,5 @@ debugSignal(keyobj, "release", true)
 
 
 
-
-
-
 loadFile("rc/run_once")
+
