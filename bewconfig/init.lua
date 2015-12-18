@@ -85,6 +85,12 @@ loadFile("loader/wallpaper")
 --[[ BATTERY ]]--
 local Battery = require("bewlib.computer.battery")
 Battery.init({update = 2})
+
+Eventemitter.on("config::load", function()
+	Battery:emit("update")
+end)
+
+
 Battery:on("percentage::changed", function(self, perc)
 	--utils.toast("percentage changed !!")
 end)
@@ -207,7 +213,6 @@ do
 
 	Battery:on("percentage::changed", Command.getFunction("widget.updateBatteryStatus"))
 	Battery:on("status::changed", Command.getFunction("widget.updateBatteryStatus"))
-	Command.run("widget.updateBatteryStatus")
 end
 
 
@@ -259,7 +264,6 @@ wBatteryGraph:set_color("#424242")
 wBatteryGraph:set_max_value(100)
 utils.setInterval(function()
 	wBatteryGraph:add_value(Battery.infos.perc)
-	wBatteryGraph:add_value(Battery.infos.perc)
 end, 60, true)
 
 
@@ -304,44 +308,47 @@ mypromptbox = {}
 -- or this should define the look of the default workspace
 foreachScreen(function (s)
 
-	wLayoutSwitcher[s] = awful.widget.layoutbox(s)
-	wLayoutSwitcher[s]:buttons(awful.util.table.join(
-	awful.button({ }, 1, function () awful.layout.inc(global.layouts,  1) end),
-	awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
-	))
+	-- Top Bar
+	do
+		wLayoutSwitcher[s] = awful.widget.layoutbox(s)
+		wLayoutSwitcher[s]:buttons(awful.util.table.join(
+		awful.button({ }, 1, function () awful.layout.inc(global.layouts,  1) end),
+		awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
+		))
 
-	mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
-	mypromptbox[s] = awful.widget.prompt()
+		mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
+		mypromptbox[s] = awful.widget.prompt()
 
-	-- Emergency widgets
-	local layEmergency = wibox.layout.fixed.horizontal()
-	layEmergency:add( wibox.widget.textbox("RC: ") )
-	layEmergency:add( wEmergencyReload )
-	layEmergency:add( wEmergencyEdit )
+		-- Emergency widgets
+		local layEmergency = wibox.layout.fixed.horizontal()
+		layEmergency:add( wibox.widget.textbox("RC: ") )
+		layEmergency:add( wEmergencyReload )
+		layEmergency:add( wEmergencyEdit )
 
-	-- Tags layout
-	local tagsLayout = wibox.layout.fixed.horizontal()
-	tagsLayout:add(mytaglist[s])
+		-- Tags layout
+		local tagsLayout = wibox.layout.fixed.horizontal()
+		tagsLayout:add(mytaglist[s])
 
-	tagsLayout:add(mypromptbox[s]) --temp
+		tagsLayout:add(mypromptbox[s]) --temp
 
-	-- Widgets that are aligned to the right
-	local right_layout = wibox.layout.fixed.horizontal()
-	if s == 1 then
-		right_layout:add(wibox.widget.systray())
+		-- Widgets that are aligned to the right
+		local right_layout = wibox.layout.fixed.horizontal()
+		if s == 1 then
+			right_layout:add(wibox.widget.systray())
+		end
+		right_layout:add(wClock)
+		right_layout:add(wBatteryGraph)
+		right_layout:add(wBattery)
+		right_layout:add(wLayoutSwitcher[s])
+
+		local layTopbar = wibox.layout.align.horizontal()
+		layTopbar:set_middle(tagsLayout)
+		layTopbar:set_right(right_layout)
+		layTopbar:set_left(layEmergency)
+
+		topbar[s] = awful.wibox({ position = "top", screen = s })
+		topbar[s]:set_widget(layTopbar)
 	end
-	right_layout:add(wClock)
-	right_layout:add(wBatteryGraph)
-	right_layout:add(wBattery)
-	right_layout:add(wLayoutSwitcher[s])
-
-	local layTopbar = wibox.layout.align.horizontal()
-	layTopbar:set_middle(tagsLayout)
-	layTopbar:set_right(right_layout)
-	layTopbar:set_left(layEmergency)
-
-	topbar[s] = awful.wibox({ position = "top", screen = s })
-	topbar[s]:set_widget(layTopbar)
 end)
 -- }}}
 
@@ -350,13 +357,92 @@ end)
 
 local wibox = require("wibox")
 
+do
+	local wOnDesktop = wibox({
+		width = 300,
+		height = 200,
+		x = 600,
+		y = 100,
+		type = "desktop",
+		visible = true,
+	})
+	wOnDesktop:set_bg("#03A9F4")
+
+	local wText = wibox.widget.textbox("blabla")
+	wText:set_font("terminus 30")
+	wText:set_align("center")
+
+	local mainLayout = wibox.layout.align.vertical()
+
+	mainLayout:set_middle(wText)
+
+	wOnDesktop:set_widget(mainLayout)
+
+
+	Battery:on("percentage::changed", function()
+		local perc = Battery.infos.perc
+
+		if perc <= 10 then
+			-- low
+			wOnDesktop:set_bg("#F44336")
+		elseif perc <= 30 then
+			-- getting low
+			wOnDesktop:set_bg("#FF9800")
+		elseif perc <= 70 then
+			-- not bad
+			wOnDesktop:set_bg("#009688")
+		else
+			-- good
+			wOnDesktop:set_bg("#43A047")
+		end
+
+		if perc == 100 then
+			wText:set_text("FULL")
+		else
+			wText:set_text(tostring(perc) .. "%")
+		end
+	end)
+
+
+end
+
+
+
+-- BatteryBar
+do
+	local screen_geom = capi.screen[capi.mouse.screen].geometry
+	local wBatteryBar = wibox({
+		x = 0,
+		y = screen_geom.height - 5,
+		height = 5,
+		width = screen_geom.width,
+		type = "desktop",
+		visible = true,
+	})
+
+	local wBar = awful.widget.progressbar({
+		height = 10,
+	})
+	wBar:set_max_value(100)
+	wBar:set_color("#4CAF50") -- green 500
+	wBar:set_background_color("#F44336") -- red 500
+
+	wBatteryBar:set_widget(wBar)
+
+	Battery:on("percentage::changed", function()
+		local perc = Battery.infos.perc
+		wBar:set_value(perc)
+	end)
+end
+
+
+
 local w = wibox({
-	width = 500,
-	height = 500,
+	width = 300,
+	height = 300,
 	x = 300,
 	y = 100,
 	ontop = true,
-	opacity = 1
 })
 w:set_bg("#03A9F4")
 
@@ -1294,5 +1380,9 @@ debugSignal(keyobj, "release", true)
 
 
 
+-- put in event "config::load"
 loadFile("rc/run_once")
+
+
+Eventemitter.emit("config::load") -- give params ?
 
