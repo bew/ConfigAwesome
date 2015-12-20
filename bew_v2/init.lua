@@ -684,7 +684,7 @@ globalkeys = awful.util.table.join(
 	-- Lock screen control
 	awful.key({  }, "XF86Sleep",
 		function ()
-			awful.util.spawn("/home/lesell_b/.bin/my_i3lock")
+			awful.util.spawn(os.getenv("HOME") .. "/.bin/my_i3lock")
 			naughty.notify({
 				text = "Locking...",
 				timeout = 0.5
@@ -692,7 +692,7 @@ globalkeys = awful.util.table.join(
 		end),
 	awful.key({  }, "Pause",
 		function ()
-			awful.util.spawn("/home/lesell_b/.bin/my_i3lock")
+			awful.util.spawn(os.getenv("HOME") .. "/.bin/my_i3lock")
 			naughty.notify({
 				text = "Locking...",
 				timeout = 0.5
