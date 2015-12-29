@@ -12,7 +12,7 @@ awful.rules.rules = {
   			border_width = theme.border_width,
 			border_color = theme.border_focus,
 			focus = true,
-			keys = Keymap.apply("client"),
+			keys = Keymap.getCApiKeys("client"),
 			buttons = clientbuttons
 		}
 	},
