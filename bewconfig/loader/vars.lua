@@ -1,5 +1,5 @@
 local awful = require("awful")
-local theme = require("beautiful")
+local beautiful = require("beautiful")
 local global = require("global")
 local lain = require("lain") --for layout
 local treesome = require("treesome") --for layout
@@ -9,8 +9,8 @@ local utils = require("bewlib.utils")
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
 local path = awful.util.getdir("config") .. "/themes/bewconfig/theme.lua"
-theme.init(path)
-global.theme = theme.get()
+beautiful.init(path)
+global.theme = beautiful.get()
 
 -- This is used later as the default terminal and editor to run.
 terminal = "xterm"

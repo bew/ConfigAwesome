@@ -7,30 +7,34 @@
 --  * http://awesome.naquadah.org/wiki/Nice_Icons
 
 -- {{{ Main
+
 local theme = {}
 
 theme.name = "bewconfig"
 
 -- List wallpapers in dir: "find -maxdepth 1 -type f | sort"
-theme.wallpaper_dir = "/home/lesell_b/Downloads/wallpaper/"
+theme.wallpaper_dir = "/home/lesell_b/wallpapers/"
 
-theme.wallpapers = {
-	"powered_by_archlinux__blue_black_on_white.png",
-	"powered_by_archlinux__yellow_on_black.png",
+--TODO: move in class Wallpaper
+-- always return a table (can be empty)
+local function getWallpapers()
+	local cmd = "find " .. theme.wallpaper_dir .. " -type f -name '*.png' -o -name '*.jpg'"
+	local output = io.popen(cmd)
+	if not output then
+		return {}
+	end
 
-	"15324-define-yourself-1920x1080-typography-wallpaper.jpg",
-	"28493-archlinux-1920x1080-computer-wallpaper.jpg",
-	"arch-linux-15396.jpg",
-	"archunivers.jpg",
-	"1364217.jpg",
-	"1451438.png",
-	"1591008.jpg",
-	"1663036.jpg",
-	"1799740.jpg",
-	"1799766.jpg",
-	"1866705.png",
-	"1930615.jpg",
-}
+	local walls = {}
+	for wallPath in output:lines() do
+		table.insert(walls, wallPath)
+	end
+
+	output:close()
+	return walls
+end
+
+theme.wallpapers = getWallpapers()
+
 theme.wallpaper = theme.wallpapers[1]
 -- }}}
 

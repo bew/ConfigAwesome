@@ -879,9 +879,10 @@ km:add({
 	ctrl = { mod = "M", key = "w" },
 	press = function()
 		notif_id.wallpaper = utils.toast("Going to change wallpaper...", { replaces_id = notif_id.wallpaper }).id
-		wallpaper_id = awful.util.cycle(#theme.wallpapers, wallpaper_id + 1)
-		gears.wallpaper.maximized(theme.wallpaper_dir .. theme.wallpapers[wallpaper_id], 1, true)
-		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. wallpaper_id .. ")", { replaces_id = notif_id.wallpaper }).id
+		local walls = theme.wallpapers
+		local selectedID = math.random(#walls) or 1
+		gears.wallpaper.maximized(theme.wallpapers[selectedID], 1, true)
+		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
 	end,
 })
 
@@ -1260,7 +1261,7 @@ awful.button({ modkey }, 3, awful.mouse.client.resize)
 
 
 
---loadFile("rc/rules")
+loadFile("rc/rules")
 
 
 
