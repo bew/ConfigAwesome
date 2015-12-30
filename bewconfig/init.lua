@@ -144,17 +144,17 @@ tags = {}
 -- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
 tags[1] = awful.tag({
 	"| no name |",
-	"           ",
+	"       ",
 	"| no name |",
-	"           ",
+	"       ",
 	"| no name |",
-	"           ",
+	"       ",
 	"| no name |",
-	"           ",
+	"       ",
 	"| no name |",
-	"           ",
+	"       ",
 	"| no name |",
-	"           ",
+	"       ",
 	"| no name |",
 }, s, global.layouts[1])
 -- }}}
@@ -1258,10 +1258,17 @@ Keymap.new("client"):add({
 		c.maximized_vertical	= not c.maximized_vertical
 		c.raise()
 	end
+}):add({
+	ctrl = { mod = "M", key = "o" },
+	press = function(self, c)
+		c.opacity = (c.opacity == 1 and theme.client_default_opacity or 1)
+	end
 })
 
 client.connect_signal("manage", function(cl)
 	cl:keys(Keymap.getCApiKeys("client"))
+
+	cl.opacity = theme.client_default_opacity
 end)
 
 
