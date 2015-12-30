@@ -207,11 +207,48 @@ awful.button({ modkey 	}, 1, awful.client.movetotag)
 
 
 -- Battery widget (in statusbar)
-local wBattery
+local wBatteryContainer
 do
-	wBattery = wibox.widget.textbox()
+	wBatteryContainer = wibox.widget.background()
+	local wBattery = wibox.widget.textbox()
+	wBattery:set_font("Awesome 10")
+
+	wBatteryContainer:set_widget(wBattery)
+
 	Command.register("widget.updateBatteryStatus", function()
-		wBattery:set_text(" | " .. Battery.infos.status .. " | " .. Battery.infos.perc .. "% | ")
+		local status = Battery.infos.status
+		local perc = Battery.infos.perc
+
+		local statusStyle
+		if status == Battery.DISCHARGING then
+			if perc <= 5 then
+				-- low
+				wBatteryContainer:set_bg("#F44336") -- red 500
+				statusStyle = ""
+			elseif perc <= 25 then
+				-- getting low
+				wBatteryContainer:set_bg("#FF9800") -- yellow
+				statusStyle = ""
+			elseif perc <= 50 then
+				-- getting low
+				wBatteryContainer:set_bg("#FF9800") -- yellow
+				statusStyle = ""
+			elseif perc <= 75 then
+				-- not bad
+				wBatteryContainer:set_bg("#009688")
+				statusStyle = ""
+			else
+				-- good
+				wBatteryContainer:set_bg("#43A047")
+				statusStyle = ""
+			end
+		else
+			wBatteryContainer:set_bg("#43A047")
+			statusStyle = ""
+		end
+
+		percStyle = (perc == 100 and "FULL" or perc .. "%")
+		wBattery:set_text(" | " .. statusStyle .. " " .. percStyle .. " | ")
 	end)
 
 
@@ -342,7 +379,7 @@ foreachScreen(function (s)
 		end
 		right_layout:add(wClock)
 		right_layout:add(wBatteryGraph)
-		right_layout:add(wBattery)
+		right_layout:add(wBatteryContainer)
 		right_layout:add(wLayoutSwitcher[s])
 
 		local layTopbar = wibox.layout.align.horizontal()
@@ -361,57 +398,6 @@ end)
 
 local wibox = require("wibox")
 
-do
-	local wOnDesktop = wibox({
-		width = 300,
-		height = 200,
-		x = 600,
-		y = 100,
-		type = "desktop",
-		visible = true,
-	})
-	wOnDesktop:set_bg("#03A9F4")
-
-	local wText = wibox.widget.textbox("blabla")
-	wText:set_font("terminus 30")
-	wText:set_align("center")
-
-	local mainLayout = wibox.layout.align.vertical()
-
-	mainLayout:set_middle(wText)
-
-	wOnDesktop:set_widget(mainLayout)
-
-
-	Battery:on("percentage::changed", function()
-		local perc = Battery.infos.perc
-
-		if perc <= 10 then
-			-- low
-			wOnDesktop:set_bg("#F44336")
-		elseif perc <= 30 then
-			-- getting low
-			wOnDesktop:set_bg("#FF9800")
-		elseif perc <= 70 then
-			-- not bad
-			wOnDesktop:set_bg("#009688")
-		else
-			-- good
-			wOnDesktop:set_bg("#43A047")
-		end
-
-		if perc == 100 then
-			wText:set_text("FULL")
-		else
-			wText:set_text(tostring(perc) .. "%")
-		end
-	end)
-
-
-end
-
-
-
 -- BatteryBar
 do
 	local screen_geom = capi.screen[capi.mouse.screen].geometry
@@ -422,6 +408,7 @@ do
 		width = screen_geom.width,
 		type = "desktop",
 		visible = true,
+		ontop = true,
 	})
 
 	local wBar = awful.widget.progressbar({
