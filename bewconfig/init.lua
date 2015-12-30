@@ -874,15 +874,31 @@ km:add({
 
 
 -- Wallpaper managment
-local wallpaper_id = 1;
+local currentWallpaperID = 1
+local lastWallpaperID = 0
+--- Select a new random wallpaper
 km:add({
 	ctrl = { mod = "M", key = "w" },
 	press = function()
-		notif_id.wallpaper = utils.toast("Going to change wallpaper...", { replaces_id = notif_id.wallpaper }).id
 		local walls = theme.wallpapers
 		local selectedID = math.random(#walls) or 1
+		gears.wallpaper.maximized(walls[selectedID], 1, true)
+		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
+
+		lastWallpaperID = (lastWallpaperID == 0 and 1 or currentWallpaperID)
+		currentWallpaperID = selectedID
+	end,
+})
+--- Reselect the last wallpaper
+km:add({
+	ctrl = { mod = "MS", key = "w" },
+	press = function()
+		local walls = theme.wallpapers
+		local selectedID = lastWallpaperID
 		gears.wallpaper.maximized(theme.wallpapers[selectedID], 1, true)
 		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
+
+		currentWallpaperID, lastWallpaperID = lastWallpaperID, currentWallpaperID
 	end,
 })
 
