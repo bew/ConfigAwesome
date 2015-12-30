@@ -1056,19 +1056,16 @@ km:add({
 ---------------------------------------------------------------
 ------------------ FN keys ------------------------------------
 ---------------------------------------------------------------
--- ALSA volume control
+-- Volume control
 -- :audio +
 km:add({
 	ctrl = { key = "XF86AudioRaiseVolume" },
 	press = function ()
-		awful.util.spawn("amixer -q set Master 1%+")
+		utils.async.getAll('pamixer --get-volume --increase 1', function(stdout)
+			local perc = tonumber(stdout)
 
-		utils.async.getAll('amixer get Master', function(stdout)
-			local vol_now = {}
-
-			vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
 			notif_id.volume = utils.toast("Increase", {
-				title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+				title = "Volume " .. perc .. "%",
 				position = "bottom_right",
 				replaces_id = notif_id.volume
 			}).id
@@ -1079,14 +1076,11 @@ km:add({
 km:add({
 	ctrl = { key = "XF86AudioLowerVolume" },
 	press = function ()
-		awful.util.spawn("amixer -q set Master 1%-")
+		utils.async.getAll('pamixer --get-volume --decrease 1', function(stdout)
+			local perc = tonumber(stdout)
 
-		utils.async.getAll('amixer get Master', function(stdout)
-			local vol_now = {}
-
-			vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
-			notif_id.volume = utils.toast("Increase", {
-				title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+			notif_id.volume = utils.toast("Decrease", {
+				title = "Volume " .. perc .. "%",
 				position = "bottom_right",
 				replaces_id = notif_id.volume
 			}).id
@@ -1097,14 +1091,11 @@ km:add({
 km:add({
 	ctrl = { key = "XF86AudioMute" },
 	press = function ()
-		awful.util.spawn("amixer -q set Master playback toggle")
+		utils.async.getAll('pamixer --get-mute --toggle-mute', function(stdout)
+			local status = stdout
 
-		utils.async.getAll('amixer get Master', function(stdout)
-			local vol_now = {}
-
-			vol_now.perc, vol_now.status = string.match(stdout, "([%d]+)%%.*%[([%l]*)")
-			notif_id.volume = utils.toast( vol_now.status == "on" and "Unmute" or "Mute", {
-				title = "Volume " .. vol_now.perc .. "% [" .. string.upper(vol_now.status) .. "]",
+			notif_id.volume = utils.toast("Toggle Mute", {
+				title = "Status : " .. status,
 				position = "bottom_right",
 				replaces_id = notif_id.volume
 			}).id
