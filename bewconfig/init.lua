@@ -1262,7 +1262,19 @@ client.connect_signal("manage", function(cl)
 	cl.opacity = theme.client_default_opacity
 end)
 
+local function moreOpacity(cl)
+	local opacity = cl.opacity
+	opacity = opacity + 0.02
+	opacity = (opacity > 1 and 1 or opacity)
+	cl.opacity = opacity
+end
 
+local function moreTransparency(cl)
+	local opacity = cl.opacity
+	opacity = opacity - 0.02
+	opacity = (opacity < 0.4 and 0.4 or opacity)
+	cl.opacity = opacity
+end
 
 
 clientbuttons = awful.util.table.join(
@@ -1270,7 +1282,9 @@ awful.button({			}, 1, function (c)
 	client.focus = c; c:raise()
 end),
 awful.button({ modkey }, 1, awful.mouse.client.move),
-awful.button({ modkey }, 3, awful.mouse.client.resize)
+awful.button({ modkey }, 3, awful.mouse.client.resize),
+awful.button({ modkey }, 4, moreTransparency),
+awful.button({ modkey }, 5, moreOpacity)
 )
 
 
