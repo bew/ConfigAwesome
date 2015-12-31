@@ -914,15 +914,16 @@ press = lockAndSleep,
 km:add({
 	ctrl = { mod = "M", key = "g" },
 	press = function()
-		notif_id.ping = utils.toast("Sending 1 packet to google.fr", {
+		local host = "google.fr"
+		notif_id.ping = utils.toast("Sending 1 packet to " .. host, {
 			position = "bottom_right",
 			replaces_id = notif_id.ping
 		}).id
-		utils.async.getAll("ping google.fr -c 1 -w 1", function(stdout)
+		utils.async.getAll("ping " .. host .. " -c 1 -w 1", function(stdout)
 			notif_id.ping = utils.toast(stdout, {
 				title = "===== Ping google.fr result =====",
 				position = "bottom_right",
-				replaces_id = notif_id.ping 
+				replaces_id = notif_id.ping
 			}).id
 		end)
 	end,
@@ -1100,6 +1101,7 @@ km:add({
 
 		utils.async.getFirstLine('xbacklight -get', function(stdout)
 			local perc = string.match(stdout, "(%d+)%..*")
+			if not perc then return end
 
 			notif_id.brightness = utils.toast("Decrease", {
 				title = "Brightness " .. perc .. "%",
@@ -1117,6 +1119,7 @@ km:add({
 
 		utils.async.getFirstLine('xbacklight -get', function(stdout)
 			local perc = string.match(stdout, "(%d+)%..*")
+			if not perc then return end
 
 			notif_id.brightness = utils.toast("Increase", {
 				title = "Brightness " .. perc .. "%",
