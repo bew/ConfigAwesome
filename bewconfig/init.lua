@@ -1342,6 +1342,7 @@ end
 --debugSignal(capi.awesome, "spawn::completed")
 --debugSignal(capi.awesome, "spawn::timeout")
 debugSignal(capi.awesome, "exit")
+debugSignal(capi.awesome, "debug::error")
 
 --debugSignal(client, "list")
 --debugSignal(client, "manage")
