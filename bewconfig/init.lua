@@ -545,7 +545,7 @@ km:add({
 	end
 })
 km:add({
-	ctrl = { mod = "MA", key = "j" },
+	ctrl = { mod = "M", key = "j" },
 	press = function()
 		Command.run("goto.tag", {
 			which = Const.PREVIOUS,
@@ -564,7 +564,7 @@ km:add({
 	end
 })
 km:add({
-	ctrl = { mod = "MA", key = "k" },
+	ctrl = { mod = "M", key = "k" },
 	press = function()
 		Command.run("goto.tag", {
 			which = Const.NEXT,
@@ -696,7 +696,7 @@ km:add({
 -- client selection
 -- :select client next
 km:add({
-	ctrl = { mod = "M", key = "j" },
+	ctrl = { mod = "MA", key = "j" },
 	press = function ()
 		awful.client.focus.byidx( 1)
 		if client.focus then client.focus:raise() end
@@ -704,7 +704,7 @@ km:add({
 })
 -- :select client previous
 km:add({
-	ctrl = { mod = "M", key = "k" },
+	ctrl = { mod = "MA", key = "k" },
 	press = function ()
 		awful.client.focus.byidx(-1)
 		if client.focus then client.focus:raise() end
@@ -1228,18 +1228,27 @@ Keymap.new("client"):add({
 	ctrl = { mod = "M", key = "a" },
 	press = function(self, c)
 		c.ontop = not c.ontop
+		utils.toast("ON TOP : " .. tostring(c.ontop))
 	end
 }):add({
 	ctrl = { mod = "M", key = "f" },
 	press = function(self, c)
 		awful.client.floating.toggle(c)
+		utils.toast("FLOATING : " .. tostring(awful.client.floating.get(c)))
 	end
 }):add({
 	ctrl = { mod = "M", key = "m" },
 	press = function(self, c)
 		c.maximized_horizontal = not c.maximized_horizontal
 		c.maximized_vertical	= not c.maximized_vertical
-		c.raise()
+		c:raise()
+		utils.toast("MAXIMIZED : " .. tostring(c.maximized_vertical and c.maximized_horizontal and true or false))
+	end
+}):add({
+	ctrl = { mod = "MA", key = "a" },
+	press = function(self, c)
+		c.sticky = not c.sticky
+		utils.toast("STICKY : " .. tostring(c.sticky))
 	end
 }):add({
 	ctrl = { mod = "M", key = "o" },
