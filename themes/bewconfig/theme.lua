@@ -12,7 +12,6 @@ local theme = {}
 
 theme.name = "bewconfig"
 
--- List wallpapers in dir: "find -maxdepth 1 -type f | sort"
 theme.wallpaper_dir = "/home/lesell_b/wallpapers/"
 
 --TODO: move in class Wallpaper
@@ -26,7 +25,10 @@ local function getWallpapers()
 
 	local walls = {}
 	for wallPath in output:lines() do
-		table.insert(walls, wallPath)
+		if not walls[wallPath] then
+			table.insert(walls, wallPath)
+			walls[wallPath] = #walls
+		end
 	end
 
 	output:close()

@@ -135,28 +135,41 @@ end)
 -- Load some commands
 loadFile("cmds/goto")
 
+function foreachScreen(callback)
+	if callback == nil then
+		return
+	end
+
+	local s
+	for s = 1, screen.count() do
+		callback(s)
+	end
+end
+
 
 
 -- {{{ Tags
 -- Define a tag table which hold all screen tags.
 tags = {}
--- Each screen has its own tag table.
--- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
-tags[1] = awful.tag({
-	"| no name |",
-	"       ",
-	"| no name |",
-	"       ",
-	"| no name |",
-	"       ",
-	"| no name |",
-	"       ",
-	"| no name |",
-	"       ",
-	"| no name |",
-	"       ",
-	"| no name |",
-}, s, global.layouts[1])
+foreachScreen(function(s)
+	-- Each screen has its own tag table.
+	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
+	tags[1] = awful.tag({
+		"| no name |",
+		"       ",
+		"| no name |",
+		"       ",
+		"| no name |",
+		"       ",
+		"| no name |",
+		"       ",
+		"| no name |",
+		"       ",
+		"| no name |",
+		"       ",
+		"| no name |",
+	}, s, global.layouts[1])
+end)
 -- }}}
 
 -- Edit the config file
@@ -330,17 +343,6 @@ end)
 
 
 
-
-function foreachScreen(callback)
-	if callback == nil then
-		return
-	end
-
-	local s
-	for s = 1, screen.count() do
-		callback(s)
-	end
-end
 
 --temp
 mypromptbox = {}
@@ -869,7 +871,7 @@ km:add({
 	press = function()
 		local walls = theme.wallpapers
 		local selectedID = math.random(#walls) or 1
-		gears.wallpaper.maximized(walls[selectedID], 1, true)
+		gears.wallpaper.maximized(walls[selectedID], capi.mouse.screen, true)
 		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
 
 		lastWallpaperID = (lastWallpaperID == 0 and 1 or currentWallpaperID)
@@ -882,7 +884,7 @@ km:add({
 	press = function()
 		local walls = theme.wallpapers
 		local selectedID = lastWallpaperID
-		gears.wallpaper.maximized(theme.wallpapers[selectedID], 1, true)
+		gears.wallpaper.maximized(theme.wallpapers[selectedID], capi.mouse.screen, true)
 		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
 
 		currentWallpaperID, lastWallpaperID = lastWallpaperID, currentWallpaperID
