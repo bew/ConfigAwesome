@@ -21,6 +21,7 @@ local capi = {
 	key = key,
 	mouse = mouse,
 	screen = screen,
+	keygrabber = keygrabber,
 }
 
 -- Standard awesome library
@@ -846,11 +847,69 @@ km:add({
 
 
 
--- Menubar
+----------------------------
+-- App Launcher
+----------------------------
+
+local applauncher = {}
+
+-- key -> do_something
+applauncher.binds = {
+	x = {
+		func = menubar.show,
+		desc = "MENUBAR",
+	},
+	t = { cmd = "xterm" },
+	["²"] = { cmd = "xterm" },
+	f = { cmd = "firefox" },
+}
+
+-- TODO (maybe): reverse bind map : do_something -> { key, key, key, ... }
+
+function applauncher.grabber(mod, key, event)
+	if event == "release" then return true end
+	capi.keygrabber.stop()
+
+	local app_match = applauncher.binds[key]
+	if app_match then
+
+		if app_match.cmd then -- bind is a cmd
+			awful.util.spawn(app_match.cmd)
+		elseif app_match.func then -- bind is a function
+			app_match.func()
+		end
+
+		notif_id.applauncher = utils.toast("Lanching " .. (app_match.cmd or app_match.desc or ""), {
+			title = "App Launcher",
+			replaces_id = notif_id.applauncher,
+		}).id
+
+	else
+		notif_id.applauncher = utils.toast("CANCEL", {
+			title = "App Launcher",
+			replaces_id = notif_id.applauncher,
+		}).id
+	end
+end
+
+-- App Launcher trigger
 km:add({
 	ctrl = { mod = "M", key = "x" },
 	press = function()
-		menubar.show()
+
+		local help_str = ""
+		for key, app_bind in pairs(applauncher.binds) do
+			help_str = help_str .. "[ " .. key:upper() .. " ] → " .. (app_bind.desc or app_bind.cmd or "unknown") .. "\n"
+		end
+		help_str = help_str .. "\nPress any other key to cancel"
+
+		notif_id.applauncher = utils.toast(help_str, {
+			title = "App Launcher\n==============",
+			timeout = 0,
+			replaces_id = notif_id.applauncher,
+		}).id
+
+		capi.keygrabber.run(applauncher.grabber)
 	end,
 })
 
@@ -991,6 +1050,7 @@ km:add({
 			if event == "release" then return true end
 			keygrabber.stop()
 			naughty.destroy(help_notif)
+
 			if networks[key] then
 				utils.async.justExec(wpa_cli.cmd .. "select_network " .. networks[key].id, function()
 					notif_id.net_selector = utils.toast("Trying to connect...", {
