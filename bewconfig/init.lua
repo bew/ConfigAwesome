@@ -9,8 +9,6 @@ Last update Wed Apr 15 16:00:29 CEST 2015
 
 --]]
 
---assert(false, "testing")
-
 --[[ Grab environnement ]]--
 local std = {
 	debug = debug,
@@ -95,15 +93,6 @@ Eventemitter.on("config::load", function()
 end)
 
 
-Battery:on("percentage::changed", function(self, perc)
-	--utils.toast("percentage changed !!")
-end)
-
-Battery:on("timeLeft::changed", function(self, time)
-	local msg = self.infos.status == "Charging" and "full" or "empty"
-	utils.toast("time to " .. msg .. ": " .. string.gsub(time, "(%d%d):(%d%d)", "%1h %2m"))
-end)
-
 Battery:on("status::changed", function(self, status)
 	utils.toast("Status changed !!\n"
 	.. "==> " .. status)
@@ -123,7 +112,11 @@ local Eventemitter = require("bewlib.eventemitter")
 
 Eventemitter.on("socket", function(event, args)
 	utils.toast.debug("get event socket")
-	utils.toast.debug(args)
+	if not args then
+		utils.toast.debug("no arguments to event")
+	else
+		utils.toast.debug(args)
+	end
 end)
 
 --[[ END REMOTE ]]--
@@ -1279,8 +1272,9 @@ end
 
 
 clientbuttons = awful.util.table.join(
-awful.button({			}, 1, function (c)
-	client.focus = c; c:raise()
+awful.button({}, 1, function (c)
+	client.focus = c
+	c:raise()
 end),
 awful.button({ modkey }, 1, awful.mouse.client.move),
 awful.button({ modkey }, 3, awful.mouse.client.resize),
