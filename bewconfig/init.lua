@@ -9,7 +9,7 @@ Last update Wed Apr 15 16:00:29 CEST 2015
 
 --]]
 
---[[ Grab environnement ]]--
+-- Grab environnement
 local std = {
 	debug = debug,
 }
@@ -54,8 +54,6 @@ local Eventemitter = require("bewlib.eventemitter")
 
 local Remote = require("bewlib.remote")
 
-Remote.init("socket")
-
 function loadFile(path)
 	local success
 	local result
@@ -83,9 +81,9 @@ local config = global.config
 loadFile("loader/wallpaper")
 
 
---[[ === BEWLIB === ]]--
+-- Init Battery System
+------------------------------------------
 
---[[ BATTERY ]]--
 local Battery = require("bewlib.computer.battery")
 Battery.init({update = 2})
 
@@ -99,17 +97,10 @@ Battery:on("status::changed", function(self, status)
 	.. "==> " .. status)
 end)
 
+-- Init Remote System
+------------------------------------------
 
-
-
-
---[[ REMOTE ]]--
-
---local Remote = require("bewlib.remote")
-
---Remote.init("socket")
-
-local Eventemitter = require("bewlib.eventemitter")
+Remote.init("socket")
 
 Eventemitter.on("socket", function(event, args)
 	utils.toast.debug("get event socket")
@@ -119,8 +110,6 @@ Eventemitter.on("socket", function(event, args)
 		utils.toast.debug(args)
 	end
 end)
-
---[[ END REMOTE ]]--
 
 
 
@@ -317,7 +306,10 @@ end, 60, true)
 
 
 
+------------------------------------------------------------------------------------
 -- Emergency widgets
+------------------------------------------------------------------------------------
+
 -- >> Reload
 local wEmergencyReload = wibox.widget.imagebox( theme.getIcon( "emergency", "rcReload" ), true)
 wEmergencyReload:buttons(awful.util.table.join(
@@ -486,20 +478,15 @@ end
 
 local notif_id = {}
 
-
-
--- Network management
---TODO: Network.Wrapper.Wpa
+--TODO: Network.init(Network.Wrapper.Wpa({ iface = "wlo1" }))
 local wpa_cli = {
 	cmd = "wpa_cli -i wlo1 "
 }
 
-local wallpaper_toggle = {
-	state = false,
-	id_notif = nil
-}
-
+------------------------------------------------------------------------------------
 -- {{{ Key bindings
+------------------------------------------------------------------------------------
+
 local km = Keymap.new("global")
 -- :battery info
 km:add({
@@ -517,7 +504,9 @@ km:add({
 	end,
 })
 
+---------------------------------------------------------------
 -- Tag navigaton
+---------------------------------------------------------------
 
 -- Enter in Tag management Mode
 -- :mode manage tag
@@ -652,7 +641,9 @@ km:add({
 })
 
 
+---------------------------------------------------------------
 -- awesome management
+---------------------------------------------------------------
 
 -- :awesome restart
 -- :ar
@@ -686,8 +677,10 @@ km:add({
 -- :awesome quit force
 -- => no confirmation dialog (and no short command form)
 
+---------------------------------------------------------------
+-- Client management
+---------------------------------------------------------------
 
--- client selection
 -- :select client next
 km:add({
 	ctrl = { mod = "MA", key = "j" },
@@ -780,8 +773,10 @@ km:add({
 -- :goto client 3
 -- :gc3
 
+---------------------------------------------------------------
+-- Terminal spawn
+---------------------------------------------------------------
 
--- Apps spawning
 -- :spawn term
 km:add({
 	ctrl = { mod = "M", key = "t" },
@@ -795,7 +790,9 @@ km:add({
 
 
 
+---------------------------------------------------------------
 -- Clients resize/move
+---------------------------------------------------------------
 
 -- :resize <what> <which>
 -- :resize client current
@@ -847,9 +844,9 @@ km:add({
 
 
 
-----------------------------
+---------------------------------------------------------------
 -- App Launcher
-----------------------------
+---------------------------------------------------------------
 
 local applauncher = {}
 
@@ -913,8 +910,10 @@ km:add({
 	end,
 })
 
-
+---------------------------------------------------------------
 -- Wallpaper managment
+---------------------------------------------------------------
+
 local currentWallpaperID = 1
 local lastWallpaperID = 0
 --- Select a new random wallpaper
@@ -943,19 +942,10 @@ km:add({
 	end,
 })
 
--- Computer managment (disabled)
--- :lock
---[[
-km:add({
-ctrl = { mod = "M", key = "p" },
-press = lockAndSleep,
-})
---]]
+---------------------------------------------------------------
+-- Network management
+---------------------------------------------------------------
 
-
---##############################
---##### Network management #####
---##############################
 -- Main Commands:
 -- :wifi		(on)
 -- :nowifi		(off)
@@ -1078,7 +1068,10 @@ km:add({
 	end,
 })
 
---- Music infos
+---------------------------------------------------------------
+-- Music
+---------------------------------------------------------------
+
 -- :musik status
 -- :musik infos
 -- :ms
@@ -1097,8 +1090,9 @@ km:add({
 })
 
 ---------------------------------------------------------------
------------------- FN keys ------------------------------------
+-- Volume
 ---------------------------------------------------------------
+
 -- Volume control
 -- :audio +
 km:add({
@@ -1146,8 +1140,10 @@ km:add({
 	end,
 })
 
+---------------------------------------------------------------
+-- Brightness
+---------------------------------------------------------------
 
--- Brightness control
 -- :brightness +
 km:add({
 	ctrl = { key = "XF86MonBrightnessDown" },
@@ -1186,7 +1182,10 @@ km:add({
 })
 
 
--- Lock screen control
+---------------------------------------------------------------
+-- Lockscreen
+---------------------------------------------------------------
+
 -- :lock
 km:add({
 	ctrl = { key = "Pause" },
@@ -1213,14 +1212,22 @@ km:add({
 	end,
 })
 
+---------------------------------------------------------------
 -- Test keygrabber
+---------------------------------------------------------------
+
 km:add({
 	ctrl = { mod = "MC", key = "k" },
 	press = function()
 		utils.toast("starting keygrabber tester")
+
+		------------------------------------------
+		-- outer keygrabber
+		------------------------------------------
+
 		local globAlphaNum
 		globAlphaNum = awful.keygrabber.run(function(mod, key, event)
-			--if event == "release" then return end -- no need to handle press & release simultaneously
+
 			if key == "Escape" then
 				awful.keygrabber.stop(globAlphaNum)
 				utils.toast("Exiting keygrabber tester")
@@ -1228,13 +1235,18 @@ km:add({
 
 			if key == "a" then
 				utils.toast.warning("starting nested keygrabber tester")
-				local numberOfKeyGrabbed
+				local nbKeyGrabbed
 				local specialKeys
+
+				------------------------------------------
+				-- inner keygrabber
+				------------------------------------------
+				
 				specialKeys = awful.keygrabber.run(function(mod, key, event)
-					if not numberOfKeyGrabbed then
-						numberOfKeyGrabbed = 1
+					if not nbKeyGrabbed then
+						nbKeyGrabbed = 1
 					else
-						numberOfKeyGrabbed = numberOfKeyGrabbed + 1
+						nbKeyGrabbed = nbKeyGrabbed + 1
 					end
 
 					if event == "release" and key == "q" then
@@ -1242,8 +1254,9 @@ km:add({
 						utils.toast.warning("Exiting nested keygrabber tester")
 					end
 
-					local args = {mod, key, event}
-					utils.toast.debug(args, { title = "============= " .. tostring(numberOfKeyGrabbed) .. " =============" })
+					utils.toast.debug({mod, key, event}, {
+						title = "============= " .. tostring(nbKeyGrabbed) .. " ============="
+					})
 
 					if key == "b" then
 						return false
@@ -1251,8 +1264,7 @@ km:add({
 				end)
 			end
 
-			local args = {mod, key, event}
-			utils.toast.debug(args)
+			utils.toast.debug({mod, key, event})
 		end)
 
 	end,
@@ -1265,11 +1277,16 @@ km:add({
 --	end,
 --})
 
+------------------------------------------
+
 -- End of definition of 'global' Keymap
 km = nil
 
 root.keys(Keymap.getCApiKeys("global"))
 
+------------------------------------------------------------------------------------
+-- Client's keymap
+------------------------------------------------------------------------------------
 
 -- Base keymap for clients
 Keymap.new("client"):add({
@@ -1348,8 +1365,12 @@ loadFile("rc/rules")
 
 
 
+-- Signals
 
+------------------------------------------------------------------------------------
 -- {{{ Signals
+------------------------------------------------------------------------------------
+
 -- Signal function to execute when a new client appears.
 client.connect_signal("manage", function (c, startup)
 	-- Enable sloppy focus
@@ -1385,7 +1406,10 @@ end)
 
 
 
+------------------------------------------------------------------------------------
 -- DEBUGING SIGNALS
+------------------------------------------------------------------------------------
+
 local function debugSignal(base, sigName, isMethod)
 	local func = function(...)
 		utils.toast.debug({...}, { title = sigName })
