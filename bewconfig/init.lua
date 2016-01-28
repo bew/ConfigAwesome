@@ -1270,10 +1270,37 @@ km:add({
 	end,
 })
 
+------------------------------------------
+-- Test: Do something when mod press/release
+------------------------------------------
+
+-- FIXME: Very weird behavior when this is activated...
+-- > restart config
+-- > try to kill client : will not always work => random somewhere
+
 --km:add({
---	ctrl = { mod = "any", key = "Super_L" }, --TODO: handle modifier = "any"
+--	ctrl = { key = "Super_L" },
 --	press = function()
 --		utils.toast.debug("Modkey pressed")
+--	end,
+--})
+--
+--km:add({
+--	ctrl = { mod = "M", key = "Super_L" },
+--	release = function()
+--		utils.toast.debug("Modkey released")
+--	end,
+--})
+
+-- FIXME END
+
+--km:add({
+--	ctrl = { anyMod = true, key = "Super_L" }, --TODO: handle modifier = "any"
+--	press = function()
+--		utils.toast.debug("Modkey pressed")
+--	end,
+--	release = function()
+--		utils.toast.debug("Modkey released")
 --	end,
 --})
 
