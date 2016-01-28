@@ -5,17 +5,19 @@ local Keymap = require("bewlib.keymap")
 
 -- {{{ Rules
 awful.rules.rules = {
+
 	-- All clients will match this rule.
 	{
 		rule = { },
 		properties = {
-  			border_width = theme.border_width,
+			border_width = theme.border_width,
 			border_color = theme.border_focus,
 			focus = true,
 			keys = Keymap.getCApiKeys("client"),
 			buttons = clientbuttons
 		}
 	},
+
 	{
 		rule = {
 			class = "QNetSoul"
@@ -31,12 +33,12 @@ awful.rules.rules = {
 				width	= 350,
 				height	= 450
 			})
-
 		end
 	},
+
 	{
 		rule = {
-			class = "Wpa_gui"
+			class = "wpa_gui"
 		},
 		properties = {
 			floating = true,
@@ -51,5 +53,6 @@ awful.rules.rules = {
 			})
 		end
 	}
+
 }
 -- }}}
