@@ -112,8 +112,21 @@ theme.border_width  = 5
 theme.border_normal = bg_theme
 theme.border_normal = "#424242"
 
+function kikoo_border_color(old_client_state)
+	local hex_digits = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" }
+
+	local function gen()
+		return hex_digits[math.random(16)]
+	end
+
+	local newColor = "#" .. gen() .. gen() .. gen() .. gen() .. gen() .. gen()
+	return newColor
+end
+
 --theme.border_focus  = "#FF9800" -- light orange
-theme.border_focus  = "#FF5722" -- Deep orange (500)
+--theme.border_focus  = "#FF5722" -- Deep orange (500)
+theme.border_focus  = kikoo_border_color
+theme.border_focus  = "#33B5E5" -- Android Blue
 theme.border_marked = "#CC9393"
 
 --theme.useless_gaps = "30"
