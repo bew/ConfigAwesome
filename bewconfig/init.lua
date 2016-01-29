@@ -870,16 +870,16 @@ function applauncher.grabber(mod, key, event)
 	local app_match = applauncher.binds[key]
 	if app_match then
 
+		notif_id.applauncher = utils.toast("Lanching " .. (app_match.cmd or app_match.desc or ""), {
+			title = "App Launcher",
+			replaces_id = notif_id.applauncher,
+		}).id
+
 		if app_match.cmd then -- bind is a cmd
 			awful.util.spawn(app_match.cmd)
 		elseif app_match.func then -- bind is a function
 			app_match.func()
 		end
-
-		notif_id.applauncher = utils.toast("Lanching " .. (app_match.cmd or app_match.desc or ""), {
-			title = "App Launcher",
-			replaces_id = notif_id.applauncher,
-		}).id
 
 	else
 		notif_id.applauncher = utils.toast("CANCEL", {
