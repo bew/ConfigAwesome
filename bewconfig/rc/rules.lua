@@ -10,8 +10,6 @@ awful.rules.rules = {
 	{
 		rule = { },
 		properties = {
-			border_width = theme.border_width,
-			border_color = theme.border_focus,
 			focus = true,
 			keys = Keymap.getCApiKeys("client"),
 			buttons = clientbuttons
