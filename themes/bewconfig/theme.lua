@@ -43,7 +43,7 @@ theme.wallpaper = theme.wallpapers[1]
 
 
 -- {{{ Local Vars
-local path = require("awful").util.getdir("config") .. "/themes/" .. theme.name
+local path = require("awful.util").getdir("config") .. "/themes/" .. theme.name
 theme.path = path
 
 local bg_theme = "#252525"
