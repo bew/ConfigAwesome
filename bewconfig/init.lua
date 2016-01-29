@@ -1421,9 +1421,23 @@ client.connect_signal("manage", function (c, startup)
 	end
 end)
 
+---------------------------------------------------------------
+-- Client focus / unfocus
+---------------------------------------------------------------
+
+local hex_digits = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" }
 client.connect_signal("focus", function(c)
-	c.border_color = theme.border_focus
+	--c.border_color = theme.border_focus
+	local function gen()
+		return hex_digits[math.random(16)]
+	end
+
+	local newColor = "#" .. gen() .. gen() .. gen() .. gen() .. gen() .. gen()
+	c.border_color = newColor
+
+	c.border_width = theme.border_width
 end)
+
 client.connect_signal("unfocus", function(c)
 	c.border_color = theme.border_normal
 end)
