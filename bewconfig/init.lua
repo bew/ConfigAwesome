@@ -34,7 +34,6 @@ local wibox = require("wibox")
 local naughty = require("naughty")
 local menubar = require("menubar")
 
-local lain = require("lain")
 local gears = require("gears")
 
 
@@ -595,6 +594,7 @@ km:add({
 
 
 --TODO: move theses commands
+-- thoses commands should accept a client / range of clients to move
 Command.register("move.client.left", function()
 	if not client.focus then return end
 	local c = client.focus
@@ -625,7 +625,7 @@ km:add({
 	press = Command.getFunction("move.client.left"),
 })
 km:add({
-	ctrl = { mod = "MAS", key = "j" },
+	ctrl = { mod = "MS", key = "j" },
 	press = Command.getFunction("move.client.left"),
 })
 
@@ -636,7 +636,7 @@ km:add({
 	press = Command.getFunction("move.client.right"),
 })
 km:add({
-	ctrl = { mod = "MAS", key = "k" },
+	ctrl = { mod = "MS", key = "k" },
 	press = Command.getFunction("move.client.right"),
 })
 
@@ -726,28 +726,28 @@ km:add({
 
 -- :move client down
 km:add({
-	ctrl = { mod = "MS", key = "j" },
+	ctrl = { mod = "MSA", key = "j" },
 	press = function()
 		awful.client.swap.bydirection("down")
 	end,
 })
 -- :move client up
 km:add({
-	ctrl = { mod = "MS", key = "k" },
+	ctrl = { mod = "MSA", key = "k" },
 	press = function()
 		awful.client.swap.bydirection("up")
 	end,
 })
 -- :move client left
 km:add({
-	ctrl = { mod = "MS", key = "h" },
+	ctrl = { mod = "MSA", key = "h" },
 	press = function()
 		awful.client.swap.bydirection("left")
 	end,
 })
 -- :move client right
 km:add({
-	ctrl = { mod = "MS", key = "l" },
+	ctrl = { mod = "MSA", key = "l" },
 	press = function()
 		awful.client.swap.bydirection("right")
 	end,
