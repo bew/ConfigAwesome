@@ -1190,7 +1190,7 @@ km:add({
 km:add({
 	ctrl = { key = "Pause" },
 	press = function ()
-		awful.util.spawn("/home/lesell_b/.bin/my_i3lock")
+		awful.util.spawn(os.getenv("HOME") .. "/.bin/i3locker")
 		naughty.notify({
 			text = "Locking...",
 			timeout = 0.5
