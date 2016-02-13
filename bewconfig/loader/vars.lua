@@ -13,7 +13,7 @@ beautiful.init(path)
 global.theme = beautiful.get()
 
 -- This is used later as the default terminal and editor to run.
-terminal = "xterm"
+terminal = "urxvt"
 geditor = "subl3"
 run_in_term_cmd = terminal .. " -e /bin/zsh -c "
 
@@ -45,8 +45,8 @@ config.default = {
 }
 
 config.apps = {
-	term = "xterm",
-	term2 = "urxvt",
+	term = "urxvt",
+	term2 = "xterm",
 	webrowser = "chromium",
 	webrowser2 = "luakit",
 	termEditor = os.getenv("EDITOR") or "vim",

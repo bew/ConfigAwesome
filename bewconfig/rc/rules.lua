@@ -17,6 +17,15 @@ awful.rules.rules = {
 	},
 
 	{
+		rule_any = {
+			class = { "URxvt", "XTerm" }
+		},
+		properties = {
+			size_hints_honor = false,
+		},
+	},
+
+	{
 		rule = {
 			class = "QNetSoul"
 		},

@@ -137,7 +137,7 @@ foreachScreen(function(s)
 	-- Each screen has its own tag table.
 	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
 	tags[1] = awful.tag({
-		"| no name |",
+		" Web",
 		"       ",
 		"| no name |",
 		"       ",
@@ -310,7 +310,7 @@ end, 60, true)
 ------------------------------------------------------------------------------------
 
 -- >> Reload
-local wEmergencyReload = wibox.widget.imagebox( theme.getIcon( "emergency", "rcReload" ), true)
+local wEmergencyReload = wibox.widget.imagebox( theme.getIcon("emergency", "rcReload"), true)
 wEmergencyReload:buttons(awful.util.table.join(
 awful.button({}, 1, function ()
 	awesome.restart()
@@ -318,7 +318,7 @@ end)
 ))
 
 -- >> Edit
-local wEmergencyEdit = wibox.widget.imagebox( theme.getIcon( "emergency", "rcEdit" ), true)
+local wEmergencyEdit = wibox.widget.imagebox( theme.getIcon("emergency", "rcEdit"), true)
 wEmergencyEdit:buttons(awful.util.table.join(
 awful.button({}, 1, function ()
 	awesome_edit()
