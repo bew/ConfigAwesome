@@ -487,6 +487,30 @@ local wpa_cli = {
 ------------------------------------------------------------------------------------
 
 local km = Keymap.new("global")
+
+-- TODO: theme switching on the fly
+-- :theme <which> [<what> = all]
+-- :theme dark statusbar
+-- :theme light
+
+-- :rc reload		(restart awesome)
+-- :rc info
+
+-- :lua <luacode>		(edit in vim ?)
+km:add({
+	ctrl = { mod = "M", key = "r" },
+	press = function ()
+		awful.prompt.run({ prompt = "   >>> Run Lua code: " },
+		mypromptbox[mouse.screen].widget,
+		function(...)
+			local ret = awful.util.eval(...)
+			utils.toast.debug(ret, {title = "Lua code result :"})
+		end, nil,
+		awful.util.getdir("cache") .. "/history_eval")
+	end,
+})
+
+
 -- :battery info
 km:add({
 	ctrl = { mod = "M", key = "b" },
@@ -508,12 +532,15 @@ km:add({
 ---------------------------------------------------------------
 
 -- Enter in Tag management Mode
--- :mode manage tag
+-- :mode manage tag				TODO: what is a mode ?
 -- :mmt
 km:add({
 	ctrl = { mod = "MC", key = "t" },
 	--press = Command.getFunction("mode.manage.tag")
 })
+
+-- Goto
+-- :goto <what> <position/fuzzy> <filter>
 
 -- :goto tag prev
 -- :goto tag previous
@@ -681,6 +708,8 @@ km:add({
 -- Client management
 ---------------------------------------------------------------
 
+-- See ':goto'
+
 -- :select client next
 km:add({
 	ctrl = { mod = "MA", key = "j" },
@@ -710,7 +739,7 @@ km:add({
 })
 
 --TODO: interactive finder (fuzzy ?) (with visual feedback as we type by marking matching client ?)
--- :find <what> <filter>
+-- :find <what> [<filter> = all]
 -- :find client
 -- :find client all      -- same as above
 -- :find client visible
@@ -720,6 +749,8 @@ km:add({
 
 
 -- In Layout Clients movement
+
+-- :move <what> [<where> = (intag / layout)] [<position> = interactive]
 
 -- :move client			(interactive mode: use hjkl to move the client)
 -- :mc
@@ -744,6 +775,7 @@ km:add({
 	press = function()
 		awful.client.swap.bydirection("left")
 	end,
+
 })
 -- :move client right
 km:add({
@@ -757,11 +789,11 @@ km:add({
 -- :move client last
 
 --TODO: swap :
+-- :swap <what> <first> [<second> = current]
 -- :swap client 3
 -- :swap client current 3  --same
 -- :swap client 3 current  --same
 
--- Goto client
 -- :goto client urgent
 -- :gcu
 km:add({
@@ -777,6 +809,7 @@ km:add({
 -- Terminal spawn
 ---------------------------------------------------------------
 
+-- see ':run'
 -- :spawn term
 km:add({
 	ctrl = { mod = "M", key = "t" },
@@ -794,10 +827,13 @@ km:add({
 -- Clients resize/move
 ---------------------------------------------------------------
 
--- :resize <what> <which>
--- :resize client current
+-- TODO: can we resize something else than client ?
+-- How about the ':mode resize' ?
+
+-- :resize [<what> = client] [<filter-one> = current]
+-- :resize
+-- :resize client current -- same
 -- :resize client mark
--- :resize			(default=client)
 
 km:add({
 	ctrl = { mod = "M", key = "l" },
@@ -808,7 +844,6 @@ km:add({
 	press = function () awful.tag.incmwfact(-0.05) end,
 })
 
--- See :move client
 --km:add({
 --	ctrl = { mod = "MS", key = "h" },
 --	press = function () awful.tag.incnmaster( 1) end,
@@ -848,6 +883,9 @@ km:add({
 -- App Launcher
 ---------------------------------------------------------------
 
+-- (replace :spawn ?)
+-- :run				(interactive)
+-- :run <what>
 local applauncher = {}
 
 -- key -> do_something
@@ -914,6 +952,24 @@ km:add({
 -- Wallpaper managment
 ---------------------------------------------------------------
 
+-- :wall [<position> = last] [<group> = current]
+-- :wall next
+-- :wall prev
+-- :wall last
+-- :wall 1242
+--
+-- group can be :
+-- * builtin group
+-- > all
+-- > last
+-- > next
+-- > prev
+-- * named group
+-- > fav(orite)
+-- > back(list)
+-- > theme:plane
+-- > theme:asia
+
 local currentWallpaperID = 1
 local lastWallpaperID = 0
 --- Select a new random wallpaper
@@ -947,14 +1003,16 @@ km:add({
 ---------------------------------------------------------------
 
 -- Main Commands:
--- :wifi		(on)
--- :nowifi		(off)
--- :network <args>
--- :wifi <args>
+-- :net <action> <args>
+-- :wifi <action> <args>
+
+-- aliases
+-- :wifi		(:wifi (enable / check ?))
+-- :nowifi		(:wifi disable)
 
 --- network checker
--- :network check
--- :ping		(alias ?)
+-- :net check
+-- :ping		(alias of :net check)
 km:add({
 	ctrl = { mod = "M", key = "g" },
 	press = function()
@@ -974,7 +1032,7 @@ km:add({
 })
 
 --- network infos
--- :network info
+-- :net info
 -- :wifi info
 km:add({
 	ctrl = { mod = "M", key = "n" },
@@ -999,7 +1057,8 @@ km:add({
 })
 
 --- network selector
--- :wifi connect
+-- :wifi connect [interactive]
+-- :wifi connect <ssid/id>
 km:add({
 	ctrl = { mod = "MC", key = "n" },
 	press = function()
@@ -1072,8 +1131,9 @@ km:add({
 -- Music
 ---------------------------------------------------------------
 
+-- :musik <action>
 -- :musik status
--- :musik infos
+-- :musik info
 -- :ms
 -- :mi
 km:add({
@@ -1094,6 +1154,7 @@ km:add({
 ---------------------------------------------------------------
 
 -- Volume control
+-- :audio increase
 -- :audio +
 km:add({
 	ctrl = { key = "XF86AudioRaiseVolume" },
@@ -1109,6 +1170,7 @@ km:add({
 		end)
 	end,
 })
+-- :audio decrease
 -- :audio -
 km:add({
 	ctrl = { key = "XF86AudioLowerVolume" },
@@ -1124,6 +1186,7 @@ km:add({
 		end)
 	end,
 })
+-- :audio mute
 -- :audio x
 km:add({
 	ctrl = { key = "XF86AudioMute" },
@@ -1144,6 +1207,13 @@ km:add({
 -- Brightness
 ---------------------------------------------------------------
 
+-- :bright <level>
+-- :bright max
+-- :bright med
+-- :bright low
+-- :bright auto		(possible ?)
+
+-- :bright +
 -- :brightness +
 km:add({
 	ctrl = { key = "XF86MonBrightnessDown" },
@@ -1314,6 +1384,11 @@ root.keys(Keymap.getCApiKeys("global"))
 ------------------------------------------------------------------------------------
 -- Client's keymap
 ------------------------------------------------------------------------------------
+
+-- :client <action>
+-- :client kill
+-- :client info
+-- :client set <option> = <value>		(ex :client set opacity = 1)
 
 -- Base keymap for clients
 Keymap.new("client"):add({
