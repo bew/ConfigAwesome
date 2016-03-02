@@ -110,6 +110,10 @@ Eventemitter.on("socket", function(event, args)
 	end
 end)
 
+Eventemitter.on("network::status", function(ev, args)
+	utils.toast.debug(args, { position = "bottom_left" })
+end)
+
 
 
 
@@ -210,45 +214,46 @@ do
 
 	wBatteryContainer:set_widget(wBattery)
 
-	Command.register("widget.updateBatteryStatus", function()
+	function updateFunction()
 		local status = Battery.infos.status
 		local perc = Battery.infos.perc
 
-		local statusStyle
-		if status == Battery.DISCHARGING then
+		local statusIcon, bg
+		if status == Battery.CHARGING then
+			bg = "#43A047"
+			statusIcon = ""
+		else
 			if perc <= 5 then
 				-- low
-				wBatteryContainer:set_bg("#F44336") -- red 500
-				statusStyle = ""
+				bg = "#F44336" -- red 500
+				statusIcon = ""
 			elseif perc <= 25 then
 				-- getting low
-				wBatteryContainer:set_bg("#FF9800") -- yellow
-				statusStyle = ""
+				bg = "#FF9800" -- yellow
+				statusIcon = ""
 			elseif perc <= 50 then
 				-- getting low
-				wBatteryContainer:set_bg("#FF9800") -- yellow
-				statusStyle = ""
+				bg = "#009688" -- teal
+				statusIcon = ""
 			elseif perc <= 75 then
 				-- not bad
-				wBatteryContainer:set_bg("#009688")
-				statusStyle = ""
+				bg = "#43A047" -- green
+				statusIcon = ""
 			else
 				-- good
-				wBatteryContainer:set_bg("#43A047")
-				statusStyle = ""
+				bg = "#43A047" -- green
+				statusIcon = ""
 			end
-		else
-			wBatteryContainer:set_bg("#43A047")
-			statusStyle = ""
 		end
 
+		wBatteryContainer:set_bg(bg)
 		percStyle = (perc == 100 and "FULL" or perc .. "%")
-		wBattery:set_text(" | " .. statusStyle .. " " .. percStyle .. " | ")
-	end)
+		wBattery:set_text(" | " .. statusIcon .. " " .. percStyle .. " | ")
+	end
 
 
-	Battery:on("percentage::changed", Command.getFunction("widget.updateBatteryStatus"))
-	Battery:on("status::changed", Command.getFunction("widget.updateBatteryStatus"))
+	Battery:on("percentage::changed", updateFunction)
+	Battery:on("status::changed", updateFunction)
 end
 
 
@@ -273,11 +278,20 @@ do
 
 	-- Add event reactions
 
+	-- change this ?
+	wBatteryLow:connect_signal("mouse::enter", function()
+		wBatteryLow.opacity = 0.3
+	end)
+
+	wBatteryLow:connect_signal("mouse::leave", function()
+		wBatteryLow.opacity = 1
+	end)
+
 	Battery:on("percentage::changed", function()
 		local perc = Battery.infos.perc
 		local status = Battery.infos.status
 
-		if perc <= 10 and status == "Discharging" then
+		if perc <= 10 and status == Battery.DISCHARGING then
 			wBatteryLow.visible = true
 			wBatteryLowText:set_text("BATTERY LOW (" .. perc .. "%)")
 		else
@@ -288,7 +302,7 @@ do
 	Battery:on("status::changed", function()
 		local status = Battery.infos.status
 
-		if status == "Charging" then
+		if status == Battery.CHARGING then
 			wBatteryLow.visible = false
 		end
 	end)
@@ -398,9 +412,7 @@ do
 		ontop = true,
 	})
 
-	local wBar = awful.widget.progressbar({
-		height = 10,
-	})
+	local wBar = awful.widget.progressbar()
 	wBar:set_max_value(100)
 	wBar:set_color("#4CAF50") -- green 500
 	wBar:set_background_color("#F44336") -- red 500
@@ -425,15 +437,19 @@ local w = wibox({
 w:set_bg("#03A9F4")
 
 local txtContent = wibox.widget.textbox("Content loading...") --degeuuuuuu
-local txtFooter = wibox.widget.textbox("Date loading...") --degeuuuuuu
-function toggle_w()
-	w.visible = not w.visible
-	if w.visible then
-		utils.async.getAll("acpi -b", function(stdout)
-			txtContent:set_text(stdout)
-		end)
-		txtFooter:set_text(os.date())
+
+function showAcpi()
+	function grabber(_, _, event)
+		capi.keygrabber.stop()
+		w.visible = false
 	end
+
+	w.visible = true
+	utils.async.getAll("acpi -b", function(stdout)
+		txtContent:set_text(stdout)
+	end)
+
+	capi.keygrabber.run(grabber)
 end
 
 -- populate w's wibox content
@@ -444,12 +460,12 @@ do
 	-- Header
 	do -- Title
 		local text = wibox.widget.textbox("Battery infos")
-		text:set_font("terminux 18")
+		text:set_font("terminus 18")
 		layHeader:set_middle(text)
 	end
 	do -- battery level
 		local text = wibox.widget.textbox(Battery.infos.perc .. "%")
-		text:set_font("terminux 18")
+		text:set_font("terminus 18")
 		layHeader:set_right(text)
 
 		Battery:on("percentage::changed", function(self, perc)
@@ -458,15 +474,9 @@ do
 	end
 	layMain:set_top(layHeader)
 
-
 	txtContent:set_align("center")
 	txtContent:set_font("terminux 18")
 	layMain:set_middle(txtContent)
-
-
-	txtFooter:set_align("center")
-	txtFooter:set_font("terminux 18")
-	layMain:set_bottom(txtFooter)
 
 	w:set_widget(layMain)
 end
@@ -514,16 +524,15 @@ km:add({
 -- :battery info
 km:add({
 	ctrl = { mod = "M", key = "b" },
-	press = toggle_w,
-	release = toggle_w,
+	press = showAcpi,
 })
 
 -- :quake
 km:add({
 	ctrl = { mod = "M", key = "y" },
 	press = function()
-		-- TODO: more customization on scratch drop, and persistance between restart
-		scratch.drop("xterm", {vert = "bottom", sticky = true})
+		-- TODO: more customization on scratch drop, and persistance between awesome restart
+		scratch.drop("urxvt", {vert = "bottom", sticky = true})
 	end,
 })
 
@@ -894,9 +903,9 @@ applauncher.binds = {
 		func = menubar.show,
 		desc = "MENUBAR",
 	},
-	t = { cmd = "xterm" },
-	["²"] = { cmd = "xterm" },
-	f = { cmd = "firefox" },
+	t = { cmd = config.apps.term },
+	["²"] = { cmd = config.apps.term },
+	f = { cmd = config.apps.webrowser },
 }
 
 -- TODO (maybe): reverse bind map : do_something -> { key, key, key, ... }
@@ -906,25 +915,27 @@ function applauncher.grabber(mod, key, event)
 	capi.keygrabber.stop()
 
 	local app_match = applauncher.binds[key]
-	if app_match then
-
-		notif_id.applauncher = utils.toast("Lanching " .. (app_match.cmd or app_match.desc or ""), {
-			title = "App Launcher",
-			replaces_id = notif_id.applauncher,
-		}).id
-
-		if app_match.cmd then -- bind is a cmd
-			awful.util.spawn(app_match.cmd)
-		elseif app_match.func then -- bind is a function
-			app_match.func()
-		end
-
-	else
+	if not app_match then
 		notif_id.applauncher = utils.toast("CANCEL", {
 			title = "App Launcher",
 			replaces_id = notif_id.applauncher,
 		}).id
 	end
+
+	notif_id.applauncher = utils.toast("Lanching " .. (app_match.cmd or app_match.desc or ""), {
+		title = "App Launcher",
+		replaces_id = notif_id.applauncher,
+	}).id
+
+	if app_match.cmd then -- bind is a cmd
+
+		-- TODO: a more async spawn system
+		awful.util.spawn(os.getenv("HOME") .. "/.bin/execit" .. " " .. app_match.cmd)
+
+	elseif app_match.func then -- bind is a function
+		app_match.func()
+	end
+
 end
 
 -- App Launcher trigger
@@ -1268,20 +1279,6 @@ km:add({
 	end,
 })
 
---for testing
-km:add({
-	ctrl = { mod = "M", key = "r" },
-	press = function ()
-		awful.prompt.run({ prompt = "   >>> Run Lua code: " },
-		mypromptbox[mouse.screen].widget,
-		function(...)
-			local ret = awful.util.eval(...)
-			utils.toast.debug(ret, {title = "Lua code result :"})
-		end, nil,
-		awful.util.getdir("cache") .. "/history_eval")
-	end,
-})
-
 ---------------------------------------------------------------
 -- Test keygrabber
 ---------------------------------------------------------------
@@ -1311,7 +1308,7 @@ km:add({
 				------------------------------------------
 				-- inner keygrabber
 				------------------------------------------
-				
+
 				specialKeys = awful.keygrabber.run(function(mod, key, event)
 					if not nbKeyGrabbed then
 						nbKeyGrabbed = 1
@@ -1341,7 +1338,7 @@ km:add({
 })
 
 ------------------------------------------
--- Test: Do something when mod press/release
+-- Test: Do something when modkey press/release
 ------------------------------------------
 
 -- FIXME: Very weird behavior when this is activated...
@@ -1375,8 +1372,9 @@ km:add({
 --})
 
 ------------------------------------------
-
 -- End of definition of 'global' Keymap
+------------------------------------------
+
 km = nil
 
 root.keys(Keymap.getCApiKeys("global"))
