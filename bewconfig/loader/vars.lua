@@ -29,9 +29,9 @@ global.layouts = {
 	awful.layout.suit.fair,
 	awful.layout.suit.fair.horizontal,
 	awful.layout.suit.floating,
-	--lain.layout.termfair, -- WTF ?
-	--lain.layout.uselessfair,
-	--lain.layout.uselesstile
+	lain.layout.termfair, -- WTF ?
+	lain.layout.uselessfair,
+	lain.layout.uselesstile,
 	treesome,
 }
 
@@ -47,7 +47,7 @@ config.default = {
 config.apps = {
 	term = "urxvt",
 	term2 = "xterm",
-	webrowser = "chromium",
+	webrowser = "firefox",
 	webrowser2 = "luakit",
 	termEditor = os.getenv("EDITOR") or "vim",
 	rcEditor = os.getenv("HOME") .. "/soft-portable/subl3"

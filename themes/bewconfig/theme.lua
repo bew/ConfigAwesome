@@ -111,7 +111,7 @@ theme.client_default_opacity = 0.85
 -- {{{ Borders
 theme.border_width  = 5
 theme.border_normal = bg_theme
-theme.border_normal = "#424242"
+theme.border_normal = "#202020"
 
 function kikoo_border_color(old_client_state)
 	local hex_digits = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" }
@@ -131,6 +131,7 @@ theme.border_focus  = "#33B5E5" -- Android Blue
 theme.border_marked = "#CC9393"
 
 --theme.useless_gaps = "30"
+theme.useless_gap_width = 30
 -- }}}
 
 -- {{{ Titlebars
