@@ -140,7 +140,7 @@ tags = {}
 foreachScreen(function(s)
 	-- Each screen has its own tag table.
 	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
-	tags[1] = awful.tag({
+	tags[s] = awful.tag({
 		" Web",
 		"       ",
 		"| no name |",
@@ -818,12 +818,13 @@ km:add({
 -- Terminal spawn
 ---------------------------------------------------------------
 
--- see ':run'
+-- FIXME: see ':run'
 -- :spawn term
 km:add({
 	ctrl = { mod = "M", key = "t" },
 	press = function () awful.util.spawn(global.config.apps.term) end,
 })
+
 -- :spawn term2
 km:add({
 	ctrl = { mod = "MA", key = "t" },
@@ -1009,6 +1010,19 @@ km:add({
 	end,
 })
 
+-- manage wallpaper (currently, just show info)
+km:add({
+	ctrl = { mod = "MC", key = "w" },
+	press = function()
+		local infos = ""
+		infos = infos .. "Current : [" .. currentWallpaperID .. "] " .. theme.wallpapers[currentWallpaperID] .. "\n"
+		if lastWallpaperID > 0 then
+			infos = infos .. "Last : [" .. lastWallpaperID .. "] " .. theme.wallpapers[lastWallpaperID]
+		end
+		notif_id.wallpaper = utils.toast(infos, { title = "=== Wallpaper Managment ===", replaces_id = notif_id.wallpaper }).id
+	end,
+})
+
 ---------------------------------------------------------------
 -- Network management
 ---------------------------------------------------------------
@@ -1022,7 +1036,7 @@ km:add({
 -- :nowifi		(:wifi disable)
 
 --- network checker
--- :net check
+-- :net check [<host> = google.fr]
 -- :ping		(alias of :net check)
 km:add({
 	ctrl = { mod = "M", key = "g" },
@@ -1034,7 +1048,7 @@ km:add({
 		}).id
 		utils.async.getAll("ping " .. host .. " -c 1 -w 1", function(stdout)
 			notif_id.ping = utils.toast(stdout, {
-				title = "===== Ping google.fr result =====",
+				title = "===== Ping " .. host .. " result =====",
 				position = "bottom_right",
 				replaces_id = notif_id.ping
 			}).id
