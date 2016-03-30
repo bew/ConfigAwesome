@@ -141,19 +141,17 @@ foreachScreen(function(s)
 	-- Each screen has its own tag table.
 	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
 	tags[s] = awful.tag({
-		" Web",
-		"       ",
-		"| no name |",
-		"       ",
-		"| no name |",
-		"       ",
-		"| no name |",
-		"       ",
-		"| no name |",
-		"       ",
-		"| no name |",
-		"       ",
-		"| no name |",
+		" WEB ",
+		"      ",
+		"      ",
+		"      ",
+		"      ",
+		"      ",
+		"      ",
+		"      ",
+		"      ",
+		"      ",
+		"      ",
 	}, s, global.layouts[1])
 end)
 -- }}}
@@ -251,7 +249,6 @@ do
 		wBattery:set_text(" | " .. statusIcon .. " " .. percStyle .. " | ")
 	end
 
-
 	Battery:on("percentage::changed", updateFunction)
 	Battery:on("status::changed", updateFunction)
 end
@@ -317,6 +314,54 @@ utils.setInterval(function()
 end, 60, true)
 
 
+-- Network infos
+------------------------------------------
+
+local wNetwork
+do
+	-- container
+	wNetwork = wibox.widget.background()
+
+	local wStatus = wibox.widget.textbox()
+	wNetwork:set_widget(wStatus)
+
+	local last_status = ""
+	local ssid = ""
+	local ip
+	function update()
+		local text = " NET : "
+
+		if #ssid > 0 then
+			text = text .. ssid .. " "
+		end
+
+		if ip then
+			text = text .. "[IP]"
+		else
+			text = text .. "[NO IP]"
+		end
+
+		wStatus:set_text(text)
+	end
+	update()
+
+	Eventemitter.on("network::dhcp", function(ev, args)
+		local reason = args.reason
+
+		if reason == "BOUND" or reason == "RENEW" then
+			ip = args.new_ip_address
+		else
+			ip = false
+		end
+		if reason == "CARRIER" then
+			ssid = args.ifssid
+		elseif reason == "NOCARRIER" then
+			ssid = ""
+		end
+		last_status = reason
+		update()
+	end)
+end
 
 
 ------------------------------------------------------------------------------------
@@ -378,7 +423,8 @@ foreachScreen(function (s)
 		if s == 1 then
 			right_layout:add(wibox.widget.systray())
 		end
-		right_layout:add(wClock)
+		right_layout:add(wNetwork)
+		-- right_layout:add(wClock)
 		right_layout:add(wBatteryGraph)
 		right_layout:add(wBatteryContainer)
 		right_layout:add(wLayoutSwitcher[s])
@@ -440,6 +486,8 @@ local txtContent = wibox.widget.textbox("Content loading...") --degeuuuuuu
 
 function showAcpi()
 	function grabber(_, _, event)
+		-- I was trying to handle long-press, visually it works,
+		-- but internally it really doesn't work :(
 		capi.keygrabber.stop()
 		w.visible = false
 	end
@@ -546,6 +594,13 @@ km:add({
 km:add({
 	ctrl = { mod = "MC", key = "t" },
 	--press = Command.getFunction("mode.manage.tag")
+	press = function()
+
+		local cmds = {
+			"a"
+		}
+
+	end,
 })
 
 -- Goto
