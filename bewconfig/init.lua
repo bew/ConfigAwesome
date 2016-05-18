@@ -16,6 +16,7 @@ local std = {
 
 local capi = {
 	timer = timer,
+	tag = tag,
 	client = client,
 	awesome = awesome,
 	key = key,
@@ -141,17 +142,7 @@ foreachScreen(function(s)
 	-- Each screen has its own tag table.
 	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
 	tags[s] = awful.tag({
-		" WEB ",
-		"      ",
-		"      ",
-		"      ",
-		"      ",
-		"      ",
-		"      ",
-		"      ",
-		"      ",
-		"      ",
-		"      ",
+		" default ",
 	}, s, global.layouts[1])
 end)
 -- }}}
@@ -182,7 +173,7 @@ menubar.geometry = {
 
 -- {{{ Wibox
 -- Create a textclock widget
-wClock = awful.widget.textclock()
+wTime = awful.widget.textclock(" %H:%M ")
 
 -- Create a wibox for each screen and add it
 topbar = {}
@@ -412,11 +403,16 @@ foreachScreen(function (s)
 		layEmergency:add( wEmergencyReload )
 		layEmergency:add( wEmergencyEdit )
 
+		local spacer = wibox.widget.textbox("      ")
+
 		-- Tags layout
 		local tagsLayout = wibox.layout.fixed.horizontal()
 		tagsLayout:add(mytaglist[s])
 
-		tagsLayout:add(mypromptbox[s]) --temp
+		local left_layout = wibox.layout.fixed.horizontal()
+		left_layout:add(layEmergency)
+		left_layout:add(spacer)
+		left_layout:add(tagsLayout)
 
 		-- Widgets that are aligned to the right
 		local right_layout = wibox.layout.fixed.horizontal()
@@ -424,15 +420,15 @@ foreachScreen(function (s)
 			right_layout:add(wibox.widget.systray())
 		end
 		right_layout:add(wNetwork)
-		-- right_layout:add(wClock)
+		right_layout:add(wTime)
 		right_layout:add(wBatteryGraph)
 		right_layout:add(wBatteryContainer)
 		right_layout:add(wLayoutSwitcher[s])
 
 		local layTopbar = wibox.layout.align.horizontal()
-		layTopbar:set_middle(tagsLayout)
+		layTopbar:set_left(left_layout)
+		layTopbar:set_middle(mypromptbox[s])
 		layTopbar:set_right(right_layout)
-		layTopbar:set_left(layEmergency)
 
 		topbar[s] = awful.wibox({ position = "top", screen = s })
 		topbar[s]:set_widget(layTopbar)
@@ -703,9 +699,65 @@ Command.register("move.client.right", function()
 	local idx = awful.tag.getidx()
 	local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
 
-	awful.client.movetotag(tags[c.screen][new_idx])
-	awful.tag.viewonly(tags[c.screen][new_idx])
+	local new_tag = tags[c.screen][new_idx]
+
+	awful.client.movetotag(new_tag)
+	awful.tag.viewonly(new_tag)
 	client.focus = c
+end)
+
+Command.register("move.tag.left", function()
+	local idx = awful.tag.getidx()
+	local new_idx = awful.util.cycle(#awful.tag.gettags(mouse.screen), idx - 1)
+	local current_tag = awful.tag.selected(mouse.screen)
+
+	awful.tag.move(new_idx, current_tag)
+	awful.tag.viewonly(current_tag)
+end)
+
+Command.register("move.tag.right", function()
+	local idx = awful.tag.getidx()
+	local new_idx = awful.util.cycle(#awful.tag.gettags(mouse.screen), idx + 1)
+	local current_tag = awful.tag.selected(mouse.screen)
+
+	awful.tag.move(new_idx, current_tag)
+	awful.tag.viewonly(current_tag)
+end)
+
+Command.register("add.tag.right", function()
+	local current_tag = awful.tag.selected(mouse.screen)
+	local idx = awful.tag.getidx()
+	local new_idx = idx + 1
+	local new_tag = awful.tag.add(" new ", {
+		layout = awful.tag.getproperty(current_tag, "layout")
+	})
+
+	awful.tag.move(new_idx, new_tag)
+	awful.tag.viewonly(new_tag)
+end)
+
+Command.register("delete.tag.current", function()
+	local current_tag = awful.tag.selected(mouse.screen)
+
+	local confirm_notif = utils.toast("Y / N", {
+		title = "Delete this tag ?",
+	})
+
+	function delete_tag()
+		awful.tag.delete(current_tag)
+	end
+
+	keygrabber.run(function(mod, key, event)
+		if event == "release" then return true end
+		keygrabber.stop()
+		naughty.destroy(confirm_notif)
+
+		if key == "y" then
+			delete_tag()
+		end
+		return true
+	end)
+
 end)
 
 -- Move client on tag Left/Right
@@ -729,6 +781,37 @@ km:add({
 km:add({
 	ctrl = { mod = "MS", key = "k" },
 	press = Command.getFunction("move.client.right"),
+})
+
+-- :move tag left
+-- :%mtr
+km:add({
+	ctrl = { mod = "M", key = "h" },
+	press = Command.getFunction("move.tag.left"),
+})
+
+-- :move tag right
+-- :%mtr
+km:add({
+	ctrl = { mod = "M", key = "l" },
+	press = Command.getFunction("move.tag.right"),
+})
+
+
+-- :add tag right
+-- :%atr
+km:add({
+	ctrl = { mod = "M", key = "i" },
+	press = Command.getFunction("add.tag.right"),
+})
+
+-- :delete tag
+-- :delete tag current
+-- :%dt
+-- :%dtc
+km:add({
+	ctrl = { mod = "M", key = "d" },
+	press = Command.getFunction("delete.tag.current"),
 })
 
 
