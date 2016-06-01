@@ -69,7 +69,7 @@ theme.bg_systray = theme.bg_normal
 
 -- {{{ Icons
 theme.icon = {}
-theme.addIcon = function (folder, name)
+function theme.addIcon(folder, name)
 	if name == nil then
 		name = folder
 		folder = nil
@@ -86,7 +86,7 @@ theme.addIcon = function (folder, name)
 	return ipath
 end
 
-theme.getIcon = function (folder, name)
+function theme.getIcon(folder, name)
 	if name == nil then
 		name = folder
 		folder = nil
@@ -113,20 +113,8 @@ theme.border_width  = 5
 theme.border_normal = bg_theme
 theme.border_normal = "#202020"
 
-function kikoo_border_color(old_client_state)
-	local hex_digits = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" }
-
-	local function gen()
-		return hex_digits[math.random(16)]
-	end
-
-	local newColor = "#" .. gen() .. gen() .. gen() .. gen() .. gen() .. gen()
-	return newColor
-end
-
 --theme.border_focus  = "#FF9800" -- light orange
 --theme.border_focus  = "#FF5722" -- Deep orange (500)
-theme.border_focus  = kikoo_border_color
 theme.border_focus  = "#33B5E5" -- Android Blue
 theme.border_marked = "#CC9393"
 
@@ -147,6 +135,8 @@ theme.titlebar_bg_normal = bg_theme
 -- tooltip_[font|opacity|fg_color|bg_color|border_width|border_color]
 -- Example:
 theme.taglist_bg_focus = "#009688"
+
+theme.taglist_fg_empty = "#555555"
 -- }}}
 
 -- {{{ Widgets
@@ -175,9 +165,11 @@ theme.menu_width  = 100
 
 -- {{{ Icons
 -- {{{ Taglist
-theme.taglist_squares_sel   = "/usr/share/awesome/themes/zenburn/taglist/squarefz.png"
-theme.taglist_squares_unsel = "/usr/share/awesome/themes/zenburn/taglist/squarez.png"
---theme.taglist_squares_resize = "false"
+theme.taglist_squares_sel   = theme.addIcon("taglist", "squarefz")
+theme.taglist_squares_unsel   = theme.addIcon("taglist", "squarez")
+
+-- FIXME: this option is not implemented in awful.widget.taglist ... ><
+theme.taglist_squares_resize = "true"
 -- }}}
 
 -- {{{ Layout
@@ -195,34 +187,6 @@ theme.layout_magnifier  = theme.addIcon("layouts", "magnifier")
 theme.layout_floating   = theme.addIcon("layouts", "floating")
 
 theme.layout_treesome   = theme.addIcon("layouts", "treesome")
--- }}}
-
--- {{{ Titlebar
---[[
-theme.titlebar_close_button_focus  = "/usr/share/awesome/themes/zenburn/titlebar/close_focus.png"
-theme.titlebar_close_button_normal = "/usr/share/awesome/themes/zenburn/titlebar/close_normal.png"
-
-theme.titlebar_ontop_button_focus_active  = "/usr/share/awesome/themes/zenburn/titlebar/ontop_focus_active.png"
-theme.titlebar_ontop_button_normal_active = "/usr/share/awesome/themes/zenburn/titlebar/ontop_normal_active.png"
-theme.titlebar_ontop_button_focus_inactive  = "/usr/share/awesome/themes/zenburn/titlebar/ontop_focus_inactive.png"
-theme.titlebar_ontop_button_normal_inactive = "/usr/share/awesome/themes/zenburn/titlebar/ontop_normal_inactive.png"
-
-theme.titlebar_sticky_button_focus_active  = "/usr/share/awesome/themes/zenburn/titlebar/sticky_focus_active.png"
-theme.titlebar_sticky_button_normal_active = "/usr/share/awesome/themes/zenburn/titlebar/sticky_normal_active.png"
-theme.titlebar_sticky_button_focus_inactive  = "/usr/share/awesome/themes/zenburn/titlebar/sticky_focus_inactive.png"
-theme.titlebar_sticky_button_normal_inactive = "/usr/share/awesome/themes/zenburn/titlebar/sticky_normal_inactive.png"
-
-theme.titlebar_floating_button_focus_active  = "/usr/share/awesome/themes/zenburn/titlebar/floating_focus_active.png"
-theme.titlebar_floating_button_normal_active = "/usr/share/awesome/themes/zenburn/titlebar/floating_normal_active.png"
-theme.titlebar_floating_button_focus_inactive  = "/usr/share/awesome/themes/zenburn/titlebar/floating_focus_inactive.png"
-theme.titlebar_floating_button_normal_inactive = "/usr/share/awesome/themes/zenburn/titlebar/floating_normal_inactive.png"
-
-theme.titlebar_maximized_button_focus_active  = "/usr/share/awesome/themes/zenburn/titlebar/maximized_focus_active.png"
-theme.titlebar_maximized_button_normal_active = "/usr/share/awesome/themes/zenburn/titlebar/maximized_normal_active.png"
-theme.titlebar_maximized_button_focus_inactive  = "/usr/share/awesome/themes/zenburn/titlebar/maximized_focus_inactive.png"
-theme.titlebar_maximized_button_normal_inactive = "/usr/share/awesome/themes/zenburn/titlebar/maximized_normal_inactive.png"
---]]
--- }}}
 -- }}}
 
 return theme
