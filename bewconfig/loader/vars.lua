@@ -1,10 +1,10 @@
 local awful = require("awful")
 local beautiful = require("beautiful")
 local global = require("global")
-local lain = require("lain") --for layout
-local treesome = require("treesome") --for layout
 
-local utils = require("bewlib.utils")
+-- layouts
+local lain = require("lain")
+local treesome = require("treesome")
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
@@ -50,15 +50,7 @@ config.apps = {
 	webrowser = "firefox",
 	webrowser2 = "luakit",
 	termEditor = os.getenv("EDITOR") or "vim",
-	rcEditor = os.getenv("HOME") .. "/soft-portable/subl3"
-}
-
-const = {
-	mouseLeft = 1,
-	mouseRight = 2,
-	mouseMiddle = 3,
-	mouseScrollUp = 4,
-	mouseScrollDown = 5,
+	rcEditor = os.getenv("EDITOR") or "vim",
 }
 
 -- }}}

@@ -1,4 +1,5 @@
 local Keymap = require("bewlib.keymap")
+local Const = require("bewlib.const")
 
 local Command = require("bewlib.command")
 

@@ -10,9 +10,9 @@ Last update Wed Apr 15 16:00:29 CEST 2015
 --]]
 
 -- Grab environnement
-local std = {
-	debug = debug,
-}
+--local std = {
+--	debug = debug,
+--}
 
 local capi = {
 	timer = timer,
@@ -54,14 +54,12 @@ local Eventemitter = require("bewlib.eventemitter")
 
 local Remote = require("bewlib.remote")
 
-function loadFile(path)
-	local success
-	local result
 
-	local path = global.confInfos.path .. "/" .. path .. ".lua"
+local function loadFile(file)
+	local path = global.confInfos.path .. "/" .. file .. ".lua"
 
 	-- Execute the file
-	local success, err = pcall(function() return dofile(path) end)
+	local success, err = pcall(dofile, path)
 	if not success then
 		naughty.notify({
 			title = "Error while loading file",
@@ -122,35 +120,24 @@ end)
 -- Load some commands
 loadFile("cmds/goto")
 
-function foreachScreen(callback)
-	if callback == nil then
-		return
-	end
 
-	local s
-	for s = 1, screen.count() do
-		callback(s)
-	end
+
+-- {{{ default tag
+for s = 1, capi.screen.count() do
+	awful.tag({
+		" blank ",
+	}, s, global.availableLayouts.tile)
 end
-
-
-
--- {{{ Tags
--- Define a tag table which hold all screen tags.
-tags = {}
-foreachScreen(function(s)
-	-- Each screen has its own tag table.
-	-- tags[s] = awful.tag({ "Web", "Divers", 3, 4, 5, "Code", "Code", 8, "Misc" }, s, layouts[1])
-	tags[s] = awful.tag({
-		" default ",
-	}, s, global.layouts[1])
-end)
 -- }}}
 
+
+
 -- Edit the config file
-function awesome_edit()
+local function awesome_edit()
 	local function spawnInTerm(cmd)
-		awful.util.spawn(run_in_term_cmd .. "'" .. cmd .. "'")
+		local term = global.config.apps.term
+		local termcmd = term .. " -e /bin/zsh -c "
+		awful.util.spawn(termcmd .. "'" .. cmd .. "'")
 	end
 
 	spawnInTerm("cd " .. awful.util.getdir("config") .. " && " .. config.apps.termEditor .. " " .. "rc.lua")
@@ -161,7 +148,7 @@ end
 
 -- {{{ Menu
 -- Menubar configuration
-menubar.utils.terminal = terminal -- Set the terminal for applications that require it
+menubar.utils.terminal = global.config.apps.term
 menubar.geometry = {
 	x = 0,
 	y = 0,
@@ -173,19 +160,17 @@ menubar.geometry = {
 
 -- {{{ Wibox
 -- Create a textclock widget
-wTime = awful.widget.textclock(" %H:%M ")
+local wTime = awful.widget.textclock(" %H:%M ")
 
 -- Create a wibox for each screen and add it
-topbar = {}
-bottombar = {}
-
-wLayoutSwitcher = {}
+local topbar = {}
+local wLayoutSwitcher = {}
 
 
 
 
 -- Tag list config
-mytaglist = {}
+local mytaglist = {}
 mytaglist.buttons = awful.util.table.join(
 awful.button({			}, 1, awful.tag.viewonly),
 awful.button({ modkey 	}, 1, awful.client.movetotag)
@@ -203,7 +188,7 @@ do
 
 	wBatteryContainer:set_widget(wBattery)
 
-	function updateFunction()
+	local function updateFunction()
 		local status = Battery.infos.status
 		local perc = Battery.infos.perc
 
@@ -236,7 +221,7 @@ do
 		end
 
 		wBatteryContainer:set_bg(bg)
-		percStyle = (perc == 100 and "FULL" or perc .. "%")
+		local percStyle = (perc == 100 and "FULL" or perc .. "%")
 		wBattery:set_text(" | " .. statusIcon .. " " .. percStyle .. " | ")
 	end
 
@@ -297,7 +282,7 @@ do
 end
 
 -- TODO: recode a graph widget
-wBatteryGraph = awful.widget.graph({})
+local wBatteryGraph = awful.widget.graph({})
 wBatteryGraph:set_color("#424242")
 wBatteryGraph:set_max_value(100)
 utils.setInterval(function()
@@ -316,10 +301,10 @@ do
 	local wStatus = wibox.widget.textbox()
 	wNetwork:set_widget(wStatus)
 
-	local last_status = ""
+	--local last_status = ""
 	local ssid = ""
 	local ip
-	function update()
+	local function update()
 		local text = " NET : "
 
 		if #ssid > 0 then
@@ -349,7 +334,7 @@ do
 		elseif reason == "NOCARRIER" then
 			ssid = ""
 		end
-		last_status = reason
+		--last_status = reason
 		update()
 	end)
 end
@@ -380,11 +365,11 @@ end)
 
 
 --temp
-mypromptbox = {}
+local mypromptbox = {}
 
 -- TODO: This should be per workspace definition,
 -- or this should define the look of the default workspace
-foreachScreen(function (s)
+for s = 1, capi.screen.count() do
 
 	-- Top Bar
 	do
@@ -433,13 +418,11 @@ foreachScreen(function (s)
 		topbar[s] = awful.wibox({ position = "top", screen = s })
 		topbar[s]:set_widget(layTopbar)
 	end
-end)
+end
 -- }}}
 
 
 
-
-local wibox = require("wibox")
 
 -- BatteryBar
 do
@@ -480,8 +463,8 @@ w:set_bg("#03A9F4")
 
 local txtContent = wibox.widget.textbox("Content loading...") --degeuuuuuu
 
-function showAcpi()
-	function grabber(_, _, event)
+local function showAcpi()
+	local function grabber(_, _, _)
 		-- I was trying to handle long-press, visually it works,
 		-- but internally it really doesn't work :(
 		capi.keygrabber.stop()
@@ -513,7 +496,7 @@ do
 		layHeader:set_right(text)
 
 		Battery:on("percentage::changed", function(self, perc)
-			text:set_text(Battery.infos.perc .. "%")
+			text:set_text(perc .. "%")
 		end)
 	end
 	layMain:set_top(layHeader)
@@ -555,7 +538,7 @@ km:add({
 	ctrl = { mod = "M", key = "r" },
 	press = function ()
 		awful.prompt.run({ prompt = "   >>> Run Lua code: " },
-		mypromptbox[mouse.screen].widget,
+		mypromptbox[capi.mouse.screen].widget,
 		function(...)
 			local ret = awful.util.eval(...)
 			utils.toast.debug(ret, {title = "Lua code result :"})
@@ -571,12 +554,12 @@ km:add({
 	press = showAcpi,
 })
 
--- :quake
+-- :guake
 km:add({
 	ctrl = { mod = "M", key = "y" },
 	press = function()
 		-- TODO: more customization on scratch drop, and persistance between awesome restart
-		scratch.drop("urxvt", {vert = "bottom", sticky = true})
+		scratch.drop(global.config.apps.term, {vert = "bottom", sticky = true})
 	end,
 })
 
@@ -659,8 +642,8 @@ km:add({
 
 --TODO: move this command
 Command.register("rename.tag", function()
-	local tag = awful.tag.selected(mouse.screen)
-	awful.prompt.run({ prompt="Rename tag: " }, mypromptbox[mouse.screen].widget,
+	local tag = awful.tag.selected(capi.mouse.screen)
+	awful.prompt.run({ prompt = "Rename tag: " }, mypromptbox[capi.mouse.screen].widget,
 	function(text)
 		if text:len() > 0 then
 			tag.name = " " .. text .. " "
@@ -683,33 +666,35 @@ km:add({
 --TODO: move theses commands
 -- thoses commands should accept a client / range of clients to move
 Command.register("move.client.left", function()
-	if not client.focus then return end
-	local c = client.focus
+	if not capi.client.focus then return end
+	local c = capi.client.focus
 	local idx = awful.tag.getidx()
-	local new_idx = (idx == 1 and #tags[c.screen] or idx - 1)
+	local new_idx = awful.util.cycle(#awful.tag.gettags(c.screen), idx - 1)
 
-	awful.client.movetotag(tags[c.screen][new_idx])
-	awful.tag.viewonly(tags[c.screen][new_idx])
-	client.focus = c
-end)
-
-Command.register("move.client.right", function()
-	if not client.focus then return end
-	local c = client.focus
-	local idx = awful.tag.getidx()
-	local new_idx = (idx == #tags[c.screen] and 1 or idx + 1)
-
-	local new_tag = tags[c.screen][new_idx]
+	local new_tag = awful.tag.gettags(c.screen)[new_idx]
 
 	awful.client.movetotag(new_tag)
 	awful.tag.viewonly(new_tag)
-	client.focus = c
+	capi.client.focus = c
+end)
+
+Command.register("move.client.right", function()
+	if not capi.client.focus then return end
+	local c = capi.client.focus
+	local idx = awful.tag.getidx()
+	local new_idx = awful.util.cycle(#awful.tag.gettags(c.screen), idx + 1)
+
+	local new_tag = awful.tag.gettags(c.screen)[new_idx]
+
+	awful.client.movetotag(new_tag)
+	awful.tag.viewonly(new_tag)
+	capi.client.focus = c
 end)
 
 Command.register("move.tag.left", function()
 	local idx = awful.tag.getidx()
-	local new_idx = awful.util.cycle(#awful.tag.gettags(mouse.screen), idx - 1)
-	local current_tag = awful.tag.selected(mouse.screen)
+	local new_idx = awful.util.cycle(#awful.tag.gettags(capi.mouse.screen), idx - 1)
+	local current_tag = awful.tag.selected(capi.mouse.screen)
 
 	awful.tag.move(new_idx, current_tag)
 	awful.tag.viewonly(current_tag)
@@ -717,15 +702,15 @@ end)
 
 Command.register("move.tag.right", function()
 	local idx = awful.tag.getidx()
-	local new_idx = awful.util.cycle(#awful.tag.gettags(mouse.screen), idx + 1)
-	local current_tag = awful.tag.selected(mouse.screen)
+	local new_idx = awful.util.cycle(#awful.tag.gettags(capi.mouse.screen), idx + 1)
+	local current_tag = awful.tag.selected(capi.mouse.screen)
 
 	awful.tag.move(new_idx, current_tag)
 	awful.tag.viewonly(current_tag)
 end)
 
 Command.register("add.tag.right", function()
-	local current_tag = awful.tag.selected(mouse.screen)
+	local current_tag = awful.tag.selected(capi.mouse.screen)
 	local idx = awful.tag.getidx()
 	local new_idx = idx + 1
 	local new_tag = awful.tag.add(" new ", {
@@ -737,17 +722,17 @@ Command.register("add.tag.right", function()
 end)
 
 Command.register("delete.tag.current", function()
-	local current_tag = awful.tag.selected(mouse.screen)
+	local current_tag = awful.tag.selected(capi.mouse.screen)
 
 	local confirm_notif = utils.toast("Y / N", {
 		title = "Delete this tag ?",
 	})
 
-	function delete_tag()
+	local function delete_tag()
 		awful.tag.delete(current_tag)
 	end
 
-	keygrabber.run(function(mod, key, event)
+	keygrabber.run(function(_, key, event)
 		if event == "release" then return true end
 		keygrabber.stop()
 		naughty.destroy(confirm_notif)
@@ -760,7 +745,7 @@ Command.register("delete.tag.current", function()
 
 end)
 
--- Move client on tag Left/Right
+-- Move client to tag Left/Right
 -- :move client tag left
 -- :%mctl
 km:add({
@@ -786,14 +771,14 @@ km:add({
 -- :move tag left
 -- :%mtr
 km:add({
-	ctrl = { mod = "M", key = "h" },
+	ctrl = { mod = "MS", key = "h" },
 	press = Command.getFunction("move.tag.left"),
 })
 
 -- :move tag right
 -- :%mtr
 km:add({
-	ctrl = { mod = "M", key = "l" },
+	ctrl = { mod = "MS", key = "l" },
 	press = Command.getFunction("move.tag.right"),
 })
 
@@ -840,8 +825,9 @@ km:add({
 				utils.toast.debug("QUIT !!!!!!!")
 				awesome.quit()
 			else
+				--TODO: utils.toast.info
 				--utils.toast.info("Awesome Quit canceled")
-				utils.toast.debug("Awesome Quit canceled (TODO: toast.info)")
+				utils.toast.debug("Awesome Quit canceled")
 			end
 		end)
 	end,
@@ -1128,7 +1114,7 @@ km:add({
 	press = function()
 		local walls = theme.wallpapers
 		local selectedID = math.random(#walls) or 1
-		gears.wallpaper.maximized(walls[selectedID], capi.mouse.screen, true)
+		gears.wallpaper.maximized(walls[selectedID], capi.mouse.screen)
 		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
 
 		lastWallpaperID = (lastWallpaperID == 0 and 1 or currentWallpaperID)
@@ -1139,9 +1125,8 @@ km:add({
 km:add({
 	ctrl = { mod = "MS", key = "w" },
 	press = function()
-		local walls = theme.wallpapers
 		local selectedID = lastWallpaperID
-		gears.wallpaper.maximized(theme.wallpapers[selectedID], capi.mouse.screen, true)
+		gears.wallpaper.maximized(theme.wallpapers[selectedID], capi.mouse.screen)
 		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
 
 		currentWallpaperID, lastWallpaperID = lastWallpaperID, currentWallpaperID
@@ -1203,7 +1188,7 @@ km:add({
 		utils.async.getAll(wpa_cli.cmd .. "status", function(stdout)
 
 			if not stdout or stdout == "" then
-				utils.toast("Please run 'wifi' in a terminal", { title = "Wifi is not ACTIVATED" })
+				utils.toast("Please start wpa_supplicant", { title = "Wifi is not ACTIVATED" })
 				return
 			end
 
@@ -1264,7 +1249,7 @@ km:add({
 			naughty.destroy(help_notif)
 
 			if networks[key] then
-				utils.async.justExec(wpa_cli.cmd .. "select_network " .. networks[key].id, function()
+				utils.async(wpa_cli.cmd .. "select_network " .. networks[key].id, function()
 					notif_id.net_selector = utils.toast("Trying to connect...", {
 						title = "Network '" .. networks[key].name .. "' selected",
 						replaces_id = notif_id.net_selector
@@ -1423,7 +1408,7 @@ km:add({
 km:add({
 	ctrl = { key = "Pause" },
 	press = function ()
-		awful.util.spawn(os.getenv("HOME") .. "/.bin/i3locker")
+		awful.util.spawn_with_shell("i3locker")
 		naughty.notify({
 			text = "Locking...",
 			timeout = 0.5
