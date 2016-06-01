@@ -12,27 +12,30 @@ local path = awful.util.getdir("config") .. "/themes/bewconfig/theme.lua"
 beautiful.init(path)
 global.theme = beautiful.get()
 
--- This is used later as the default terminal and editor to run.
-terminal = "urxvt"
-geditor = "subl3"
-run_in_term_cmd = terminal .. " -e /bin/zsh -c "
-
 modkey = "Mod4"
-altkey = "Mod1"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
+global.availableLayouts = {
+	floating = awful.layout.suit.floating,
+	tile = awful.layout.suit.tile,
+	tileleft = awful.layout.suit.tile.left,
+	tilebottom = awful.layout.suit.tile.bottom,
+	tiletop = awful.layout.suit.tile.top,
+	fair = awful.layout.suit.fair,
+	fairh = awful.layout.suit.fair.horizontal,
+	uselessfair = lain.layout.uselessfair,
+	uselesstile = lain.layout.uselesstile,
+	treesome = treesome,
+}
+
 global.layouts = {
-	awful.layout.suit.tile,
-	--awful.layout.suit.tile.left,
-	awful.layout.suit.tile.bottom,
-	--awful.layout.suit.tile.top,
-	awful.layout.suit.fair,
-	awful.layout.suit.fair.horizontal,
-	awful.layout.suit.floating,
-	lain.layout.termfair, -- WTF ?
-	lain.layout.uselessfair,
-	lain.layout.uselesstile,
-	treesome,
+	global.availableLayouts.tile,
+	global.availableLayouts.tileleft,
+	global.availableLayouts.tilebottom,
+	global.availableLayouts.tiletop,
+	global.availableLayouts.uselesstile,
+	global.availableLayouts.treesome,
+	global.availableLayouts.floating,
 }
 
 local config = {}

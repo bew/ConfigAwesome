@@ -45,6 +45,8 @@ local scratch = require("scratch")
 
 local global = require("global")
 
+local MsgPack = require("MessagePack") -- used for config backup
+
 --[[ My lib ]]--
 local utils = require("bewlib.utils")
 local Keymap = require("bewlib.keymap")
@@ -1697,6 +1699,157 @@ debugSignal(keyobj, "release", true)
 -- put in event "config::load"
 loadFile("rc/run_once")
 
+
+---------------------------------------------------------------
+-- Register some exit hooks -- TODO: move this..
+---------------------------------------------------------------
+
+capi.awesome.connect_signal("exit", function(restart)
+	if restart then
+		Eventemitter.emit("awesome::restart")
+	else
+		Eventemitter.emit("awesome::exit")
+	end
+end)
+
+
+------------------------------------------------------------------------------------
+-- Save / reload between awesome restart's
+------------------------------------------------------------------------------------
+
+local backup_file_path = "/tmp/awesome_backup_restart"
+
+-- Save hook
+---------------------------------------------------------------
+
+Eventemitter.on("awesome::restart", function()
+	
+	utils.log("making backup")
+
+	-- Construct backup
+	------------------------------------------
+
+	local backup = {
+		screens = {},
+	}
+
+	for screen_num = 1, capi.screen.count() do
+		utils.log("backup screen " .. screen_num)
+		local screen_tags = awful.tag.gettags(screen_num)
+
+		local screen_info = {
+			--nb_tags = #screen_tags,
+			tags = {},
+		}
+
+		for _, tag in ipairs(screen_tags) do
+			local tag_info = {
+				name = tag.name,
+				selected = tag.selected,
+				activated = tag.activated,
+				layout = awful.tag.getproperty(tag, "layout").name,
+			}
+			table.insert(screen_info.tags, tag_info)
+		end
+
+		table.insert(backup.screens, screen_num, screen_info)
+	end
+
+	-- Save backup to tmp file
+	------------------------------------------
+
+	utils.log(backup)
+
+	--local backup_serial = MsgPack.pack(backup)
+	local status, backup_serial_or_error = pcall(MsgPack.pack, backup)
+	if not status then
+		utils.log("Error while packing backup through MsgPack: " .. backup_serial_or_error)
+		return
+	end
+	local backup_serial = backup_serial_or_error
+
+	local file, open_err = io.open(backup_file_path, "w")
+	if not file then
+		utils.log("Cannot open backup file : " .. open_err)
+		return
+	end
+
+	do
+		local ok, write_err = file:write(backup_serial)
+		if not ok then
+			utils.toast.error(write_err, { title = "Cannot write to backup file" })
+		end
+	end
+	file:close()
+	utils.log("backup finished")
+end)
+
+-- Restore hook
+---------------------------------------------------------------
+
+Eventemitter.on("config::load", function()
+
+	-- Extract backup from tmp file
+	------------------------------------------
+
+	local backup
+
+	do
+		local file = io.open(backup_file_path, "r")
+		if not file then
+			return
+		end
+
+		local backup_serial = file:read("*a")
+		local status, backup_or_error = pcall(MsgPack.unpack, backup_serial)
+		if not status then
+			utils.toast.error(backup_or_error, { title = "Cannot convert backup to Lua table" })
+			return
+		end
+		backup = backup_or_error
+
+		file:close()
+	end
+
+	-- Restore backup
+	-- FIXME: put all this 'restore' code into a pcall to protect against failure ?
+	------------------------------------------
+
+
+	-- for each known screen
+	for screen_num = 1, capi.screen.count() do
+		local screen_info = backup.screens[screen_num]
+
+		local before_restore_screen_tags = awful.tag.gettags(screen_num)
+
+		for _, tag_info in ipairs(screen_info.tags) do
+			local new_tag = awful.tag.add(tag_info.name, {
+				screen = screen_num,
+			})
+
+			new_tag.selected = tag_info.selected
+			new_tag.activated = tag_info.activated
+
+			if global.layouts[tag_info.layout] then
+				awful.tag.setproperty(new_tag, "layout", global.availableLayouts[tag_info.layout])
+			end
+		end
+
+		local after_restore_screen_tags = awful.tag.gettags(screen_num)
+
+		if #after_restore_screen_tags > #before_restore_screen_tags then
+			for _, old_tag in ipairs(before_restore_screen_tags) do
+				awful.tag.delete(old_tag)
+			end
+		end
+
+	end
+
+end)
+
+------------------------------------------------------------------------------------
+-- Config loaded, trigger some events ;)
+------------------------------------------------------------------------------------
 
 Eventemitter.emit("config::load") -- give params ?
 
