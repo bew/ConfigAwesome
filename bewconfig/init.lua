@@ -1820,6 +1820,10 @@ Eventemitter.on("config::load", function()
 	for screen_num = 1, capi.screen.count() do
 		local screen_info = backup.screens[screen_num]
 
+		if not screen_info then
+			goto continue
+		end
+
 		local before_restore_screen_tags = awful.tag.gettags(screen_num)
 
 		for _, tag_info in ipairs(screen_info.tags) do
@@ -1830,7 +1834,7 @@ Eventemitter.on("config::load", function()
 			new_tag.selected = tag_info.selected
 			new_tag.activated = tag_info.activated
 
-			if global.layouts[tag_info.layout] then
+			if global.availableLayouts[tag_info.layout] then
 				awful.tag.setproperty(new_tag, "layout", global.availableLayouts[tag_info.layout])
 			end
 		end
@@ -1843,6 +1847,7 @@ Eventemitter.on("config::load", function()
 			end
 		end
 
+		::continue::
 	end
 
 end)
