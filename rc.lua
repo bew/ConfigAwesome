@@ -7,15 +7,18 @@ local awful = require("awful")
 local naughty = require("naughty")
 
 local themeLoader = true
-local loadError= nil
+local loadError = nil
 
-local rc;
+-- Init randomness
+math.randomseed(os.time())
+
+local _
 if themeLoader then
-	rc, global_err = loadfile(awful.util.getdir("config") .. "/ThemeLoader/init.lua");
-	if rc then
-		rc, global_err = pcall(rc);
-		if rc then
-			return;
+	local f, err = loadfile(awful.util.getdir("config") .. "/ThemeLoader/init.lua")
+	if not err then
+		_, err = pcall(f)
+		if not err then
+			return
 		end
 	end
 end

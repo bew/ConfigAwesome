@@ -8,6 +8,9 @@
 
 -- {{{ Main
 
+local module = {}
+module.name, module.path = ...
+
 local theme = {}
 
 theme.name = "bewconfig"
@@ -37,7 +40,10 @@ end
 
 theme.wallpapers = getWallpapers()
 
-theme.wallpaper = theme.wallpapers[1]
+do
+	local random_wall_idx = math.random(1, #theme.wallpapers)
+	theme.wallpaper = theme.wallpapers[random_wall_idx]
+end
 -- }}}
 
 

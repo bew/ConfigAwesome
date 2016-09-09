@@ -38,6 +38,8 @@ global.layouts = {
 	global.availableLayouts.floating,
 }
 
+awful.util.shell = "zsh"
+
 local config = {}
 global.config = config
 

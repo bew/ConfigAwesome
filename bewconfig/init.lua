@@ -577,10 +577,6 @@ km:add({
 	--press = Command.getFunction("mode.manage.tag")
 	press = function()
 
-		local cmds = {
-			"a"
-		}
-
 	end,
 })
 
@@ -947,15 +943,16 @@ km:add({
 -- FIXME: see ':run'
 -- :spawn term
 km:add({
-	ctrl = { mod = "M", key = "t" },
+	--ctrl = { mod = "M", key = "t" },
+	ctrl = { mod = "M", key = "Return" }, -- fallback, I don't use it
 	press = function () awful.util.spawn(global.config.apps.term) end,
 })
 
--- :spawn term2
-km:add({
-	ctrl = { mod = "MA", key = "t" },
-	press = function () awful.util.spawn(global.config.apps.term2) end,
-})
+---- :spawn term2
+--km:add({
+--	ctrl = { mod = "MA", key = "t" },
+--	press = function () awful.util.spawn(global.config.apps.term2) end,
+--})
 
 
 
@@ -1448,6 +1445,7 @@ km:add({
 				-- inner keygrabber
 				------------------------------------------
 
+				-- luacheck: ignore mod key event
 				specialKeys = awful.keygrabber.run(function(mod, key, event)
 					if not nbKeyGrabbed then
 						nbKeyGrabbed = 1
@@ -1613,7 +1611,7 @@ loadFile("rc/rules")
 -- Signal function to execute when a new client appears.
 client.connect_signal("manage", function (c, startup)
 	-- Enable sloppy focus
-	c:connect_signal("mouse::enter", function(c)
+	c:connect_signal("mouse::enter", function()
 		if awful.layout.get(c.screen) ~= awful.layout.suit.magnifier
 			and awful.client.focus.filter(c) then
 			client.focus = c
