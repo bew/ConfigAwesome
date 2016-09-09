@@ -61,7 +61,7 @@ for i = 1, #confList do
 	naughty.notify({
 		title = "#> ThemeLoader : Theme '" .. confList[i].name .. "' crashed during startup on " .. os.date("%d/%m/%Y %T"),
 		text = "Theme path: " .. confList[i].path .. "/init.lua\n"
-			.. "Error:\n\n" .. err .. "\n",
+			.. "Error:\n\n" .. err .. "\n" .. debug.traceback(),
 		timeout = 0
 	})
 end
