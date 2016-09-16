@@ -283,13 +283,73 @@ do
 	end)
 end
 
--- TODO: recode a graph widget
-local wBatteryGraph = awful.widget.graph({})
-wBatteryGraph:set_color("#424242")
-wBatteryGraph:set_max_value(100)
-utils.setInterval(function()
-	wBatteryGraph:add_value(Battery.infos.perc)
-end, 60, true)
+
+-- Mini cmus player
+---------------------------------------------------------------
+
+local wMusicCtrl, cmus_show_infos
+do
+	wMusicCtrl = wibox.widget.textbox("")
+	wMusicCtrl:set_font("Awesome 10")
+
+	local symbols = {
+		play = "",
+		pause = "",
+		stop = "",
+		--prev = "",
+		--next = "",
+	}
+	-- init: after configuration load, launch a full status update
+
+
+	local cmus_state  = {
+		["status"] = "N/A",
+		["file"]  = "N/A",
+		["duration"]  = "N/A",
+	}
+	local function cmus_full_update()
+
+		-- Get data from cmus 
+		local f = io.popen("cmus-remote -Q")
+		if not f then return end
+
+		for line in f:lines() do
+			for k, v in string.gmatch(line, "([%w]+)[%s](.*)$") do
+				if cmus_state[k] then
+					cmus_state[k] = v
+				end
+			end
+		end
+		f:close()
+
+		cmus_state.filepath = cmus_state.file
+		cmus_state.file = string.match(cmus_state.filepath, "([^/]*)$")
+	end
+
+	function cmus_show_infos()
+		local str
+		if cmus_state.status == "playing" then
+			str = symbols.play .. " " .. cmus_state.file
+		elseif cmus_state.status == "paused" then
+			str = symbols.pause .. " " .. cmus_state.file
+		elseif cmus_state.status == "stopped" then
+			str = symbols.stop .. " " .. cmus_state.file
+		else
+			str = cmus_state.status
+		end
+		utils.toast(str, {title = "Cmus update"})
+	end
+
+	local function cmus_event_update(ev, args)
+		--temp:
+		cmus_full_update()
+
+		cmus_show_infos()
+	end
+
+	Eventemitter.on("cmus", cmus_event_update)
+	Eventemitter.on("config::load", cmus_event_update)
+end
 
 
 -- Network infos
@@ -408,8 +468,8 @@ for s = 1, capi.screen.count() do
 		end
 		right_layout:add(wNetwork)
 		right_layout:add(wTime)
-		right_layout:add(wBatteryGraph)
 		right_layout:add(wBatteryContainer)
+		right_layout:add(wMusicCtrl)
 		right_layout:add(wLayoutSwitcher[s])
 
 		local layTopbar = wibox.layout.align.horizontal()
@@ -1284,15 +1344,9 @@ km:add({
 -- :ms
 -- :mi
 km:add({
-	ctrl = { mod = "MA", key = "m" },
+	ctrl = { mod = "MC", key = "m" },
 	press = function()
-		utils.async.getAll("mpc status", function(stdout)
-			notif_id.music_info = utils.toast(stdout, {
-				title = "==== Current Track Status ====",
-				position = "bottom_left",
-				replaces_id = notif_id.music_info
-			}).id
-		end)
+		cmus_show_infos()
 	end,
 })
 
