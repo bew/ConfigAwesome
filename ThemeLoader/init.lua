@@ -3,11 +3,11 @@
 -----------------
 -- by Bew78LesellB - 2015
 
-local awful = require("awful")
 local naughty = require("naughty")
 local global = require("global")
 
-local confdir = awful.util.getdir("config")
+--local confdir = require("awful.util").getdir("config")
+local confdir = os.getenv("HOME") .. "/.awesome-master/config/awesome/"
 
 local confList = {
 	{
@@ -20,12 +20,12 @@ local confList = {
 	}
 }
 
-function addPackagePath(dirPath)
+local function addPackagePath(dirPath)
 	package.path = package.path .. ";" .. dirPath .. "/?.lua;"
 	package.path = package.path .. ";" .. dirPath .. "/?/init.lua;"
 end
 
-function loadConf(confpath)
+local function loadConf(confpath)
 	local rc, err = loadfile(confpath);
 
 	if rc then

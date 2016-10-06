@@ -3,18 +3,19 @@
 
 -- package.path = package.path .. ";./lib/?.lua;"
 
-local awful = require("awful")
 local naughty = require("naughty")
 
 local themeLoader = true
 local loadError = nil
+
+local cwd = debug.getinfo(1).source:match("@?(.*/)")
 
 -- Init randomness
 math.randomseed(os.time())
 
 local _
 if themeLoader then
-	local f, err = loadfile(awful.util.getdir("config") .. "/ThemeLoader/init.lua")
+	local f, err = loadfile(cwd .. "/ThemeLoader/init.lua")
 	if not err then
 		_, err = pcall(f)
 		if not err then

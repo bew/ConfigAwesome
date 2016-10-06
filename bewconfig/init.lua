@@ -125,10 +125,10 @@ loadFile("cmds/goto")
 
 
 -- {{{ default tag
-for s = 1, capi.screen.count() do
+for screen in capi.screen do
 	awful.tag({
 		" blank ",
-	}, s, global.availableLayouts.tile)
+	}, screen, global.availableLayouts.tile)
 end
 -- }}}
 
@@ -162,7 +162,7 @@ menubar.geometry = {
 
 -- {{{ Wibox
 -- Create a textclock widget
-local wTime = awful.widget.textclock(" %H:%M ")
+local wTime = wibox.widget.textclock(" %H:%M ")
 
 -- Create a wibox for each screen and add it
 local topbar = {}
@@ -184,7 +184,7 @@ awful.button({ modkey 	}, 1, awful.client.movetotag)
 -- Battery widget (in statusbar)
 local wBatteryContainer
 do
-	wBatteryContainer = wibox.widget.background()
+	wBatteryContainer = wibox.container.background()
 	local wBattery = wibox.widget.textbox()
 	wBattery:set_font("Awesome 10")
 
@@ -236,7 +236,7 @@ end
 do
 	-- Define widget
 
-	local screen_geom = capi.screen[capi.mouse.screen].geometry
+	local screen_geom = screen.primary.geometry
 	local wBatteryLow = wibox({
 		width = 300,
 		height = 50,
@@ -358,7 +358,7 @@ end
 local wNetwork
 do
 	-- container
-	wNetwork = wibox.widget.background()
+	wNetwork = wibox.container.background()
 
 	local wStatus = wibox.widget.textbox()
 	wNetwork:set_widget(wStatus)
@@ -431,7 +431,7 @@ local mypromptbox = {}
 
 -- TODO: This should be per workspace definition,
 -- or this should define the look of the default workspace
-for s = 1, capi.screen.count() do
+for s in capi.screen do
 
 	-- Top Bar
 	do
@@ -477,7 +477,7 @@ for s = 1, capi.screen.count() do
 		layTopbar:set_middle(mypromptbox[s])
 		layTopbar:set_right(right_layout)
 
-		topbar[s] = awful.wibox({ position = "top", screen = s })
+		topbar[s] = awful.wibar({ position = "top", screen = s })
 		topbar[s]:set_widget(layTopbar)
 	end
 end
@@ -488,7 +488,7 @@ end
 
 -- BatteryBar
 do
-	local screen_geom = capi.screen[capi.mouse.screen].geometry
+	local screen_geom = screen.primary.geometry
 	local wBatteryBar = wibox({
 		x = 0,
 		y = screen_geom.height - 5,
@@ -499,7 +499,7 @@ do
 		ontop = true,
 	})
 
-	local wBar = awful.widget.progressbar()
+	local wBar = wibox.widget.progressbar()
 	wBar:set_max_value(100)
 	wBar:set_color("#4CAF50") -- green 500
 	wBar:set_background_color("#F44336") -- red 500
@@ -700,7 +700,7 @@ km:add({
 
 --TODO: move this command
 Command.register("rename.tag", function()
-	local tag = awful.tag.selected(capi.mouse.screen)
+	local tag = capi.mouse.screen.selected_tag
 	awful.prompt.run({ prompt = "Rename tag: " }, mypromptbox[capi.mouse.screen].widget,
 	function(text)
 		if text:len() > 0 then
@@ -725,69 +725,68 @@ km:add({
 -- thoses commands should accept a client / range of clients to move
 Command.register("move.client.left", function()
 	if not capi.client.focus then return end
+
 	local c = capi.client.focus
-	local idx = awful.tag.getidx()
-	local new_idx = awful.util.cycle(#awful.tag.gettags(c.screen), idx - 1)
+	local tag = c.screen.selected_tag
+	local new_idx = awful.util.cycle(#c.screen.tags, tag.index - 1)
 
-	local new_tag = awful.tag.gettags(c.screen)[new_idx]
+	local new_tag = c.screen.tags[new_idx]
 
-	awful.client.movetotag(new_tag)
-	awful.tag.viewonly(new_tag)
+	c:move_to_tag(new_tag)
+	new_tag:view_only()
 	capi.client.focus = c
 end)
 
 Command.register("move.client.right", function()
 	if not capi.client.focus then return end
+
 	local c = capi.client.focus
-	local idx = awful.tag.getidx()
-	local new_idx = awful.util.cycle(#awful.tag.gettags(c.screen), idx + 1)
+	local tag = c.screen.selected_tag
+	local new_idx = awful.util.cycle(#c.screen.tags, tag.index + 1)
 
-	local new_tag = awful.tag.gettags(c.screen)[new_idx]
+	local new_tag = c.screen.tags[new_idx]
 
-	awful.client.movetotag(new_tag)
-	awful.tag.viewonly(new_tag)
+	c:move_to_tag(new_tag)
+	new_tag:view_only()
 	capi.client.focus = c
 end)
 
 Command.register("move.tag.left", function()
-	local idx = awful.tag.getidx()
-	local new_idx = awful.util.cycle(#awful.tag.gettags(capi.mouse.screen), idx - 1)
-	local current_tag = awful.tag.selected(capi.mouse.screen)
+	local tag = capi.mouse.screen.selected_tag
+	local new_idx = awful.util.cycle(#capi.mouse.screen.tags, tag.index - 1)
 
-	awful.tag.move(new_idx, current_tag)
-	awful.tag.viewonly(current_tag)
+	tag.index = new_idx
+	tag:view_only()
 end)
 
 Command.register("move.tag.right", function()
-	local idx = awful.tag.getidx()
-	local new_idx = awful.util.cycle(#awful.tag.gettags(capi.mouse.screen), idx + 1)
-	local current_tag = awful.tag.selected(capi.mouse.screen)
+	local tag = capi.mouse.screen.selected_tag
+	local new_idx = awful.util.cycle(#capi.mouse.screen.tags, tag.index + 1)
 
-	awful.tag.move(new_idx, current_tag)
-	awful.tag.viewonly(current_tag)
+	tag.index = new_idx
+	tag:view_only()
 end)
 
 Command.register("add.tag.right", function()
-	local current_tag = awful.tag.selected(capi.mouse.screen)
-	local idx = awful.tag.getidx()
-	local new_idx = idx + 1
+	local tag = capi.mouse.screen.selected_tag
+	local new_idx = tag.index + 1
 	local new_tag = awful.tag.add(" new ", {
-		layout = awful.tag.getproperty(current_tag, "layout")
+		layout = tag.layout,
 	})
 
-	awful.tag.move(new_idx, new_tag)
-	awful.tag.viewonly(new_tag)
+	new_tag.index = new_idx
+	new_tag:view_only()
 end)
 
 Command.register("delete.tag.current", function()
-	local current_tag = awful.tag.selected(capi.mouse.screen)
+	local tag = capi.mouse.screen.selected_tag
 
 	local confirm_notif = utils.toast("Y / N", {
 		title = "Delete this tag ?",
 	})
 
 	local function delete_tag()
-		awful.tag.delete(current_tag)
+		tag:delete()
 	end
 
 	keygrabber.run(function(_, key, event)
@@ -1010,7 +1009,7 @@ km:add({
 km:add({
 	--ctrl = { mod = "M", key = "t" },
 	ctrl = { mod = "M", key = "Return" }, -- fallback, I don't use it
-	press = function () awful.util.spawn(global.config.apps.term) end,
+	press = function () awful.spawn(global.config.apps.term) end,
 })
 
 ---- :spawn term2
@@ -1109,6 +1108,7 @@ function applauncher.grabber(mod, key, event)
 			title = "App Launcher",
 			replaces_id = notif_id.applauncher,
 		}).id
+		return
 	end
 
 	notif_id.applauncher = utils.toast("Lanching " .. (app_match.cmd or app_match.desc or ""), {
@@ -1119,7 +1119,7 @@ function applauncher.grabber(mod, key, event)
 	if app_match.cmd then -- bind is a cmd
 
 		-- TODO: a more async spawn system
-		awful.util.spawn(os.getenv("HOME") .. "/.bin/execit" .. " " .. app_match.cmd)
+		awful.spawn(os.getenv("HOME") .. "/.bin/execit" .. " " .. app_match.cmd)
 
 	elseif app_match.func then -- bind is a function
 		app_match.func()
@@ -1790,9 +1790,9 @@ Eventemitter.on("awesome::restart", function()
 		screens = {},
 	}
 
-	for screen_num = 1, capi.screen.count() do
-		utils.log("backup screen " .. screen_num)
-		local screen_tags = awful.tag.gettags(screen_num)
+	for screen in capi.screen do
+		utils.log("backup screen " .. tostring(screen))
+		local screen_tags = screen.tags
 
 		local screen_info = {
 			--nb_tags = #screen_tags,
@@ -1809,7 +1809,7 @@ Eventemitter.on("awesome::restart", function()
 			table.insert(screen_info.tags, tag_info)
 		end
 
-		table.insert(backup.screens, screen_num, screen_info)
+		table.insert(backup.screens, screen.index, screen_info)
 	end
 
 	-- Save backup to tmp file
@@ -1874,18 +1874,18 @@ Eventemitter.on("config::load", function()
 
 
 	-- for each known screen
-	for screen_num = 1, capi.screen.count() do
-		local screen_info = backup.screens[screen_num]
+	for screen in capi.screen do
+		local screen_info = backup.screens[screen.index]
 
 		if not screen_info then
 			goto continue
 		end
 
-		local before_restore_screen_tags = awful.tag.gettags(screen_num)
+		local before_restore_screen_tags = screen.tags
 
 		for _, tag_info in ipairs(screen_info.tags) do
 			local new_tag = awful.tag.add(tag_info.name, {
-				screen = screen_num,
+				screen = screen,
 			})
 
 			new_tag.selected = tag_info.selected
@@ -1896,11 +1896,11 @@ Eventemitter.on("config::load", function()
 			end
 		end
 
-		local after_restore_screen_tags = awful.tag.gettags(screen_num)
+		local after_restore_screen_tags = screen.tags
 
 		if #after_restore_screen_tags > #before_restore_screen_tags then
 			for _, old_tag in ipairs(before_restore_screen_tags) do
-				awful.tag.delete(old_tag)
+				old_tag:delete()
 			end
 		end
 
