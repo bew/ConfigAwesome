@@ -18,4 +18,5 @@ globals = {
 	"selection",
 	"tag",
 	"timer",
+	"modkey",
 }

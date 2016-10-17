@@ -161,25 +161,6 @@ menubar.geometry = {
 
 
 -- {{{ Wibox
--- Create a textclock widget
-local wTime = wibox.widget.textclock(" %H:%M ")
-
--- Create a wibox for each screen and add it
-local topbar = {}
-local wLayoutSwitcher = {}
-
-
-
-
--- Tag list config
-local mytaglist = {}
-mytaglist.buttons = awful.util.table.join(
-awful.button({			}, 1, awful.tag.viewonly),
-awful.button({ modkey 	}, 1, awful.client.movetotag)
-)
-
-
-
 
 -- Battery widget (in statusbar)
 local wBatteryContainer
@@ -243,13 +224,21 @@ do
 		x = screen_geom.width / 2 - 100,
 		y = screen_geom.height - 50,
 		ontop = true,
-		opacity = 1
-	});
-	wBatteryLow:set_bg("#FF6565")
-	local wBatteryLowText = wibox.widget.textbox("BATTERY LOW") --pas beau...
-	wBatteryLowText:set_align("center")
-	wBatteryLowText:set_font("terminux 18")
-	wBatteryLow:set_widget(wBatteryLowText)
+	})
+
+	wBatteryLow:setup {
+		id = "w_back",
+
+		layout = wibox.container.background,
+		bg = "#FF6565",
+
+		{
+			id = "w_text",
+			widget = wibox.widget.textbox,
+			align = "center",
+			font = "terminux 18",
+		},
+	}
 
 	-- Add event reactions
 
@@ -266,9 +255,14 @@ do
 		local perc = Battery.infos.perc
 		local status = Battery.infos.status
 
-		if perc <= 10 and status == Battery.DISCHARGING then
+		utils.toast.debug(Battery.infos)
+
+		if perc <= 20 and status == Battery.DISCHARGING then
+			utils.toast.debug("show battery low")
+			utils.log(wBatteryLow)
 			wBatteryLow.visible = true
-			wBatteryLowText:set_text("BATTERY LOW (" .. perc .. "%)")
+			local text = wBatteryLow.w_back.w_text
+			text:set_text("BATTERY LOW (" .. perc .. "%)")
 		else
 			wBatteryLow.visible = false
 		end
@@ -426,61 +420,75 @@ end)
 
 
 
---temp
-local mypromptbox = {}
+-- Create a textclock widget
+local wTime = wibox.widget.textclock(" %H:%M ")
+
+-- Create a wibox for each screen and add it
+local topbar = {}
+
+-- Tag list config
+local mytaglist = {}
+mytaglist.buttons = awful.util.table.join(
+awful.button({			}, 1, awful.tag.viewonly),
+awful.button({ modkey 	}, 1, awful.client.movetotag)
+)
+
+
 
 -- TODO: This should be per workspace definition,
 -- or this should define the look of the default workspace
-for s in capi.screen do
+awful.screen.connect_for_each_screen(function(s)
 
-	-- Top Bar
-	do
-		wLayoutSwitcher[s] = awful.widget.layoutbox(s)
-		wLayoutSwitcher[s]:buttons(awful.util.table.join(
-		awful.button({ }, 1, function () awful.layout.inc(global.layouts,  1) end),
-		awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
-		))
+	local spacer = wibox.widget.textbox("      ")
 
-		mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
-		mypromptbox[s] = awful.widget.prompt()
+	s.my_layout_switcher = awful.widget.layoutbox(s)
+	s.my_layout_switcher:buttons(awful.util.table.join(
+	awful.button({ }, 1, function () awful.layout.inc(global.layouts,  1) end),
+	awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
+	))
 
-		-- Emergency widgets
-		local layEmergency = wibox.layout.fixed.horizontal()
-		layEmergency:add( wibox.widget.textbox("RC: ") )
-		layEmergency:add( wEmergencyReload )
-		layEmergency:add( wEmergencyEdit )
+	mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
+	s.mypromptbox = awful.widget.prompt()
 
-		local spacer = wibox.widget.textbox("      ")
+	topbar[s] = awful.wibar({ position = "top", screen = s })
 
-		-- Tags layout
-		local tagsLayout = wibox.layout.fixed.horizontal()
-		tagsLayout:add(mytaglist[s])
+	topbar[s]:setup {
+		layout = wibox.layout.align.horizontal,
 
-		local left_layout = wibox.layout.fixed.horizontal()
-		left_layout:add(layEmergency)
-		left_layout:add(spacer)
-		left_layout:add(tagsLayout)
+		-- Left
+		{
+			layout = wibox.layout.fixed.horizontal,
 
-		-- Widgets that are aligned to the right
-		local right_layout = wibox.layout.fixed.horizontal()
-		if s == 1 then
-			right_layout:add(wibox.widget.systray())
-		end
-		right_layout:add(wNetwork)
-		right_layout:add(wTime)
-		right_layout:add(wBatteryContainer)
-		right_layout:add(wMusicCtrl)
-		right_layout:add(wLayoutSwitcher[s])
+			-- Emergency widgets
+			{
+				layout = wibox.layout.fixed.horizontal,
 
-		local layTopbar = wibox.layout.align.horizontal()
-		layTopbar:set_left(left_layout)
-		layTopbar:set_middle(mypromptbox[s])
-		layTopbar:set_right(right_layout)
+				{
+					widget = wibox.widget.textbox,
+					text = "RC: ",
+				},
+				wEmergencyReload,
+				wEmergencyEdit,
+			},
+			spacer,
+			mytaglist[s],
+		},
+		-- Middle
+		s.mypromptbox,
+		-- Right
+		{
+			layout = wibox.layout.fixed.horizontal,
 
-		topbar[s] = awful.wibar({ position = "top", screen = s })
-		topbar[s]:set_widget(layTopbar)
-	end
-end
+			wibox.widget.systray(),
+			wNetwork,
+			wTime,
+			wBatteryContainer,
+			wMusicCtrl,
+			s.my_layout_switcher,
+		},
+	}
+
+end)
 -- }}}
 
 
@@ -499,78 +507,86 @@ do
 		ontop = true,
 	})
 
-	local wBar = wibox.widget.progressbar()
-	wBar:set_max_value(100)
-	wBar:set_color("#4CAF50") -- green 500
-	wBar:set_background_color("#F44336") -- red 500
+	wBatteryBar:setup {
+		id = "w_bar",
+		widget = wibox.widget.progressbar,
 
-	wBatteryBar:set_widget(wBar)
+		max_value = 100,
+		color = "#4CAF50", -- green 500
+		background_color = "#F44336", -- red 500
+	}
 
 	Battery:on("percentage::changed", function()
 		local perc = Battery.infos.perc
-		wBar:set_value(perc)
+		wBatteryBar.w_bar:set_value(perc)
 	end)
 end
 
 
-
-local w = wibox({
+local wBatteryInfos = wibox({
 	width = 300,
 	height = 300,
 	x = 300,
 	y = 100,
 	ontop = true,
 })
-w:set_bg("#03A9F4")
+wBatteryInfos:set_bg("#03A9F4")
 
-local txtContent = wibox.widget.textbox("Content loading...") --degeuuuuuu
+-- populate wBatteryInfos's wibox content
+do
+	local w_perc = wibox.widget.textbox(Battery.infos.perc .. "%")
+	w_perc:set_font("terminus 18")
+
+	-- Header
+	wBatteryInfos:setup {
+		id = "w_main",
+		layout = wibox.layout.align.vertical,
+
+		{
+			-- top
+			layout = wibox.layout.align.horizontal,
+
+			{
+				-- Title
+				widget = wibox.widget.textbox,
+				text = "Battery infos",
+				font = "terminus 18",
+			},
+			w_perc,
+		},
+		{
+			-- middle
+			id = "w_content",
+			widget = wibox.widget.textbox,
+
+			text = "Content loading",
+			align = "center",
+			font = "terminux 18",
+		}
+	}
+
+	Battery:on("percentage::changed", function(self, perc)
+		w_perc:set_text(perc .. "%")
+	end)
+end
+
+
 
 local function showAcpi()
 	local function grabber(_, _, _)
 		-- I was trying to handle long-press, visually it works,
 		-- but internally it really doesn't work :(
 		capi.keygrabber.stop()
-		w.visible = false
+		wBatteryInfos.visible = false
 	end
 
-	w.visible = true
-	utils.async.getAll("acpi -b", function(stdout)
-		txtContent:set_text(stdout)
+	wBatteryInfos.visible = true
+	awful.spawn.easy_async("acpi -b", function(stdout)
+		wBatteryInfos.w_main.w_content:set_text(stdout)
 	end)
 
 	capi.keygrabber.run(grabber)
 end
-
--- populate w's wibox content
-do
-	local layMain = wibox.layout.align.vertical()
-
-	local layHeader = wibox.layout.align.horizontal()
-	-- Header
-	do -- Title
-		local text = wibox.widget.textbox("Battery infos")
-		text:set_font("terminus 18")
-		layHeader:set_middle(text)
-	end
-	do -- battery level
-		local text = wibox.widget.textbox(Battery.infos.perc .. "%")
-		text:set_font("terminus 18")
-		layHeader:set_right(text)
-
-		Battery:on("percentage::changed", function(self, perc)
-			text:set_text(perc .. "%")
-		end)
-	end
-	layMain:set_top(layHeader)
-
-	txtContent:set_align("center")
-	txtContent:set_font("terminux 18")
-	layMain:set_middle(txtContent)
-
-	w:set_widget(layMain)
-end
-
-
 
 
 
@@ -585,6 +601,7 @@ local wpa_cli = {
 -- {{{ Key bindings
 ------------------------------------------------------------------------------------
 
+-- luacheck: ignore km
 local km = Keymap.new("global")
 
 -- TODO: theme switching on the fly
@@ -599,13 +616,15 @@ local km = Keymap.new("global")
 km:add({
 	ctrl = { mod = "M", key = "r" },
 	press = function ()
-		awful.prompt.run({ prompt = "   >>> Run Lua code: " },
-		mypromptbox[capi.mouse.screen].widget,
-		function(...)
-			local ret = awful.util.eval(...)
-			utils.toast.debug(ret, {title = "Lua code result :"})
-		end, nil,
-		awful.util.getdir("cache") .. "/history_eval")
+		awful.prompt.run({
+			prompt = "   >>> Run Lua code: ",
+			textbox = awful.screen.focused().mypromptbox.widget,
+			exe_callback = function(...)
+				local ret = awful.util.eval(...)
+				utils.toast.debug(ret, {title = "Lua code result :"})
+			end,
+			history_path = awful.util.getdir("cache") .. "/history_eval",
+		})
 	end,
 })
 
@@ -701,12 +720,15 @@ km:add({
 --TODO: move this command
 Command.register("rename.tag", function()
 	local tag = capi.mouse.screen.selected_tag
-	awful.prompt.run({ prompt = "Rename tag: " }, mypromptbox[capi.mouse.screen].widget,
-	function(text)
-		if text:len() > 0 then
-			tag.name = " " .. text .. " "
+	awful.prompt.run({
+		prompt = "Rename tag: ",
+		textbox = awful.screen.focused().mypromptbox.widget,
+		exe_callback = function(text)
+			if text:len() > 0 then
+				tag.name = " " .. text .. " "
+			end
 		end
-	end)
+	})
 end)
 
 -- :rename tag
@@ -874,9 +896,9 @@ km:add({
 	ctrl = { mod = "MC", key = "q" },
 	press = function()
 		local zenity = 'zenity --question --text="Are you sure you want to quit Awesome ?" --ok-label="Quit" --cancel-label="Stay here" '
-		local cmd = zenity .. " && echo ok || echo cancel"
+		local zenity_cmd = zenity .. " && echo ok || echo cancel"
 
-		utils.async.getFirstLine(cmd, function(stdout)
+		utils.async.getFirstLine(zenity_cmd, function(stdout)
 			utils.toast.debug(stdout)
 			if stdout == "ok" then
 				utils.toast.debug("QUIT !!!!!!!")
@@ -1166,7 +1188,7 @@ km:add({
 -- > prev
 -- * named group
 -- > fav(orite)
--- > back(list)
+-- > black(list)
 -- > theme:plane
 -- > theme:asia
 
@@ -1233,7 +1255,7 @@ km:add({
 			position = "bottom_right",
 			replaces_id = notif_id.ping
 		}).id
-		utils.async.getAll("ping " .. host .. " -c 1 -w 1", function(stdout)
+		awful.spawn.easy_async("ping " .. host .. " -c 1 -w 1", function(stdout)
 			notif_id.ping = utils.toast(stdout, {
 				title = "===== Ping " .. host .. " result =====",
 				position = "bottom_right",
@@ -1249,7 +1271,7 @@ km:add({
 km:add({
 	ctrl = { mod = "M", key = "n" },
 	press = function()
-		utils.async.getAll(wpa_cli.cmd .. "status", function(stdout)
+		awful.spawn.easy_async(wpa_cli.cmd .. "status", function(stdout)
 
 			if not stdout or stdout == "" then
 				utils.toast("Please start wpa_supplicant", { title = "Wifi is not ACTIVATED" })
@@ -1330,7 +1352,7 @@ km:add({
 km:add({
 	ctrl = { mod = "MS", key = "n" },
 	press = function()
-		utils.async.getAll(wpa_cli.cmd .. "list_networks", function(stdout)
+		awful.spawn.easy_async(wpa_cli.cmd .. "list_networks", function(stdout)
 			notif_id.net_list = utils.toast(stdout, {
 				title = "===== Networks saved list =====",
 				replaces_id = notif_id.net_list
@@ -1365,7 +1387,7 @@ km:add({
 km:add({
 	ctrl = { key = "XF86AudioRaiseVolume" },
 	press = function ()
-		utils.async.getAll('pamixer --get-volume --increase 1', function(stdout)
+		awful.spawn.easy_async('pamixer --get-volume --increase 1', function(stdout)
 			local perc = tonumber(stdout)
 
 			notif_id.volume = utils.toast("Increase", {
@@ -1381,7 +1403,7 @@ km:add({
 km:add({
 	ctrl = { key = "XF86AudioLowerVolume" },
 	press = function ()
-		utils.async.getAll('pamixer --get-volume --decrease 1', function(stdout)
+		awful.spawn.easy_async('pamixer --get-volume --decrease 1', function(stdout)
 			local perc = tonumber(stdout)
 
 			notif_id.volume = utils.toast("Decrease", {
@@ -1397,7 +1419,7 @@ km:add({
 km:add({
 	ctrl = { key = "XF86AudioMute" },
 	press = function ()
-		utils.async.getAll('pamixer --get-mute --toggle-mute', function(stdout)
+		awful.spawn.easy_async('pamixer --get-mute --toggle-mute', function(stdout)
 			local status = stdout
 
 			notif_id.volume = utils.toast("Toggle Mute", {
@@ -1572,7 +1594,6 @@ km:add({
 ------------------------------------------
 
 km = nil
-
 root.keys(Keymap.getCApiKeys("global"))
 
 ------------------------------------------------------------------------------------
@@ -1644,6 +1665,8 @@ local function moreTransparency(cl)
 end
 
 
+-- luacheck: ignore clientbuttons
+-- FIXME: ugly..
 clientbuttons = awful.util.table.join(
 awful.button({}, 1, function (c)
 	client.focus = c
@@ -1914,4 +1937,5 @@ end)
 ------------------------------------------------------------------------------------
 
 Eventemitter.emit("config::load") -- give params ?
+
 
