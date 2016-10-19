@@ -900,6 +900,9 @@ km:add({
 ---------------------------------------------------------------
 
 -- See ':goto'
+-- goto / select:
+-- - select : just focus
+-- - goto : focus & raise
 
 -- :select client next
 km:add({
@@ -937,6 +940,8 @@ km:add({
 -- :find client tiled
 -- :find client floating
 -- etc...
+--
+-- FIXME: why use find, over select/goto ?
 
 
 -- In Layout Clients movement
