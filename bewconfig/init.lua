@@ -255,10 +255,7 @@ do
 		local perc = Battery.infos.perc
 		local status = Battery.infos.status
 
-		utils.toast.debug(Battery.infos)
-
 		if perc <= 20 and status == Battery.DISCHARGING then
-			utils.toast.debug("show battery low")
 			utils.log(wBatteryLow)
 			wBatteryLow.visible = true
 			local text = wBatteryLow.w_back.w_text
@@ -1335,7 +1332,7 @@ km:add({
 			naughty.destroy(help_notif)
 
 			if networks[key] then
-				utils.async(wpa_cli.cmd .. "select_network " .. networks[key].id, function()
+				awful.spawn.easy_async(wpa_cli.cmd .. "select_network " .. networks[key].id, function()
 					notif_id.net_selector = utils.toast("Trying to connect...", {
 						title = "Network '" .. networks[key].name .. "' selected",
 						replaces_id = notif_id.net_selector
@@ -1580,7 +1577,7 @@ km:add({
 -- FIXME END
 
 --km:add({
---	ctrl = { anyMod = true, key = "Super_L" }, --TODO: handle modifier = "any"
+--	ctrl = { anyMod = true, key = "Super_L" }, --TODO: handle mod = "any" or mod = "*"
 --	press = function()
 --		utils.toast.debug("Modkey pressed")
 --	end,

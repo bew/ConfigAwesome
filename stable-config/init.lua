@@ -57,7 +57,7 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
-local path = "/usr/share/awesome/themes/zenburn/theme.lua"
+local path = "/usr/local/share/awesome/themes/zenburn/theme.lua"
 beautiful.init(path)
 
 -- This is used later as the default terminal and editor to run.

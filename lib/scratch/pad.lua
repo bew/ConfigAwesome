@@ -53,7 +53,7 @@ function pad.set(c, width, height, sticky, screen)
     width  = width  or 0.50
     height = height or 0.50
     sticky = sticky or false
-    screen = screen or capi.mouse.screen
+    local screen = screen or capi.mouse.screen
 
     -- Determine signal usage in this version of awesome
     local attach_signal = capi.client.connect_signal    or capi.client.add_signal
@@ -109,7 +109,7 @@ end
 -- Move the scratchpad to the current workspace, focus and raise it
 -- when it's hidden, or hide it when it's visible.
 function pad.toggle(screen)
-    screen = screen or capi.mouse.screen
+    local screen = screen or capi.mouse.screen
 
     -- Check if we have a client on storage,
     if scratchpad.pad and

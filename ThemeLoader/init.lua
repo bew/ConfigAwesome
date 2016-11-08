@@ -6,8 +6,8 @@
 local naughty = require("naughty")
 local global = require("global")
 
---local confdir = require("awful.util").getdir("config")
-local confdir = os.getenv("HOME") .. "/.awesome-master/config/awesome/"
+local confdir = require("awful.util").getdir("config")
+--local confdir = os.getenv("HOME") .. "/.awesome-master/config/awesome/"
 
 local confList = {
 	{

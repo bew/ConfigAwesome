@@ -42,13 +42,13 @@ local dropdown = {}
 -- Create a new window for the drop-down application when it doesn't
 -- exist, or toggle between hidden and visible states when it does
 --function toggle(prog, vert, horiz, width, height, sticky, screen)
-function toggle(prog, opt)
-    vert   = opt.vert   or "top"
-    horiz  = opt.horiz  or "center"
-    width  = opt.width  or 1
-    height = opt.height or 0.25
-    sticky = opt.sticky or false
-    screen = opt.screen or capi.mouse.screen
+local function toggle(prog, opt)
+    local vert   = opt.vert   or "top"
+    local horiz  = opt.horiz  or "center"
+    local width  = opt.width  or 1
+    local height = opt.height or 0.25
+    local sticky = opt.sticky or false
+    local screen = opt.screen or capi.mouse.screen
 
     -- Determine signal usage in this version of awesome
     local attach_signal = capi.client.connect_signal    or capi.client.add_signal
@@ -68,7 +68,8 @@ function toggle(prog, opt)
     end
 
     if not dropdown[prog][screen] then
-        spawnw = function (c)
+        local spawnw
+		spawnw = function (c)
             dropdown[prog][screen] = c
 
             -- Scratchdrop clients are floaters
@@ -80,6 +81,7 @@ function toggle(prog, opt)
             if width  <= 1 then width  = screengeom.width  * width  end
             if height <= 1 then height = screengeom.height * height end
 
+			local x, y
             if     horiz == "left"  then x = screengeom.x
             elseif horiz == "right" then x = screengeom.width - width
             else   x =  screengeom.x+(screengeom.width-width)/2 end
@@ -106,7 +108,7 @@ function toggle(prog, opt)
         awful.util.spawn(prog, false)
     else
         -- Get a running client
-        c = dropdown[prog][screen]
+        local c = dropdown[prog][screen]
 
         -- Switch the client to the current workspace
         if c:isvisible() == false then c.hidden = true
