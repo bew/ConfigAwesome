@@ -787,10 +787,12 @@ Command.register("move.tag.right", function()
 end)
 
 Command.register("add.tag.right", function()
-	local tag = capi.mouse.screen.selected_tag
+	local screen = capi.mouse.screen
+	local tag = screen.selected_tag
 	local new_idx = tag.index + 1
 	local new_tag = awful.tag.add(" new ", {
 		layout = tag.layout,
+		screen = screen,
 	})
 
 	new_tag.index = new_idx
@@ -1137,8 +1139,7 @@ function applauncher.grabber(mod, key, event)
 
 	if app_match.cmd then -- bind is a cmd
 
-		-- TODO: a more async spawn system
-		awful.spawn(os.getenv("HOME") .. "/.bin/execit" .. " " .. app_match.cmd)
+		awful.spawn(app_match.cmd)
 
 	elseif app_match.func then -- bind is a function
 		app_match.func()
@@ -1485,7 +1486,7 @@ km:add({
 km:add({
 	ctrl = { key = "Pause" },
 	press = function ()
-		awful.util.spawn_with_shell("i3locker")
+		awful.spawn.with_shell("i3locker")
 		naughty.notify({
 			text = "Locking...",
 			timeout = 0.5
@@ -1739,10 +1740,10 @@ end)
 
 local function debugSignal(base, sigName, isMethod)
 	local func = function(...)
-		utils.toast.debug({...}, { title = sigName })
+		utils.toast.debug({...}, { title = "Params for event " .. sigName })
 	end
 	local function show()
-		utils.toast.debug(nil, { title = sigName, position = "top_left" })
+		utils.toast.debug(sigName, { position = "top_left" })
 	end
 	if isMethod then
 		base:connect_signal(sigName, func)
@@ -1877,9 +1878,9 @@ Eventemitter.on("config::load", function()
 			return
 		end
 
-		local backup_serial = file:read("*a")
-		local status, backup_or_error = pcall(MsgPack.unpack, backup_serial)
-		if not status then
+		local backup_raw = file:read("*a")
+		local success, backup_or_error = pcall(MsgPack.unpack, backup_raw)
+		if not success then
 			utils.toast.error(backup_or_error, { title = "Cannot convert backup to Lua table" })
 			return
 		end
