@@ -1439,41 +1439,90 @@ km:add({
 -- :bright low
 -- :bright auto		(possible ?)
 
+-- Brightness controls
+------------------------------------------
+
+local function brightness_get(callback)
+	awful.spawn.easy_async("light -G", function(stdout)
+		local level = tonumber(stdout)
+
+		if callback then
+			callback(level)
+		end
+	end)
+end
+
+local function brightness_increase(by)
+	awful.spawn("light -A " .. by)
+end
+
+local function brightness_decrease(by)
+	awful.spawn("light -U " .. by)
+end
+
+-- Helpers
+------------------------------------------
+
+local function brightness_show(message)
+	brightness_get(function(perc)
+		if not message then
+			message = "Current level"
+		end
+
+		notif_id.brightness = utils.toast(message, {
+			title = "Brightness " .. perc .. "%",
+			position = "bottom_right",
+			replaces_id = notif_id.brightness
+		}).id
+	end)
+end
+
+local function brightness_up_show(by)
+	brightness_increase(by)
+	brightness_show("Increase by " .. by)
+end
+
+local function brightness_down_show(by)
+	brightness_decrease(by)
+	brightness_show("Decrease by " .. by)
+end
+
+-- Bindings
+------------------------------------------
+
 -- :bright +
 -- :brightness +
 km:add({
 	ctrl = { key = "XF86MonBrightnessDown" },
 	press = function ()
-		awful.util.spawn("xbacklight -dec 5 -time 1")
-
-		utils.async.getFirstLine('xbacklight -get', function(stdout)
-			local perc = string.match(stdout, "(%d+)%..*")
-			if not perc then return end
-
-			notif_id.brightness = utils.toast("Decrease", {
-				title = "Brightness " .. perc .. "%",
-				position = "bottom_right",
-				replaces_id = notif_id.brightness
-			}).id
-		end)
+		brightness_down_show(1)
 	end,
 })
+
+-- :bright -
 -- :brightness -
 km:add({
 	ctrl = { key = "XF86MonBrightnessUp" },
 	press = function ()
-		awful.util.spawn("xbacklight -inc 5 -time 1")
+		brightness_up_show(1)
+	end,
+})
 
-		utils.async.getFirstLine('xbacklight -get', function(stdout)
-			local perc = string.match(stdout, "(%d+)%..*")
-			if not perc then return end
+-- :bright ++
+-- :brightness ++
+km:add({
+	ctrl = { mod = "S", key = "XF86MonBrightnessDown" },
+	press = function ()
+		brightness_down_show(5)
+	end,
+})
 
-			notif_id.brightness = utils.toast("Increase", {
-				title = "Brightness " .. perc .. "%",
-				position = "bottom_right",
-				replaces_id = notif_id.brightness
-			}).id
-		end)
+-- :bright --
+-- :brightness --
+km:add({
+	ctrl = { mod = "S", key = "XF86MonBrightnessUp" },
+	press = function ()
+		brightness_up_show(5)
 	end,
 })
 
