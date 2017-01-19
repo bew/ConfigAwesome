@@ -3,16 +3,16 @@ local beautiful = require("beautiful")
 local global = require("global")
 
 -- layouts
-local lain = require("lain")
 local treesome = require("treesome")
 
 -- {{{ Variable definitions
--- Themes define colours, icons, font and wallpapers.
 local path = awful.util.getdir("config") .. "/themes/bewconfig/theme.lua"
 beautiful.init(path)
 global.theme = beautiful.get()
 
 modkey = "Mod4"
+
+awful.layout.suit.floating.resize_jump_to_corner = false
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 global.availableLayouts = {
@@ -21,10 +21,6 @@ global.availableLayouts = {
 	tileleft = awful.layout.suit.tile.left,
 	tilebottom = awful.layout.suit.tile.bottom,
 	tiletop = awful.layout.suit.tile.top,
-	fair = awful.layout.suit.fair,
-	fairh = awful.layout.suit.fair.horizontal,
-	uselessfair = lain.layout.uselessfair,
-	uselesstile = lain.layout.uselesstile,
 	treesome = treesome,
 }
 
@@ -33,7 +29,6 @@ global.layouts = {
 	global.availableLayouts.tileleft,
 	global.availableLayouts.tilebottom,
 	global.availableLayouts.tiletop,
-	global.availableLayouts.uselesstile,
 	global.availableLayouts.treesome,
 	global.availableLayouts.floating,
 }

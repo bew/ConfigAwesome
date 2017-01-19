@@ -124,12 +124,12 @@ loadFile("cmds/goto")
 
 
 
--- {{{ default tag
-for screen in capi.screen do
+-- {{{ default tag for current & future screens
+awful.screen.connect_for_each_screen(function (screen)
 	awful.tag({
 		" blank ",
 	}, screen, global.availableLayouts.tile)
-end
+end)
 -- }}}
 
 
@@ -339,7 +339,6 @@ do
 	end
 
 	Eventemitter.on("cmus", cmus_event_update)
-	Eventemitter.on("config::load", cmus_event_update)
 end
 
 
@@ -434,22 +433,21 @@ awful.button({ modkey 	}, 1, awful.client.movetotag)
 
 -- TODO: This should be per workspace definition,
 -- or this should define the look of the default workspace
-awful.screen.connect_for_each_screen(function(s)
+local spacer = wibox.widget.textbox("      ")
+awful.screen.connect_for_each_screen(function(screen)
 
-	local spacer = wibox.widget.textbox("      ")
-
-	s.my_layout_switcher = awful.widget.layoutbox(s)
-	s.my_layout_switcher:buttons(awful.util.table.join(
+	screen.my_layout_switcher = awful.widget.layoutbox(screen)
+	screen.my_layout_switcher:buttons(awful.util.table.join(
 	awful.button({ }, 1, function () awful.layout.inc(global.layouts,  1) end),
 	awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
 	))
 
-	mytaglist[s] = awful.widget.taglist(s, awful.widget.taglist.filter.all, mytaglist.buttons)
-	s.mypromptbox = awful.widget.prompt()
+	mytaglist[screen] = awful.widget.taglist(screen, awful.widget.taglist.filter.all, mytaglist.buttons)
+	screen.mypromptbox = awful.widget.prompt()
 
-	topbar[s] = awful.wibar({ position = "top", screen = s })
+	topbar[screen] = awful.wibar({ position = "top", screen = screen })
 
-	topbar[s]:setup {
+	topbar[screen]:setup {
 		layout = wibox.layout.align.horizontal,
 
 		-- Left
@@ -468,10 +466,10 @@ awful.screen.connect_for_each_screen(function(s)
 				wEmergencyEdit,
 			},
 			spacer,
-			mytaglist[s],
+			mytaglist[screen],
 		},
 		-- Middle
-		s.mypromptbox,
+		screen.mypromptbox,
 		-- Right
 		{
 			layout = wibox.layout.fixed.horizontal,
@@ -481,7 +479,7 @@ awful.screen.connect_for_each_screen(function(s)
 			wTime,
 			wBatteryContainer,
 			wMusicCtrl,
-			s.my_layout_switcher,
+			screen.my_layout_switcher,
 		},
 	}
 
@@ -1191,7 +1189,7 @@ km:add({
 -- > theme:asia
 
 local currentWallpaperID = 1
-local lastWallpaperID = 0
+local lastWallpaperID = 1
 --- Select a new random wallpaper
 km:add({
 	ctrl = { mod = "M", key = "w" },
@@ -1201,7 +1199,7 @@ km:add({
 		gears.wallpaper.maximized(walls[selectedID], capi.mouse.screen)
 		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
 
-		lastWallpaperID = (lastWallpaperID == 0 and 1 or currentWallpaperID)
+		lastWallpaperID = currentWallpaperID
 		currentWallpaperID = selectedID
 	end,
 })
@@ -1535,11 +1533,11 @@ km:add({
 km:add({
 	ctrl = { key = "Pause" },
 	press = function ()
-		awful.spawn.with_shell("i3locker")
 		naughty.notify({
 			text = "Locking...",
 			timeout = 0.5
 		})
+		awful.spawn.with_shell("i3locker")
 	end,
 })
 
