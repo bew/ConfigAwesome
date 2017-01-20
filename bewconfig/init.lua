@@ -61,17 +61,17 @@ local function loadFile(file)
 	local path = global.confInfos.path .. "/" .. file .. ".lua"
 
 	-- Execute the file
-	local success, err = pcall(dofile, path)
+	local success, err_or_result = pcall(dofile, path)
 	if not success then
 		naughty.notify({
 			title = "Error while loading file",
-			text = "When loading `" .. path .. "`, got the following error:\n" .. err,
+			text = "When loading `" .. path .. "`, got the following error:\n" .. err_or_result,
 			preset = naughty.config.presets.critical
 		})
-		return print("E: error loading RC file '" .. path .. "': " .. err)
+		return print("E: error loading RC file '" .. path .. "': " .. err_or_result)
 	end
 
-	return err
+	return err_or_result
 end
 
 loadFile("loader/vars")
@@ -129,6 +129,9 @@ awful.screen.connect_for_each_screen(function (screen)
 	awful.tag({
 		" blank ",
 	}, screen, global.availableLayouts.tile)
+
+	-- TODO: better place to set this ?
+	screen.padding = 5
 end)
 -- }}}
 
@@ -429,7 +432,7 @@ awful.button({			}, 1, awful.tag.viewonly),
 awful.button({ modkey 	}, 1, awful.client.movetotag)
 )
 
-
+local custom_taglist_update = loadFile('widget/taglist')
 
 -- TODO: This should be per workspace definition,
 -- or this should define the look of the default workspace
@@ -442,7 +445,7 @@ awful.screen.connect_for_each_screen(function(screen)
 	awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
 	))
 
-	mytaglist[screen] = awful.widget.taglist(screen, awful.widget.taglist.filter.all, mytaglist.buttons)
+	mytaglist[screen] = awful.widget.taglist(screen, awful.widget.taglist.filter.all, mytaglist.buttons, nil, custom_taglist_update)
 	screen.mypromptbox = awful.widget.prompt()
 
 	topbar[screen] = awful.wibar({ position = "top", screen = screen })
@@ -717,10 +720,11 @@ Command.register("rename.tag", function()
 	local tag = capi.mouse.screen.selected_tag
 	awful.prompt.run({
 		prompt = "Rename tag: ",
+		text = tag.name,
 		textbox = awful.screen.focused().mypromptbox.widget,
 		exe_callback = function(text)
 			if text:len() > 0 then
-				tag.name = " " .. text .. " "
+				tag.name = text
 			end
 		end
 	})
