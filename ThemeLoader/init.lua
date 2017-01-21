@@ -6,65 +6,88 @@
 local naughty = require("naughty")
 local global = require("global")
 
-local confdir = require("awful.util").getdir("config")
---local confdir = os.getenv("HOME") .. "/.awesome-master/config/awesome/"
-
-local confList = {
-	{
-		name = "Bew Config",
-		path = confdir .. "/bewconfig"
-	},
-	{
-		name = "Stable config",
-		path = confdir .. "/stable-config"
-	}
+local ThemeLoader = {
+	options = {},
+	conflist = {},
 }
+local options = ThemeLoader.options
 
 local function addPackagePath(dirPath)
 	package.path = package.path .. ";" .. dirPath .. "/?.lua;"
 	package.path = package.path .. ";" .. dirPath .. "/?/init.lua;"
 end
 
-local function loadConf(confpath)
-	local rc, err = loadfile(confpath);
+local function loadConf(fullpath)
+	local save_awesome_conffile = awesome.conffile
+	awesome.conffile = fullpath
 
+	local rc, success, load_err, exec_err
+
+	rc, load_err = loadfile(fullpath);
 	if rc then
-	    rc, err = pcall(rc);
-	    if rc then
-	        return nil;
+	    success, exec_err = pcall(rc);
+	    if success then
+	        return
 	    end
 	end
-	return err
+	awesome.conffile = save_awesome_conffile
+	return load_err or exec_err
 end
 
+function ThemeLoader.init(args)
+	args = args or {}
 
-addPackagePath(confdir .. "/lib/")
+	options.conf_root = args.conf_root or awesome.conffile:match("(.*/)")
 
-local err
-for i = 1, #confList do
-	global.confInfos = confList[i]
+	return true
+end
 
-	local oldPackagePath = package.path
-	addPackagePath(confList[i].path .. "/lib/")
-	package.path = package.path .. ";" .. confList[i].path .. "/lib/?/init.lua;"
+function ThemeLoader.add_config(dir, name)
+	local path = options.conf_root .. "/" .. dir
 
-	err = loadConf(confList[i].path .. "/init.lua")
+	local conf = {
+		name = name,
+		path = path,
+		fullpath = path .. "/" .. "init.lua"
+	}
 
-	if not err then
-		-- no error
-		naughty.notify({ text = "Theme '" .. confList[i].name .. "' loaded !", timeout = 5 })
-		return;
+	-- prepend to conf list
+	--table.insert(ThemeLoader.conflist, 1, conf)
+	table.insert(ThemeLoader.conflist, conf)
+end
+
+function ThemeLoader.run()
+
+	addPackagePath(options.conf_root .. "/lib/")
+
+	local err
+	for _, conf in ipairs(ThemeLoader.conflist) do
+		global.confInfos = conf
+
+		local oldPackagePath = package.path
+		addPackagePath(conf.path .. "/lib/")
+
+		err = loadConf(conf.fullpath)
+
+		if not err then
+			-- no error
+			naughty.notify({ text = "Theme '" .. conf.name .. "' loaded !", timeout = 5 })
+			return true
+		end
+
+		-- error when loading theme
+		package.path = oldPackagePath
+		naughty.notify({
+			title = "#> ThemeLoader : Theme '" .. conf.name .. "' crashed during startup on " .. os.date("%d/%m/%Y %T"),
+			text = "Theme path: " .. conf.path .. "/init.lua\n"
+			.. "Error:\n\n" .. err .. "\n" .. debug.traceback(),
+			timeout = 0
+		})
 	end
 
-	-- error when loading theme
-	package.path = oldPackagePath
-	naughty.notify({
-		title = "#> ThemeLoader : Theme '" .. confList[i].name .. "' crashed during startup on " .. os.date("%d/%m/%Y %T"),
-		text = "Theme path: " .. confList[i].path .. "/init.lua\n"
-			.. "Error:\n\n" .. err .. "\n" .. debug.traceback(),
-		timeout = 0
-	})
+	-- all themes crashed
+	return false
 end
 
--- all themes crashed
-assert(false, "\n#### ThemeLoader : Cannot load themes ####\n\nError:\n" .. err) --trigger error
+return ThemeLoader
+

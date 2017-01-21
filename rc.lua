@@ -1,36 +1,32 @@
 -- failsafe mode
 -- if the current config fail, load the default rc.lua
 
--- package.path = package.path .. ";./lib/?.lua;"
-
-local naughty = require("naughty")
-
-local themeLoader = true
-local loadError = nil
 
 local cwd = debug.getinfo(1).source:match("@?(.*/)")
 
 -- Init randomness
 math.randomseed(os.time())
 
-local _
-if themeLoader then
-	local f, err = loadfile(cwd .. "/ThemeLoader/init.lua")
-	if not err then
-		_, err = pcall(f)
-		if not err then
-			return
-		end
+local ThemeLoader
+local function loadLoader()
+	ThemeLoader = require("ThemeLoader")
+	print("ThemeLoader loaded at", ThemeLoader)
+end
+
+if pcall(loadLoader) and ThemeLoader.init({confdir = cwd}) then
+	-- ThemeLoader found, adding configs & run them !
+
+	ThemeLoader.add_config("/bewconfig", "Bew config")
+	ThemeLoader.add_config("/stable-config", "Very old config")
+
+	if ThemeLoader.run() then
+		return
 	end
+
+	-- TODO: add error handler
+	-- ThemeLoader.on_error(function(err, is_last) --[[ do something ]] end)
 end
 
 -- Load defaut theme when all others fail
+print("#### ThemeLoader : Cannot load themes ####")
 dofile("/etc/xdg/awesome/rc.lua");
-
-if loadError then
-	naughty.notify({
-		title = "#> Awesome crashed during startup on " .. os.date("%d/%m/%Y %T"),
-		text = "Error:\n\n" .. loadError .. "\n",
-		timeout = 0
-	})
-end
