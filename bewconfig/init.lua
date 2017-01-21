@@ -127,7 +127,7 @@ loadFile("cmds/goto")
 -- {{{ default tag for current & future screens
 awful.screen.connect_for_each_screen(function (screen)
 	awful.tag({
-		" blank ",
+		"blank",
 	}, screen, global.availableLayouts.tile)
 
 	-- TODO: better place to set this ?
@@ -145,7 +145,7 @@ local function awesome_edit()
 		awful.util.spawn(termcmd .. "'" .. cmd .. "'")
 	end
 
-	spawnInTerm("cd " .. awful.util.getdir("config") .. " && " .. config.apps.termEditor .. " " .. "rc.lua")
+	spawnInTerm("cd " .. global.confInfos.path .. " && " .. config.apps.termEditor .. " " .. "init.lua")
 end
 
 
@@ -792,7 +792,7 @@ Command.register("add.tag.right", function()
 	local screen = capi.mouse.screen
 	local tag = screen.selected_tag
 	local new_idx = tag.index + 1
-	local new_tag = awful.tag.add(" new ", {
+	local new_tag = awful.tag.add("new", {
 		layout = tag.layout,
 		screen = screen,
 	})
