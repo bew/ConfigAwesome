@@ -259,7 +259,6 @@ do
 		local status = Battery.infos.status
 
 		if perc <= 20 and status == Battery.DISCHARGING then
-			utils.log(wBatteryLow)
 			wBatteryLow.visible = true
 			local text = wBatteryLow.w_back.w_text
 			text:set_text("BATTERY LOW (" .. perc .. "%)")
