@@ -1,5 +1,5 @@
 -- failsafe mode
--- if the current config fail, load the default rc.lua
+-- if all configs fail, load the default rc.lua
 
 
 local cwd = debug.getinfo(1).source:match("@?(.*/)")

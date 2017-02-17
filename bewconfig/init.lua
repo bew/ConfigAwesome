@@ -1657,24 +1657,24 @@ root.keys(Keymap.getCApiKeys("global"))
 -- Base keymap for clients
 Keymap.new("client"):add({
 	ctrl = { mod = "MS", key = "c" },
-	press = function(self, c)
+	press = function(_, c)
 		c:kill()
 	end,
 }):add({
 	ctrl = { mod = "M", key = "a" },
-	press = function(self, c)
+	press = function(_, c)
 		c.ontop = not c.ontop
 		utils.toast("ON TOP : " .. tostring(c.ontop))
 	end
 }):add({
 	ctrl = { mod = "M", key = "f" },
-	press = function(self, c)
+	press = function(_, c)
 		awful.client.floating.toggle(c)
 		utils.toast("FLOATING : " .. tostring(awful.client.floating.get(c)))
 	end
 }):add({
 	ctrl = { mod = "M", key = "m" },
-	press = function(self, c)
+	press = function(_, c)
 		c.maximized_horizontal = not c.maximized_horizontal
 		c.maximized_vertical	= not c.maximized_vertical
 		c:raise()
@@ -1682,13 +1682,13 @@ Keymap.new("client"):add({
 	end
 }):add({
 	ctrl = { mod = "MA", key = "a" },
-	press = function(self, c)
+	press = function(_, c)
 		c.sticky = not c.sticky
 		utils.toast("STICKY : " .. tostring(c.sticky))
 	end
 }):add({
 	ctrl = { mod = "M", key = "o" },
-	press = function(self, c)
+	press = function(_, c)
 		c.opacity = (c.opacity == 1 and theme.client_default_opacity or 1)
 	end
 })
