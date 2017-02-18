@@ -279,12 +279,13 @@ end
 
 -- Mini cmus player
 ---------------------------------------------------------------
+--
+-- TODO: on mouse:hover on the widget
+--  => show player controls & progressbar (as tooltip?)
+--
 
 local wMusicCtrl, cmus_show_infos
 do
-	wMusicCtrl = wibox.widget.textbox("")
-	wMusicCtrl:set_font("Awesome 10")
-
 	local symbols = {
 		play = "",
 		pause = "",
@@ -294,15 +295,27 @@ do
 	}
 	-- init: after configuration load, launch a full status update
 
+	local cmus_state
+	local function cmus_state_reset()
+		cmus_state = {
+			status = "N/A",
+			file  = "N/A",
+			duration  = "N/A",
+			running = false,
+		}
+	end
+	local function cmus_state_init()
+		cmus_state_reset()
 
-	local cmus_state  = {
-		["status"] = "N/A",
-		["file"]  = "N/A",
-		["duration"]  = "N/A",
-	}
-	local function cmus_full_update()
+		-- TODO: start life pulser on cmus
+		--  - if cmus is closed:
+		--    => hide the wMusicCtrl widget
+		--    => stop the life pulser
+	end
 
-		-- Get data from cmus 
+	local function cmus_state_update()
+
+		-- Get data from cmus
 		local f = io.popen("cmus-remote -Q")
 		if not f then return end
 
@@ -319,7 +332,7 @@ do
 		cmus_state.file = string.match(cmus_state.filepath, "([^/]*)$")
 	end
 
-	function cmus_show_infos()
+	local function cmus_state_as_string()
 		local str
 		if cmus_state.status == "playing" then
 			str = symbols.play .. " " .. cmus_state.file
@@ -330,17 +343,36 @@ do
 		else
 			str = cmus_state.status
 		end
-		utils.toast(str, {title = "Cmus update"})
+		return str
 	end
 
-	local function cmus_event_update(ev, args)
-		--temp:
-		cmus_full_update()
+
+	cmus_state_init()
+
+	wMusicCtrl = wibox.widget.textbox("")
+	wMusicCtrl.font = "Awesome 8"
+
+	local function cmus_widget_update()
+		wMusicCtrl.text = cmus_state_as_string()
+
+		if not wMusicCtrl.visible then
+			wMusicCtrl.visible = true
+		end
+	end
+
+	-- set 'global' function to update widget and show status
+	function cmus_show_infos()
+		local str = cmus_state_as_string()
+		utils.toast(str, {title = "Cmus update"})
+
+		cmus_widget_update()
+	end
+
+	Eventemitter.on("cmus", function()
+		cmus_state_update()
 
 		cmus_show_infos()
-	end
-
-	Eventemitter.on("cmus", cmus_event_update)
+	end)
 end
 
 
@@ -476,11 +508,12 @@ awful.screen.connect_for_each_screen(function(screen)
 		{
 			layout = wibox.layout.fixed.horizontal,
 
+			wMusicCtrl,
+			spacer,
 			wibox.widget.systray(),
 			wNetwork,
 			wTime,
 			wBatteryContainer,
-			wMusicCtrl,
 			screen.my_layout_switcher,
 		},
 	}
@@ -543,6 +576,7 @@ do
 			-- top
 			layout = wibox.layout.align.horizontal,
 
+			nil, -- nothing on the left
 			{
 				-- Title
 				widget = wibox.widget.textbox,
