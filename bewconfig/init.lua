@@ -170,9 +170,9 @@ local wBatteryContainer
 do
 	wBatteryContainer = wibox.container.background()
 	local wBattery = wibox.widget.textbox()
-	wBattery:set_font("Awesome 10")
+	wBattery.font = "Awesome 10"
 
-	wBatteryContainer:set_widget(wBattery)
+	wBatteryContainer.widget = wBattery
 
 	local function updateFunction()
 		local status = Battery.infos.status
@@ -206,9 +206,9 @@ do
 			end
 		end
 
-		wBatteryContainer:set_bg(bg)
+		wBatteryContainer.bg = bg
 		local percStyle = (perc == 100 and "FULL" or perc .. "%")
-		wBattery:set_text(" | " .. statusIcon .. " " .. percStyle .. " | ")
+		wBattery.text = " | " .. statusIcon .. " " .. percStyle .. " | "
 	end
 
 	Battery:on("percentage::changed", updateFunction)
@@ -258,10 +258,10 @@ do
 		local perc = Battery.infos.perc
 		local status = Battery.infos.status
 
-		if perc <= 20 and status == Battery.DISCHARGING then
+		if perc <= 25 and status == Battery.DISCHARGING then
 			wBatteryLow.visible = true
 			local text = wBatteryLow.w_back.w_text
-			text:set_text("BATTERY LOW (" .. perc .. "%)")
+			text.text = "BATTERY LOW (" .. perc .. "%)"
 		else
 			wBatteryLow.visible = false
 		end
@@ -385,7 +385,7 @@ do
 	wNetwork = wibox.container.background()
 
 	local wStatus = wibox.widget.textbox()
-	wNetwork:set_widget(wStatus)
+	wNetwork.widget = wStatus
 
 	--local last_status = ""
 	local ssid = ""
@@ -403,7 +403,7 @@ do
 			text = text .. "[NO IP]"
 		end
 
-		wStatus:set_text(text)
+		wStatus.text = text
 	end
 	update()
 
@@ -548,7 +548,7 @@ do
 
 	Battery:on("percentage::changed", function()
 		local perc = Battery.infos.perc
-		wBatteryBar.w_bar:set_value(perc)
+		wBatteryBar.w_bar.value = perc
 	end)
 end
 
@@ -560,12 +560,12 @@ local wBatteryInfos = wibox({
 	y = 100,
 	ontop = true,
 })
-wBatteryInfos:set_bg("#03A9F4")
+wBatteryInfos.bg = "#03A9F4"
 
 -- populate wBatteryInfos's wibox content
 do
 	local w_perc = wibox.widget.textbox(Battery.infos.perc .. "%")
-	w_perc:set_font("terminus 18")
+	w_perc.font = "terminus 18"
 
 	-- Header
 	wBatteryInfos:setup {
@@ -597,7 +597,7 @@ do
 	}
 
 	Battery:on("percentage::changed", function(self, perc)
-		w_perc:set_text(perc .. "%")
+		w_perc.text = perc .. "%"
 	end)
 end
 
@@ -613,7 +613,7 @@ local function showAcpi()
 
 	wBatteryInfos.visible = true
 	awful.spawn.easy_async("acpi -b", function(stdout)
-		wBatteryInfos.w_main.w_content:set_text(stdout)
+		wBatteryInfos.w_main.w_content.text = stdout
 	end)
 
 	capi.keygrabber.run(grabber)
