@@ -1097,26 +1097,6 @@ km:add({
 	press = function () awful.tag.incmwfact(-0.05) end,
 })
 
---km:add({
---	ctrl = { mod = "MS", key = "h" },
---	press = function () awful.tag.incnmaster( 1) end,
---})
---km:add({
---	ctrl = { mod = "MS", key = "l" },
---	press = function () awful.tag.incnmaster(-1) end,
---})
-
-km:add({
-	ctrl = { mod = "MC", key = "h" },
-	press = function () awful.tag.incncol( 1) end,
-})
-km:add({
-	ctrl = { mod = "MC", key = "l" },
-	press = function () awful.tag.incncol(-1) end,
-})
-
-
-
 -- switch layout
 
 -- :layout next

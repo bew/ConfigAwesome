@@ -8,9 +8,6 @@
 
 -- {{{ Main
 
-local module = {}
-module.name, module.path = ...
-
 local theme = {}
 
 theme.name = "bewconfig"
@@ -146,37 +143,9 @@ theme.taglist_bg_focus = "#009688"
 theme.taglist_fg_empty = "#555555"
 -- }}}
 
--- {{{ Widgets
--- You can add as many variables as
--- you wish and access them by using
--- beautiful.variable in your rc.lua
---theme.fg_widget        = "#AECF96"
---theme.fg_center_widget = "#88A175"
---theme.fg_end_widget    = "#FF5656"
---theme.bg_widget        = "#494B4F"
---theme.border_widget    = "#3F3F3F"
--- }}}
-
--- {{{ Mouse finder
-theme.mouse_finder_color = "#CC9393"
--- mouse_finder_[timeout|animate_timeout|radius|factor]
--- }}}
-
 -- {{{ Menu
--- Variables set for theming the menu:
--- menu_[bg|fg]_[normal|focus]
--- menu_[border_color|border_width]
 theme.menu_height = 15
 theme.menu_width  = 100
--- }}}
-
--- {{{ Icons
--- {{{ Taglist
-theme.taglist_squares_sel   = theme.addIcon("taglist", "squarefz")
-theme.taglist_squares_unsel   = theme.addIcon("taglist", "squarez")
-
--- FIXME: this option is not implemented in awful.widget.taglist ... ><
-theme.taglist_squares_resize = "true"
 -- }}}
 
 -- {{{ Layout
