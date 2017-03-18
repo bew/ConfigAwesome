@@ -1658,9 +1658,33 @@ km:add({
 km = nil
 root.keys(Keymap.getCApiKeys("global"))
 
+
+awful.client.property.persist("locked", "boolean")
+
+
 ------------------------------------------------------------------------------------
 -- Client's keymap
 ------------------------------------------------------------------------------------
+
+local function refresh_border_color(c)
+
+	if client.focus == c then
+		if c.locked then
+			c.border_color = theme.border_focus_when_locked
+		else
+			c.border_color = theme.border_focus
+		end
+	else
+		if c.locked then
+			c.border_color = theme.border_normal_when_locked
+		else
+			c.border_color = theme.border_normal
+		end
+	end
+
+end
+
+
 
 -- :client <action>
 -- :client kill
@@ -1671,8 +1695,27 @@ root.keys(Keymap.getCApiKeys("global"))
 Keymap.new("client"):add({
 	ctrl = { mod = "MS", key = "c" },
 	press = function(_, c)
+		if c.locked then
+			utils.toast.warning("The client is LOCKED. You need to unlock it first")
+			return
+		end
+
 		c:kill()
 	end,
+}):add({
+	ctrl = { mod = "MC", key = "l" },
+	press = function(_, c)
+		c.locked = not c.locked
+		refresh_border_color(c)
+
+		local action
+		if c.locked then
+			action = "LOCKED"
+		else
+			action = "UNLOCKED"
+		end
+		utils.toast(action)
+	end
 }):add({
 	ctrl = { mod = "M", key = "a" },
 	press = function(_, c)
@@ -1780,17 +1823,12 @@ end)
 ---------------------------------------------------------------
 
 client.connect_signal("focus", function(c)
-	if type(theme.border_focus) == "function" then
-		c.border_color = theme.border_focus(c)
-	else
-		c.border_color = theme.border_focus
-	end
-
+	refresh_border_color(c)
 	c.border_width = theme.border_width
 end)
 
 client.connect_signal("unfocus", function(c)
-	c.border_color = theme.border_normal
+	refresh_border_color(c)
 end)
 -- }}}
 

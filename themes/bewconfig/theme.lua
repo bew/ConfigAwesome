@@ -122,6 +122,9 @@ theme.border_normal = "#202020"
 theme.border_focus  = "#33B5E5" -- Android Blue
 theme.border_marked = "#CC9393"
 
+theme.border_normal_when_locked = theme.border_normal
+theme.border_focus_when_locked = "#c62828"
+
 --theme.useless_gaps = "30"
 theme.useless_gap_width = 30
 -- }}}
