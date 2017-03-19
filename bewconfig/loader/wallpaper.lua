@@ -1,5 +1,6 @@
 local theme = require("beautiful")
 local gears = require("gears")
+local ascreen = require("awful.screen")
 
 local function randomWall()
 	local walls = theme.wallpapers
@@ -10,9 +11,9 @@ end
 
 -- {{{ Wallpaper
 if theme.wallpapers then
-	for s = 1, screen.count() do
+	ascreen.connect_for_each_screen(function (screen)
 		local wall = randomWall()
-		gears.wallpaper.maximized(wall, s, true)
-	end
+		gears.wallpaper.maximized(wall, screen, true)
+	end)
 end
 -- }}}

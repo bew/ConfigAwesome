@@ -1731,10 +1731,11 @@ Keymap.new("client"):add({
 }):add({
 	ctrl = { mod = "M", key = "m" },
 	press = function(_, c)
-		c.maximized_horizontal = not c.maximized_horizontal
-		c.maximized_vertical	= not c.maximized_vertical
-		c:raise()
-		utils.toast("MAXIMIZED : " .. tostring(c.maximized_vertical and c.maximized_horizontal and true or false))
+		c.maximized = not c.maximized
+		if c.maximized then
+			c:raise()
+		end
+		utils.toast("MAXIMIZED : " .. tostring(c.maximized))
 	end
 }):add({
 	ctrl = { mod = "MA", key = "a" },
@@ -1903,7 +1904,7 @@ local backup_file_path = "/tmp/awesome_backup_restart"
 ---------------------------------------------------------------
 
 Eventemitter.on("awesome::restart", function()
-	
+
 	utils.log("making backup")
 
 	-- Construct backup
