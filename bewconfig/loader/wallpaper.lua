@@ -1,19 +1,29 @@
-local theme = require("beautiful")
 local gears = require("gears")
 local ascreen = require("awful.screen")
 
-local function randomWall()
-	local walls = theme.wallpapers
-	local selectedID = math.random(#walls) or 1
-	return walls[selectedID]
-end
+local WallCache = require("bewlib.wallpapers.cache")
+local WallSelector = require("bewlib.wallpapers.selector")
 
+local global_wall_cache = WallCache.new({
+	where = os.getenv("HOME") .. "/wallpapers/",
+})
+global_wall_cache:scan()
 
--- {{{ Wallpaper
-if theme.wallpapers then
-	ascreen.connect_for_each_screen(function (screen)
-		local wall = randomWall()
-		gears.wallpaper.maximized(wall, screen, true)
-	end)
-end
--- }}}
+ascreen.connect_for_each_screen(function(screen)
+
+	screen.wallpaper_selector = WallSelector.new({
+		cache = global_wall_cache,
+
+		-- TODO: when global wallpaper filter change, this selector should use it
+		-- follow_filter_of = wall_filter,
+
+		on_select = function(wall_path)
+			gears.wallpaper.maximized(wall_path, screen, true)
+		end,
+	})
+
+	--global_wall_cache:on("scan::complete", function()
+		screen.wallpaper_selector:next()
+	--end)
+
+end)

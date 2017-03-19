@@ -1205,43 +1205,22 @@ km:add({
 -- > theme:plane
 -- > theme:asia
 
-local currentWallpaperID = 1
-local lastWallpaperID = 1
 --- Select a new random wallpaper
 km:add({
 	ctrl = { mod = "M", key = "w" },
 	press = function()
-		local walls = theme.wallpapers
-		local selectedID = math.random(#walls) or 1
-		gears.wallpaper.maximized(walls[selectedID], capi.mouse.screen)
-		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
+		local screen = capi.mouse.screen
 
-		lastWallpaperID = currentWallpaperID
-		currentWallpaperID = selectedID
+		screen.wallpaper_selector:next()
 	end,
 })
 --- Reselect the last wallpaper
 km:add({
 	ctrl = { mod = "MS", key = "w" },
 	press = function()
-		local selectedID = lastWallpaperID
-		gears.wallpaper.maximized(theme.wallpapers[selectedID], capi.mouse.screen)
-		notif_id.wallpaper = utils.toast("Changing wallpaper (" .. selectedID .. ")", { replaces_id = notif_id.wallpaper }).id
+		local screen = capi.mouse.screen
 
-		currentWallpaperID, lastWallpaperID = lastWallpaperID, currentWallpaperID
-	end,
-})
-
--- manage wallpaper (currently, just show info)
-km:add({
-	ctrl = { mod = "MC", key = "w" },
-	press = function()
-		local infos = ""
-		infos = infos .. "Current : [" .. currentWallpaperID .. "] " .. theme.wallpapers[currentWallpaperID] .. "\n"
-		if lastWallpaperID > 0 then
-			infos = infos .. "Last : [" .. lastWallpaperID .. "] " .. theme.wallpapers[lastWallpaperID]
-		end
-		notif_id.wallpaper = utils.toast(infos, { title = "=== Wallpaper Managment ===", replaces_id = notif_id.wallpaper }).id
+		screen.wallpaper_selector:previous()
 	end,
 })
 
