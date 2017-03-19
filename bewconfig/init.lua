@@ -671,7 +671,11 @@ km:add({
 	ctrl = { mod = "M", key = "y" },
 	press = function()
 		-- TODO: more customization on scratch drop, and persistance between awesome restart
-		scratch.drop(global.config.apps.term, {vert = "bottom", sticky = true})
+		scratch.drop(global.config.apps.term, {
+			vert = "bottom",
+			width = 0.75,
+			sticky = true,
+		})
 	end,
 })
 
