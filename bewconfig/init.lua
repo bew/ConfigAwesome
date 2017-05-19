@@ -1569,6 +1569,24 @@ km:add({
 	end,
 })
 
+-- Lock & sleep
+-- :sleep
+km:add({
+	ctrl = { mod = "C", key = "Pause" },
+	press = function ()
+		awful.spawn.with_shell("i3locker")
+		naughty.notify({
+			text = "Sleeping...",
+			timeout = 0.5
+		})
+		utils.setTimeout(function()
+			awful.spawn.easy_async("systemctl suspend", function(stdout, stderr)
+				utils.toast.debug({ out = stdout, err = stderr })
+			end)
+		end, 0.5)
+	end,
+})
+
 ---------------------------------------------------------------
 -- Test keygrabber
 ---------------------------------------------------------------
