@@ -447,6 +447,23 @@ end)
 ))
 
 
+local function tag_rename(t)
+	awful.prompt.run({
+		prompt = "Rename tag: ",
+		text = t.name,
+		textbox = awful.screen.focused().mypromptbox.widget,
+		exe_callback = function(text)
+			if text:len() > 0 then
+				t.name = text
+			end
+		end
+	})
+end
+Command.register("rename.tag", function()
+	local t = capi.mouse.screen.selected_tag
+	tag_rename(t)
+end)
+
 
 
 
@@ -459,8 +476,17 @@ local topbar = {}
 -- Tag list config
 local mytaglist = {}
 mytaglist.buttons = awful.util.table.join(
-awful.button({			}, 1, awful.tag.viewonly),
-awful.button({ modkey 	}, 1, awful.client.movetotag)
+awful.button({}, 1, awful.tag.viewonly),
+awful.button({ modkey }, 1, awful.client.movetotag),
+awful.button({}, 3, function(t)
+	if client.focus then
+		client.focus:move_to_tag(t)
+	end
+end),
+awful.button({}, 2, function(t)
+	tag_rename(t)
+end
+)
 )
 
 local custom_taglist_update = loadFile('widget/taglist')
@@ -750,22 +776,6 @@ km:add({
 })
 
 
-
-
---TODO: move this command
-Command.register("rename.tag", function()
-	local tag = capi.mouse.screen.selected_tag
-	awful.prompt.run({
-		prompt = "Rename tag: ",
-		text = tag.name,
-		textbox = awful.screen.focused().mypromptbox.widget,
-		exe_callback = function(text)
-			if text:len() > 0 then
-				tag.name = text
-			end
-		end
-	})
-end)
 
 -- :rename tag
 -- :rename tag "My Tag"
