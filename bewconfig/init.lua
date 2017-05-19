@@ -258,7 +258,7 @@ do
 		local perc = Battery.infos.perc
 		local status = Battery.infos.status
 
-		if perc <= 25 and status == Battery.DISCHARGING then
+		if perc <= 10 and status == Battery.DISCHARGING then
 			wBatteryLow.visible = true
 			local text = wBatteryLow.w_back.w_text
 			text.text = "BATTERY LOW (" .. perc .. "%)"
@@ -1143,6 +1143,7 @@ applauncher.binds = {
 	},
 	t = { cmd = config.apps.term },
 	["²"] = { cmd = config.apps.term },
+	[" "] = { cmd = config.apps.term },
 	f = { cmd = config.apps.webrowser },
 }
 
@@ -1154,7 +1155,7 @@ function applauncher.grabber(mod, key, event)
 
 	local app_match = applauncher.binds[key]
 	if not app_match then
-		notif_id.applauncher = utils.toast("CANCEL", {
+		notif_id.applauncher = utils.toast("CANCEL - key:" .. key, {
 			title = "App Launcher",
 			replaces_id = notif_id.applauncher,
 		}).id
