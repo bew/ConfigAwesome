@@ -12,35 +12,7 @@ local theme = {}
 
 theme.name = "bewconfig"
 
-theme.wallpaper_dir = "/home/lesell_b/wallpapers/"
-
---TODO: move in class Wallpaper
--- always return a table (can be empty)
-local function getWallpapers()
-	local cmd = "find " .. theme.wallpaper_dir .. " -type f -name '*.png' -o -name '*.jpg'"
-	local output = io.popen(cmd)
-	if not output then
-		return {}
-	end
-
-	local walls = {}
-	for wallPath in output:lines() do
-		if not walls[wallPath] then
-			table.insert(walls, wallPath)
-			walls[wallPath] = #walls
-		end
-	end
-
-	output:close()
-	return walls
-end
-
-theme.wallpapers = getWallpapers()
-
-do
-	local random_wall_idx = math.random(1, #theme.wallpapers)
-	theme.wallpaper = theme.wallpapers[random_wall_idx]
-end
+theme.wallpaper_dir = os.getenv("HOME") .. "/wallpapers/"
 -- }}}
 
 

@@ -1,11 +1,12 @@
 local gears = require("gears")
 local ascreen = require("awful.screen")
+local beautiful = require("beautiful")
 
 local WallCache = require("bewlib.wallpapers.cache")
 local WallSelector = require("bewlib.wallpapers.selector")
 
 local global_wall_cache = WallCache.new({
-	where = os.getenv("HOME") .. "/wallpapers/",
+	where = beautiful.wallpaper_dir,
 })
 global_wall_cache:scan()
 

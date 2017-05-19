@@ -1227,6 +1227,10 @@ km:add({
 		local screen = capi.mouse.screen
 
 		screen.wallpaper_selector:next()
+
+		-- store in in_wall_selection history
+		-- start timer (1 min), when reached, drop the in_wall_selection
+		--
 	end,
 })
 --- Reselect the last wallpaper
@@ -1236,6 +1240,19 @@ km:add({
 		local screen = capi.mouse.screen
 
 		screen.wallpaper_selector:previous()
+	end,
+})
+
+--- Show current wallpaper infos
+km:add({
+	ctrl = { mod = "MC", key = "w" },
+	press = function()
+		local screen = capi.mouse.screen
+
+		local wall = screen.wallpaper_selector:current()
+		utils.toast(wall, {
+			title = "Current wallpaper",
+		})
 	end,
 })
 
