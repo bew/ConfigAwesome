@@ -1141,8 +1141,6 @@ applauncher.binds = {
 		func = menubar.show,
 		desc = "MENUBAR",
 	},
-	t = { cmd = config.apps.term },
-	["²"] = { cmd = config.apps.term },
 	[" "] = { cmd = config.apps.term },
 	f = { cmd = config.apps.webrowser },
 }
@@ -1188,6 +1186,7 @@ km:add({
 		end
 		help_str = help_str .. "\nPress any other key to cancel"
 
+		-- shouldn't be a Notification but a kind of dialog
 		notif_id.applauncher = utils.toast(help_str, {
 			title = "App Launcher\n==============",
 			timeout = 0,
@@ -1227,10 +1226,6 @@ km:add({
 		local screen = capi.mouse.screen
 
 		screen.wallpaper_selector:next()
-
-		-- store in in_wall_selection history
-		-- start timer (1 min), when reached, drop the in_wall_selection
-		--
 	end,
 })
 --- Reselect the last wallpaper
@@ -1600,25 +1595,25 @@ km:add({
 		-- outer keygrabber
 		------------------------------------------
 
-		local globAlphaNum
-		globAlphaNum = awful.keygrabber.run(function(mod, key, event)
+		local outer_grabber
+		outer_grabber = awful.keygrabber.run(function(mod, key, event)
 
 			if key == "Escape" then
-				awful.keygrabber.stop(globAlphaNum)
+				awful.keygrabber.stop(outer_grabber)
 				utils.toast("Exiting keygrabber tester")
 			end
 
 			if key == "a" then
 				utils.toast.warning("starting nested keygrabber tester")
 				local nbKeyGrabbed
-				local specialKeys
+				local inner_grabber
 
 				------------------------------------------
 				-- inner keygrabber
 				------------------------------------------
 
 				-- luacheck: ignore mod key event
-				specialKeys = awful.keygrabber.run(function(mod, key, event)
+				inner_grabber = awful.keygrabber.run(function(mod, key, event)
 					if not nbKeyGrabbed then
 						nbKeyGrabbed = 1
 					else
@@ -1626,7 +1621,7 @@ km:add({
 					end
 
 					if event == "release" and key == "q" then
-						awful.keygrabber.stop(specialKeys)
+						awful.keygrabber.stop(inner_grabber)
 						utils.toast.warning("Exiting nested keygrabber tester")
 					end
 
