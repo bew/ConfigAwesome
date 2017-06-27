@@ -453,9 +453,7 @@ local function tag_rename(t)
 		text = t.name,
 		textbox = awful.screen.focused().mypromptbox.widget,
 		exe_callback = function(text)
-			if text:len() > 0 then
-				t.name = text
-			end
+			t.name = text
 		end
 	})
 end
@@ -1400,39 +1398,89 @@ km:add({
 -- Volume
 ---------------------------------------------------------------
 
+local function audio_volume_get(callback)
+	awful.spawn.easy_async('pamixer --get-volume', function(stdout)
+		local perc = tonumber(stdout)
+
+		if callback then
+			callback(perc)
+		end
+	end)
+end
+
+local function audio_volume_increase(by)
+	awful.spawn.spawn('pamixer --increase ' .. by)
+end
+
+local function audio_volume_decrease(by)
+	awful.spawn.spawn('pamixer --decrease ' .. by)
+end
+
+-- Helpers
+------------------------------------------
+
+local function audio_volume_show(message)
+	audio_volume_get(function(perc)
+		if not message then
+			message = "Current level"
+		end
+
+		notif_id.volume = utils.toast(message, {
+			title = "Volume " .. perc .. "%",
+			position = "bottom_right",
+			replaces_id = notif_id.volume,
+		}).id
+	end)
+end
+
+local function audio_volume_up_show(by)
+	audio_volume_increase(by)
+	audio_volume_show("Increase by " .. by)
+end
+
+local function audio_volume_down_show(by)
+	audio_volume_decrease(by)
+	audio_volume_show("Decrease by " .. by)
+end
+
+-- Bindings
+------------------------------------------
+
 -- Volume control
--- :audio increase
+-- :audio inc[rease]
 -- :audio +
 km:add({
 	ctrl = { key = "XF86AudioRaiseVolume" },
 	press = function ()
-		awful.spawn.easy_async('pamixer --get-volume --increase 1', function(stdout)
-			local perc = tonumber(stdout)
-
-			notif_id.volume = utils.toast("Increase", {
-				title = "Volume " .. perc .. "%",
-				position = "bottom_right",
-				replaces_id = notif_id.volume
-			}).id
-		end)
+		audio_volume_up_show(1)
 	end,
 })
--- :audio decrease
+
+-- :audio dec[rease]
 -- :audio -
 km:add({
 	ctrl = { key = "XF86AudioLowerVolume" },
 	press = function ()
-		awful.spawn.easy_async('pamixer --get-volume --decrease 1', function(stdout)
-			local perc = tonumber(stdout)
-
-			notif_id.volume = utils.toast("Decrease", {
-				title = "Volume " .. perc .. "%",
-				position = "bottom_right",
-				replaces_id = notif_id.volume
-			}).id
-		end)
+		audio_volume_down_show(1)
 	end,
 })
+
+-- :audio ++
+km:add({
+	ctrl = { mod = "S", key = "XF86AudioRaiseVolume" },
+	press = function ()
+		audio_volume_up_show(5)
+	end,
+})
+
+-- :audio --
+km:add({
+	ctrl = { mod = "S", key = "XF86AudioLowerVolume" },
+	press = function ()
+		audio_volume_down_show(5)
+	end,
+})
+
 -- :audio mute
 -- :audio x
 km:add({
@@ -1493,7 +1541,7 @@ local function brightness_show(message)
 		notif_id.brightness = utils.toast(message, {
 			title = "Brightness " .. perc .. "%",
 			position = "bottom_right",
-			replaces_id = notif_id.brightness
+			replaces_id = notif_id.brightness,
 		}).id
 	end)
 end
