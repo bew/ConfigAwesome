@@ -580,13 +580,13 @@ end
 
 
 local wBatteryInfos = wibox({
-	width = 300,
-	height = 300,
+	width = 700,
+	height = 40,
 	x = 300,
 	y = 100,
 	ontop = true,
 })
-wBatteryInfos.bg = "#03A9F4"
+wBatteryInfos.bg = "#2e7d32"
 
 -- populate wBatteryInfos's wibox content
 do
@@ -595,31 +595,12 @@ do
 
 	-- Header
 	wBatteryInfos:setup {
-		id = "w_main",
-		layout = wibox.layout.align.vertical,
+		id = "w_content",
+		widget = wibox.widget.textbox,
 
-		{
-			-- top
-			layout = wibox.layout.align.horizontal,
-
-			nil, -- nothing on the left
-			{
-				-- Title
-				widget = wibox.widget.textbox,
-				text = "Battery infos",
-				font = "terminus 18",
-			},
-			w_perc,
-		},
-		{
-			-- middle
-			id = "w_content",
-			widget = wibox.widget.textbox,
-
-			text = "Content loading",
-			align = "center",
-			font = "terminux 18",
-		}
+		text = "Content loading",
+		align = "center",
+		font = "terminux 18",
 	}
 
 	Battery:on("percentage::changed", function(self, perc)
@@ -630,19 +611,14 @@ end
 
 
 local function showAcpi()
-	local function grabber(_, _, _)
-		-- I was trying to handle long-press, visually it works,
-		-- but internally it really doesn't work :(
-		capi.keygrabber.stop()
+	if wBatteryInfos.visible == false then
+		awful.spawn.easy_async("acpi -b", function(stdout)
+			wBatteryInfos.w_content.text = stdout
+		end)
+		wBatteryInfos.visible = true
+	else
 		wBatteryInfos.visible = false
 	end
-
-	wBatteryInfos.visible = true
-	awful.spawn.easy_async("acpi -b", function(stdout)
-		wBatteryInfos.w_main.w_content.text = stdout
-	end)
-
-	capi.keygrabber.run(grabber)
 end
 
 
