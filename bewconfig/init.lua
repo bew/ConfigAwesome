@@ -387,7 +387,6 @@ do
 	local wStatus = wibox.widget.textbox()
 	wNetwork.widget = wStatus
 
-	--local last_status = ""
 	local ssid = ""
 	local ip
 	local function update()
@@ -407,7 +406,11 @@ do
 	end
 	update()
 
-	Eventemitter.on("network::dhcp", function(ev, args)
+	Eventemitter.on("network::dhcp", function(_, args)
+		if not (args.interface == 'wlo1' or args.interface == 'enp0s25') then
+			return
+		end
+
 		local reason = args.reason
 
 		if reason == "BOUND" or reason == "RENEW" then
@@ -420,7 +423,6 @@ do
 		elseif reason == "NOCARRIER" then
 			ssid = ""
 		end
-		--last_status = reason
 		update()
 	end)
 end
