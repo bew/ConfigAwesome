@@ -109,8 +109,17 @@ Eventemitter.on("socket", function(_, args)
 	end
 end)
 
-Eventemitter.on("network::status", function(ev, args)
-	utils.toast.debug(args, { position = "bottom_left" })
+--Eventemitter.on("network::status", function(ev, args)
+local notif_id_by_dhcp_interface = {}
+Eventemitter.on("network::dhcp", function(_, args)
+    local str = ""
+    str = str .. args.interface .. ": " .. args.reason
+
+	local notif = utils.toast(str, {
+        position = "bottom_left",
+        replaces_id = notif_id_by_dhcp_interface[args.interface]
+    })
+    notif_id_by_dhcp_interface[args.interface] = notif.id
 end)
 
 
