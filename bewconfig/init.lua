@@ -35,8 +35,6 @@ local wibox = require("wibox")
 local naughty = require("naughty")
 local menubar = require("menubar")
 
-local gears = require("gears")
-
 
 -- Autofocus (when changing tag/screen/etc or add/delete client/tag)
 require("awful.autofocus")
@@ -92,7 +90,7 @@ Eventemitter.on("config::load", function()
 end)
 
 
-Battery:on("status::changed", function(self, status)
+Battery:on("status::changed", function(_, status)
 	utils.toast("Status changed !!\n"
 	.. "==> " .. status)
 end)
@@ -102,7 +100,7 @@ end)
 
 Remote.init("socket")
 
-Eventemitter.on("socket", function(event, args)
+Eventemitter.on("socket", function(_, args)
 	utils.toast.debug("get event socket")
 	if not args then
 		utils.toast.debug("no arguments to event")
@@ -502,7 +500,12 @@ awful.screen.connect_for_each_screen(function(screen)
 	awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
 	))
 
-	mytaglist[screen] = awful.widget.taglist(screen, awful.widget.taglist.filter.all, mytaglist.buttons, nil, custom_taglist_update)
+    mytaglist[screen] = awful.widget.taglist(screen,
+    awful.widget.taglist.filter.all,
+        mytaglist.buttons,
+        nil,
+        custom_taglist_update
+    )
 	screen.mypromptbox = awful.widget.prompt()
 
 	topbar[screen] = awful.wibar({ position = "top", screen = screen })
@@ -603,7 +606,7 @@ do
 		font = "terminux 18",
 	}
 
-	Battery:on("percentage::changed", function(self, perc)
+	Battery:on("percentage::changed", function(_, perc)
 		w_perc.text = perc .. "%"
 	end)
 end
@@ -919,7 +922,8 @@ km:add({
 km:add({
 	ctrl = { mod = "MC", key = "q" },
 	press = function()
-		local zenity = 'zenity --question --text="Are you sure you want to quit Awesome ?" --ok-label="Quit" --cancel-label="Stay here" '
+        local text = "Are you sure you want to quit Awesome ?"
+        local zenity = 'zenity --question --text="' .. text .. '" --ok-label="Quit" --cancel-label="Stay here" '
 		local zenity_cmd = zenity .. " && echo ok || echo cancel"
 
 		utils.async.getFirstLine(zenity_cmd, function(stdout)
@@ -1123,7 +1127,7 @@ applauncher.binds = {
 
 -- TODO (maybe): reverse bind map : do_something -> { key, key, key, ... }
 
-function applauncher.grabber(mod, key, event)
+function applauncher.grabber(mod, key, event) -- luacheck: ignore mod
 	if event == "release" then return true end
 	capi.keygrabber.stop()
 
@@ -1324,7 +1328,7 @@ km:add({
 		notif_id.net_selector = help_notif.id
 
 		-- grab keys
-		keygrabber.run(function(mod, key, event)
+		keygrabber.run(function(mod, key, event) -- luacheck: ignore mod
 			if event == "release" then return true end
 			keygrabber.stop()
 			naughty.destroy(help_notif)
