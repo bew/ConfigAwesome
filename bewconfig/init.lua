@@ -851,7 +851,12 @@ Command.register("delete.tag.current", function()
                 traceback = false,
             })
         else
-            tag:delete()
+            if not tag:delete() then
+                utils.toast.error("Cannot delete this tag\nIs the tag not empty?", {
+                    timeout = 5,
+                    traceback = false,
+                })
+            end
         end
 	end
 
