@@ -837,14 +837,22 @@ Command.register("add.tag.right", function()
 end)
 
 Command.register("delete.tag.current", function()
+    local nb_tags = #capi.mouse.screen.tags
 	local tag = capi.mouse.screen.selected_tag
 
 	local confirm_notif = utils.toast("Y / N", {
 		title = "Delete this tag ?",
 	})
 
-	local function delete_tag()
-		tag:delete()
+	local function try_delete_tag()
+        if nb_tags == 1 then
+            utils.toast.error("Cannot delete last tag!", {
+                timeout = 5,
+                traceback = false,
+            })
+        else
+            tag:delete()
+        end
 	end
 
 	keygrabber.run(function(_, key, event)
@@ -853,7 +861,7 @@ Command.register("delete.tag.current", function()
 		naughty.destroy(confirm_notif)
 
 		if key == "y" then
-			delete_tag()
+			try_delete_tag()
 		end
 		return true
 	end)
