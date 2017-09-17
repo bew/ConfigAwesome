@@ -1127,6 +1127,31 @@ km:add({
 })
 
 
+---------------------------------------------------------------
+-- Client context menu
+---------------------------------------------------------------
+local client_context_menu = {}
+
+-- when invoked, open the context menu on the current focused client
+-- fill the context menu state with the state of the client
+--
+-- client context menu:
+-- - [l]ock
+-- - [f]loating
+-- - [m]aximize
+-- - sticky (keybind?)
+-- - ...?
+--
+-- (attach a context menu instance to a client? Not needed)
+--
+-- Wanted behavior:
+--
+-- Using <key>: activate/toggle action & close menu
+-- Using Shift-<key>: activate/toggle action & stay in menu
+--
+-- Note about menu: This cannot be done with awful.menu, as the keygrabber
+-- simply ignore the modifiers. (Not sure if we can change the grabber, I think not)
+
 
 ---------------------------------------------------------------
 -- App Launcher
