@@ -5,15 +5,9 @@
 [submodule "lib/lain"]
 	path = lib/lain
 	url = https://github.com/copycat-killer/lain.git
-[submodule "lib/radical"]
-	path = lib/radical
-	url = https://github.com/Elv13/radical.git
 [submodule "lib/treesome"]
 	path = lib/treesome
 	url = http://github.com/RobSis/treesome.git
 [submodule "lib/redflat"]
 	path = lib/redflat
 	url = git@github.com:worron/redflat.git
-[submodule "study/awesompd"]
-	path = study/awesompd
-	url = git@github.com:alexander-yakushev/awesompd.git
