@@ -12,6 +12,9 @@ local theme = {}
 
 theme.name = "bewconfig"
 
+-- Force notification icon size (for the better!)
+theme.notification_icon_size = 42
+
 theme.wallpaper_dir = os.getenv("HOME") .. "/wallpapers/"
 -- }}}
 
