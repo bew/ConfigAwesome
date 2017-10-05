@@ -688,6 +688,7 @@ km:add({
 		scratch.drop(global.config.apps.term, {
 			vert = "bottom",
 			width = 0.75,
+			height = 0.50,
 			sticky = true,
 		})
 	end,
