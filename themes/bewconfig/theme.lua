@@ -32,7 +32,7 @@ local bg_theme = "#252525"
 -- {{{ Styles
 --theme.font      = "sans 8"
 
-theme.font      = "DejaVuSansMonoForPowerline Nerd Font 8"
+theme.font      = "DejaVuSansMonoForPowerline Nerd Font 6"
 
 -- {{{ Colors
 theme.fg_normal  = "#DCDCCC"

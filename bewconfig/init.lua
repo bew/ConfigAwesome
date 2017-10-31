@@ -164,7 +164,8 @@ menubar.utils.terminal = global.config.apps.term
 menubar.geometry = {
 	x = 0,
 	y = 0,
-	width = 1500
+	width = 1500,
+    height = 20,
 }
 -- }}}
 
@@ -177,7 +178,7 @@ local wBatteryContainer
 do
 	wBatteryContainer = wibox.container.background()
 	local wBattery = wibox.widget.textbox()
-	wBattery.font = "Awesome 10"
+	wBattery.font = "Awesome 7"
 
 	wBatteryContainer.widget = wBattery
 
@@ -246,7 +247,7 @@ do
 			id = "w_text",
 			widget = wibox.widget.textbox,
 			align = "center",
-			font = "terminux 18",
+			font = "terminux 10",
 		},
 	}
 
@@ -357,7 +358,7 @@ do
 	cmus_state_init()
 
 	wMusicCtrl = wibox.widget.textbox("")
-	wMusicCtrl.font = "Awesome 8"
+	wMusicCtrl.font = "Awesome 5"
 
 	local function cmus_widget_update()
 		wMusicCtrl.text = cmus_state_as_string()
@@ -517,7 +518,11 @@ awful.screen.connect_for_each_screen(function(screen)
     )
 	screen.mypromptbox = awful.widget.prompt()
 
-	topbar[screen] = awful.wibar({ position = "top", screen = screen })
+	topbar[screen] = awful.wibar({
+        position = "top",
+        screen = screen,
+        height = 20,
+    })
 
 	topbar[screen]:setup {
 		layout = wibox.layout.align.horizontal,
@@ -602,8 +607,10 @@ wBatteryInfos.bg = "#2e7d32"
 
 -- populate wBatteryInfos's wibox content
 do
+    local font = "terminus 10"
+
 	local w_perc = wibox.widget.textbox(Battery.infos.perc .. "%")
-	w_perc.font = "terminus 18"
+	w_perc.font = font
 
 	-- Header
 	wBatteryInfos:setup {
@@ -612,7 +619,7 @@ do
 
 		text = "Content loading",
 		align = "center",
-		font = "terminux 18",
+		font = font,
 	}
 
 	Battery:on("percentage::changed", function(_, perc)
