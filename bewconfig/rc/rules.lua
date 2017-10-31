@@ -27,7 +27,7 @@ awful.rules.rules = {
 
 	{
 		rule = {
-			class = "QNetSoul"
+			class = "discord"
 		},
 		properties = {
 			floating = true,
@@ -35,10 +35,10 @@ awful.rules.rules = {
 		},
 		callback = function(c)
 			c:geometry({
-				x		= 1500,
-				y		= 25,
-				width	= 350,
-				height	= 450
+				x		= 100,
+				y		= 100,
+				width	= 1600,
+				height	= 800
 			})
 		end
 	},
