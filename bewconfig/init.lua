@@ -1153,6 +1153,7 @@ applauncher.binds = {
 	},
 	[" "] = { cmd = config.apps.term },
 	f = { cmd = config.apps.webrowser },
+	v = { cmd = config.apps.webrowser2 },
 }
 
 -- TODO (maybe): reverse bind map : do_something -> { key, key, key, ... }
