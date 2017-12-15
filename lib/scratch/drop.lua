@@ -73,7 +73,7 @@ local function toggle(prog, opt)
             dropdown[prog][screen] = c
 
             -- Scratchdrop clients are floaters
-            awful.client.floating.set(c, true)
+            c.floating = true
 
             -- Client geometry and placement
             local screengeom = capi.screen[screen].workarea
@@ -105,14 +105,14 @@ local function toggle(prog, opt)
 
         -- Add manage signal and spawn the program
         attach_signal("manage", spawnw)
-        awful.util.spawn(prog, false)
+        awful.spawn(prog, false)
     else
         -- Get a running client
         local c = dropdown[prog][screen]
 
         -- Switch the client to the current workspace
         if c:isvisible() == false then c.hidden = true
-            awful.client.movetotag(awful.tag.selected(screen), c)
+            c:move_to_tag(capi.mouse.screen.selected_tag)
         end
 
         -- Focus and raise if hidden
