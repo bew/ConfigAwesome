@@ -63,3 +63,16 @@ With `Shift`: do the action, stay in client mode
 ## Alarm system
 
 Maybe don't do it in the WM/DE?
+
+
+## DBus based data gathering
+
+lgi, Gio notes: https://github.com/pavouk/lgi/blob/master/docs/gio.md
+
+Battery infos from upower:
+
+- [Widget `upower_battery`](https://github.com/lexa/awesome_upower_battery)
+(Using `lgi.require('UPowerGlib')`, need sth to be installed)
+
+- [Widget `power_widget`](https://github.com/stefano-m/awesome-power_widget)
+
