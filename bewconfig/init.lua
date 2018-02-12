@@ -1164,7 +1164,7 @@ function applauncher.grabber(mod, key, event) -- luacheck: ignore mod
 		return
 	end
 
-	notif_id.applauncher = utils.toast("Lanching " .. (app_match.cmd or app_match.desc or ""), {
+	notif_id.applauncher = utils.toast("Launching " .. (app_match.cmd or app_match.desc or ""), {
 		title = "App Launcher",
 		replaces_id = notif_id.applauncher,
 	}).id
