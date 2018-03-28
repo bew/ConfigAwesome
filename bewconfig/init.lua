@@ -1614,7 +1614,7 @@ km:add({
 			text = "Locking...",
 			timeout = 0.5
 		})
-		awful.spawn.with_shell("i3locker")
+		awful.spawn.with_shell("i3colocker")
 	end,
 })
 
@@ -1623,7 +1623,7 @@ km:add({
 km:add({
 	ctrl = { mod = "C", key = "Pause" },
 	press = function ()
-		awful.spawn.with_shell("i3locker")
+		awful.spawn.with_shell("i3colocker")
 		naughty.notify({
 			text = "Sleeping...",
 			timeout = 0.5
