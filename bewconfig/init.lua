@@ -684,7 +684,6 @@ km:add({
 km:add({
 	ctrl = { mod = "M", key = "y" },
 	press = function()
-		-- TODO: more customization on scratch drop, and persistance between awesome restart
 		scratch.drop(global.config.apps.term, {
 			vert = "bottom",
 			width = 0.75,
@@ -701,13 +700,12 @@ km:add({
 -- Enter in Tag management Mode
 -- :mode manage tag				TODO: what is a mode ?
 -- :mmt
-km:add({
-	ctrl = { mod = "MC", key = "t" },
-	--press = Command.getFunction("mode.manage.tag")
-	press = function()
-
-	end,
-})
+--km:add({
+--	ctrl = { mod = "MC", key = "t" },
+--	press = function()
+--		change_mode("tag_management")
+--	end,
+--})
 
 -- Goto
 -- :goto <what> <position/fuzzy> <filter>
