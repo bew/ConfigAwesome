@@ -680,6 +680,14 @@ km:add({
 	press = showAcpi,
 })
 
+km:add({
+	ctrl = { mod = "MC", key = "b" },
+	press = function ()
+	    Battery.disabled = not Battery.disabled
+        utils.toast("Battery update disabled state: " .. tostring(Battery.disabled))
+	end,
+})
+
 -- :guake
 km:add({
 	ctrl = { mod = "M", key = "y" },
