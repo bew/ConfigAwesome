@@ -952,12 +952,10 @@ km:add({
 	ctrl = { mod = "MC", key = "q" },
 	press = function()
         local text = "Are you sure you want to quit Awesome ?"
-        local zenity = 'zenity --question --text="' .. text .. '" --ok-label="Quit" --cancel-label="Stay here" '
-		local zenity_cmd = zenity .. " && echo ok || echo cancel"
+        local zenity_cmd = 'zenity --question --text="' .. text .. '" --ok-label="Quit" --cancel-label="Stay here" '
 
-		utils.async.getFirstLine(zenity_cmd, function(stdout)
-			utils.toast.debug(stdout)
-			if stdout == "ok" then
+        awful.spawn.easy_async(zenity_cmd, function(_, _, _, exit_code)
+			if exit_code == 0 then
 				utils.toast.debug("QUIT !!!!!!!")
 				awesome.quit()
 			else
@@ -1447,12 +1445,17 @@ end
 
 local function audio_volume_up_show(by)
 	audio_volume_increase(by)
-	audio_volume_show("Increase by " .. by)
+
+    utils.setTimeout(function()
+        audio_volume_show("Increase by " .. by)
+    end, 0.1)
 end
 
 local function audio_volume_down_show(by)
 	audio_volume_decrease(by)
-	audio_volume_show("Decrease by " .. by)
+    utils.setTimeout(function()
+        audio_volume_show("Decrease by " .. by)
+    end, 0.1)
 end
 
 -- Bindings
