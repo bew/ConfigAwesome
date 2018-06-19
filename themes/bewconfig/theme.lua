@@ -49,32 +49,32 @@ theme.bg_systray = theme.bg_normal
 -- {{{ Icons
 theme.icon = {}
 function theme.addIcon(folder, name)
-	if name == nil then
-		name = folder
-		folder = nil
-	end
-	local ipath = path .. "/icon/" .. (folder and folder .. "/") .. name .. ".png"
-	if folder ~= nil then
-		if theme.icon[folder] == nil then
-			theme.icon[folder] = {}
-		end
-		theme.icon[folder][name] = ipath
-	else
-		theme.icon[name] = ipath
-	end
-	return ipath
+    if name == nil then
+        name = folder
+        folder = nil
+    end
+    local ipath = path .. "/icon/" .. (folder and folder .. "/") .. name .. ".png"
+    if folder ~= nil then
+        if theme.icon[folder] == nil then
+            theme.icon[folder] = {}
+        end
+        theme.icon[folder][name] = ipath
+    else
+        theme.icon[name] = ipath
+    end
+    return ipath
 end
 
 function theme.getIcon(folder, name)
-	if name == nil then
-		name = folder
-		folder = nil
-	end
-	if folder ~= nil and theme.icon[folder] ~= nil then
-		return theme.icon[folder][name]
-	else
-		return theme.icon[name]
-	end
+    if name == nil then
+        name = folder
+        folder = nil
+    end
+    if folder ~= nil and theme.icon[folder] ~= nil then
+        return theme.icon[folder][name]
+    else
+        return theme.icon[name]
+    end
 end
 
 theme.addIcon( "emergency", "rcEdit" )

@@ -69,7 +69,7 @@ local function toggle(prog, opt)
 
     if not dropdown[prog][screen] then
         local spawnw
-		spawnw = function (c)
+        spawnw = function (c)
             dropdown[prog][screen] = c
 
             -- Scratchdrop clients are floaters
@@ -81,7 +81,7 @@ local function toggle(prog, opt)
             if width  <= 1 then width  = screengeom.width  * width  end
             if height <= 1 then height = screengeom.height * height end
 
-			local x, y
+            local x, y
             if     horiz == "left"  then x = screengeom.x
             elseif horiz == "right" then x = screengeom.width - width
             else   x =  screengeom.x+(screengeom.width-width)/2 end
