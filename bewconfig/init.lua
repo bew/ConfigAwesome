@@ -133,12 +133,11 @@ loadFile("cmds/goto")
 
 -- {{{ default tag for current & future screens
 awful.screen.connect_for_each_screen(function (screen)
-	awful.tag({
-		"blank",
-	}, screen, global.availableLayouts.tile)
-
-	-- TODO: better place to set this ?
-	screen.padding = 5
+    awful.tag.add("blank", {
+        layout = global.availableLayouts.tile,
+        screen = screen,
+        gap = 7,
+    })
 end)
 -- }}}
 
@@ -837,6 +836,7 @@ Command.register("add.tag.right", function()
 	local new_tag = awful.tag.add("new", {
 		layout = tag.layout,
 		screen = screen,
+        gap = 7,
 	})
 
 	new_tag.index = new_idx
@@ -2097,6 +2097,7 @@ Eventemitter.on("config::load", function()
 		for _, tag_info in ipairs(screen_info.tags) do
 			local new_tag = awful.tag.add(tag_info.name, {
 				screen = screen,
+                gap = 7,
 			})
 
 			new_tag.selected = tag_info.selected
