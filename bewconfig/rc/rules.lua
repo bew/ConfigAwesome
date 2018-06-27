@@ -31,15 +31,14 @@ awful.rules.rules = {
         },
         properties = {
             floating = true,
-            ontop = true,
+            --ontop = true,
         },
         callback = function(c)
             c:geometry({
-                x      = 100,
-                y      = 100,
                 width  = 1600,
                 height = 800,
             })
+            awful.placement.centered(c)
         end
     },
 
