@@ -133,11 +133,12 @@ loadFile("cmds/goto")
 
 -- {{{ default tag for current & future screens
 awful.screen.connect_for_each_screen(function (screen)
-    awful.tag.add("blank", {
+    local tag = awful.tag.add("blank", {
         layout = global.availableLayouts.tile,
         screen = screen,
         gap = 7,
     })
+    tag:view_only()
 end)
 -- }}}
 
