@@ -39,8 +39,6 @@ local menubar = require("menubar")
 -- Autofocus (when changing tag/screen/etc or add/delete client/tag)
 require("awful.autofocus")
 
-local scratch = require("scratch")
-
 local global = require("global")
 
 local MsgPack = require("MessagePack") -- used for config backup
@@ -52,8 +50,9 @@ local Const = require("bewlib.const")
 local Command = require("bewlib.command")
 local Eventemitter = require("bewlib.eventemitter")
 
-local Remote = require("bewlib.remote")
+local Scratch = require("bewlib.scratch")
 
+local Remote = require("bewlib.remote")
 
 local function loadFile(file)
     local path = global.confInfos.path .. "/" .. file .. ".lua"
@@ -121,6 +120,20 @@ Eventemitter.on("network::dhcp", function(_, args)
     })
     notif_id_by_dhcp_interface[args.interface] = notif.id
 end)
+
+-- Init Scratch client config
+------------------------------------------
+
+Scratch.prog = global.config.apps.term
+Scratch.default_options = {
+    vert = "bottom",
+    horiz = "center",
+    width = 0.75,
+    height = 0.50,
+    sticky = true,
+    ontop = true,
+}
+
 
 
 
@@ -688,16 +701,34 @@ km:add({
     end,
 })
 
--- :guake
+-- :scratch
 km:add({
     ctrl = { mod = "M", key = "y" },
     press = function()
-        scratch.drop(global.config.apps.term, {
-            vert = "bottom",
-            width = 0.75,
-            height = 0.50,
-            sticky = true,
-        })
+        Scratch.toggle()
+    end,
+})
+
+-- Swap focused client with current scratch
+-- :scratch swap
+km:add({
+    ctrl = { mod = "MS", key = "y" },
+    press = function()
+        local focus_c = capi.client.focus
+        local old_scratch_client = Scratch.get_client()
+        if focus_c == old_scratch_client then
+            -- focused client is the scratch client
+            Scratch.disable_current()
+
+        elseif old_scratch_client then
+            -- swap focused client with scratched client
+            Scratch.swap_with(focus_c)
+
+        else
+            -- no current scratch client
+            -- => just make focused client the scratch client
+            Scratch.make_scratch(focus_c)
+        end
     end,
 })
 
