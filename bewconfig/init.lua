@@ -1843,19 +1843,25 @@ Keymap.new("client"):add({
         else
             action = "UNLOCKED"
         end
-        utils.toast(action)
+        notif_id.client_locked = utils.toast(action, {
+            replaces_id = notif_id.client_locked
+        }).id
     end
 }):add({
     ctrl = { mod = "M", key = "a" },
     press = function(_, c)
         c.ontop = not c.ontop
-        utils.toast("ON TOP : " .. tostring(c.ontop))
+        notif_id.client_ontop = utils.toast("ON TOP : " .. tostring(c.ontop), {
+            replaces_id = notif_id.client_ontop
+        }).id
     end
 }):add({
     ctrl = { mod = "M", key = "f" },
     press = function(_, c)
         awful.client.floating.toggle(c)
-        utils.toast("FLOATING : " .. tostring(awful.client.floating.get(c)))
+        notif_id.client_floating = utils.toast("FLOATING : " .. tostring(awful.client.floating.get(c)), {
+            replaces_id = notif_id.client_floating
+        }).id
     end
 }):add({
     ctrl = { mod = "M", key = "m" },
@@ -1864,13 +1870,17 @@ Keymap.new("client"):add({
         if c.maximized then
             c:raise()
         end
-        utils.toast("MAXIMIZED : " .. tostring(c.maximized))
+        notif_id.client_maximized = utils.toast("MAXIMIZED : " .. tostring(c.maximized), {
+            replaces_id = notif_id.client_maximized
+        }).id
     end
 }):add({
     ctrl = { mod = "MA", key = "a" },
     press = function(_, c)
         c.sticky = not c.sticky
-        utils.toast("STICKY : " .. tostring(c.sticky))
+        notif_id.client_sticky = utils.toast("STICKY : " .. tostring(c.sticky), {
+            replaces_id = notif_id.client_sticky
+        }).id
     end
 }):add({
     ctrl = { mod = "M", key = "o" },
