@@ -1533,14 +1533,24 @@ km:add({
 km:add({
     ctrl = { key = "XF86AudioMute" },
     press = function ()
-        awful.spawn.easy_async('pamixer --get-mute --toggle-mute', function(stdout)
-            local status = stdout
+        awful.spawn.easy_async('pamixer --toggle-mute', function()
+            awful.spawn.easy_async('pamixer --get-mute', function(stdout)
+                local status = string.gsub(stdout, "\n", "")
+                local mute_str
 
-            notif_id.volume = utils.toast("Toggle Mute", {
-                title = "Status : " .. status,
-                position = "bottom_right",
-                replaces_id = notif_id.volume
-            }).id
+                if status == "true" then
+                    mute_str = "Mute"
+                elseif status == "false" then
+                    mute_str = "Unmute"
+                else
+                    mute_str = "Unknown mute status: " .. status
+                end
+
+                notif_id.volume = utils.toast(mute_str, {
+                    position = "bottom_right",
+                    replaces_id = notif_id.volume
+                }).id
+            end)
         end)
     end,
 })
