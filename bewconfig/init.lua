@@ -577,12 +577,12 @@ end)
 
 -- BatteryBar
 do
-    local screen_geom = screen.primary.geometry
+    local geo = capi.screen.primary.geometry
     local wBatteryBar = wibox({
-        x = 0,
-        y = screen_geom.height - 5,
+        x = geo.x,
+        y = geo.y + geo.height - 5,
         height = 5,
-        width = screen_geom.width,
+        width = geo.width,
         type = "desktop",
         visible = true,
         ontop = true,
