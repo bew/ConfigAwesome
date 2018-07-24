@@ -41,24 +41,5 @@ awful.rules.rules = {
             awful.placement.centered(c)
         end
     },
-
-    {
-        rule = {
-            class = "wpa_gui"
-        },
-        properties = {
-            floating = true,
-            ontop = true,
-        },
-        callback = function(c)
-            c:geometry({
-                x      = 1400,
-                y      = 25,
-                width  = 350,
-                height = 370,
-            })
-        end
-    }
-
 }
 -- }}}
