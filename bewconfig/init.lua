@@ -174,11 +174,22 @@ end
 -- {{{ Menu
 -- Menubar configuration
 menubar.utils.terminal = global.config.apps.term
-menubar.geometry = {
-    x = 0,
-    y = 0,
-    width = 1500
-}
+do
+    local geo = capi.screen.primary.geometry
+    menubar.geometry = {
+        x = geo.x + 0,
+        y = geo.y + 0,
+        width = 1500
+    }
+    capi.screen.connect_signal("added", function(scr)
+        -- update menubar coords
+        local _geo = capi.screen.primary.geometry
+        menubar.geometry = {
+            x = _geo.x + 0,
+            y = _geo.y + 0,
+        }
+    end)
+end
 -- }}}
 
 
@@ -240,12 +251,12 @@ end
 do
     -- Define widget
 
-    local screen_geom = screen.primary.geometry
+    local geo = capi.screen.primary.geometry
     local wBatteryLow = wibox({
         width = 300,
         height = 50,
-        x = screen_geom.width / 2 - 100,
-        y = screen_geom.height - 50,
+        x = geo.x + geo.width / 2 - 100,
+        y = geo.y + geo.height - 50,
         ontop = true,
     })
 
@@ -604,17 +615,19 @@ do
 end
 
 
-local wBatteryInfos = wibox({
-    width = 700,
-    height = 40,
-    x = 300,
-    y = 100,
-    ontop = true,
-})
-wBatteryInfos.bg = "#2e7d32"
+local wBatteryInfos
+do
+    local geo = capi.screen.primary.geometry
+    wBatteryInfos = wibox({
+        x = geo.x + 300,
+        y = geo.y + 100,
+        width = 700,
+        height = 40,
+        ontop = true,
+    })
+    wBatteryInfos.bg = "#2e7d32"
 
 -- populate wBatteryInfos's wibox content
-do
     local w_perc = wibox.widget.textbox(Battery.infos.perc .. "%")
     w_perc.font = "terminus 18"
 
@@ -635,11 +648,14 @@ end
 
 
 
-local function showAcpi()
+local function toggle_acpi_infos()
     if wBatteryInfos.visible == false then
         awful.spawn.easy_async("acpi -b", function(stdout)
             wBatteryInfos.w_content.text = stdout
         end)
+        local geo = awful.screen.focused().geometry
+        wBatteryInfos.x = geo.x + 300
+        wBatteryInfos.y = geo.y + 100
         wBatteryInfos.visible = true
     else
         wBatteryInfos.visible = false
@@ -690,7 +706,7 @@ km:add({
 -- :battery info
 km:add({
     ctrl = { mod = "M", key = "b" },
-    press = showAcpi,
+    press = toggle_acpi_infos,
 })
 
 --- Disable battery reoprting (usually used when ACPI fails)
