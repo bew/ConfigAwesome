@@ -2061,7 +2061,9 @@ end)
 
 local function debugSignal(base, sigName, isMethod)
     local func = function(...)
-        utils.toast.debug({...}, { title = "Params for event " .. sigName })
+        utils.toast.debug(utils.inspect({...}), {
+            title = "Params for event " .. sigName
+        })
     end
     local function show()
         utils.toast.debug(sigName, { position = "top_left" })
