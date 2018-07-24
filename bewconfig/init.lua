@@ -693,6 +693,7 @@ km:add({
     press = showAcpi,
 })
 
+--- Disable battery reoprting (usually used when ACPI fails)
 km:add({
     ctrl = { mod = "MC", key = "b" },
     press = function ()
@@ -966,6 +967,69 @@ km:add({
     press = Command.getFunction("delete.tag.current"),
 })
 
+---------------------------------------------------------------
+-- Screen
+---------------------------------------------------------------
+
+local gmath = require("gears.math")
+
+local function get_screen_relative(offset)
+    local focused_scr = awful.screen.focused()
+    local new_index = gmath.cycle(capi.screen.count(), focused_scr.index + offset)
+    return capi.screen[new_index]
+end
+
+-- Goto screen
+------------------------------------------
+
+-- :goto screen next
+km:add({
+    ctrl = { mod = "M", key = "s" },
+    press = function()
+        local new_screen = get_screen_relative(1)
+        awful.screen.focus(new_screen)
+    end
+})
+
+-- :goto screen prev
+km:add({
+    ctrl = { mod = "M", key = "q" },
+    press = function()
+        local new_screen = get_screen_relative(-1)
+        awful.screen.focus(new_screen)
+    end
+})
+
+-- Move client to screen
+------------------------------------------
+
+-- :move screen next
+km:add({
+    ctrl = { mod = "MS", key = "s" },
+    press = function()
+        if capi.screen.count() == 1 then
+            utils.toast("There is only 1 screen")
+            return
+        end
+
+        local new_screen = get_screen_relative(1)
+        capi.client.focus:move_to_screen(new_screen)
+    end
+})
+
+-- :move screen prev
+km:add({
+    ctrl = { mod = "MS", key = "q" },
+    press = function()
+        if capi.screen.count() == 1 then
+            utils.toast("There is only 1 screen")
+            return
+        end
+
+        local new_screen = get_screen_relative(1)
+        capi.client.focus:move_to_screen(new_screen)
+    end
+})
 
 ---------------------------------------------------------------
 -- awesome management
