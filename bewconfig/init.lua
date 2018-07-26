@@ -893,6 +893,20 @@ Command.register("add.tag.right", function()
     new_tag:view_only()
 end)
 
+Command.register("add.tag.left", function()
+    local scr = capi.mouse.screen
+    local tag = scr.selected_tag
+    local new_idx = tag.index -- insert at current tag index
+    local new_tag = awful.tag.add("new", {
+        layout = tag.layout,
+        screen = scr,
+        gap = 7,
+    })
+
+    new_tag.index = new_idx
+    new_tag:view_only()
+end)
+
 Command.register("delete.tag.current", function()
     local scr = capi.mouse.screen
     local nb_tags = #scr.tags
@@ -972,8 +986,15 @@ km:add({
 -- :add tag right
 -- :%atr
 km:add({
-    ctrl = { mod = "M", key = "i" },
+    ctrl = { mod = "MS", key = "i" },
     press = Command.getFunction("add.tag.right"),
+})
+
+-- :add tag left
+-- :%ath
+km:add({
+    ctrl = { mod = "M", key = "i" },
+    press = Command.getFunction("add.tag.left"),
 })
 
 -- :delete tag
