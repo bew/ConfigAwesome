@@ -932,9 +932,9 @@ Command.register("delete.tag.current", function()
         end
     end
 
-    keygrabber.run(function(_, key, event)
+    capi.keygrabber.run(function(_, key, event)
         if event == "release" then return true end
-        keygrabber.stop()
+        capi.keygrabber.stop()
         naughty.destroy(confirm_notif)
 
         if key == "y" then
@@ -1491,9 +1491,9 @@ km:add({
         notif_id.net_selector = help_notif.id
 
         -- grab keys
-        keygrabber.run(function(mod, key, event) -- luacheck: ignore mod
+        capi.keygrabber.run(function(mod, key, event) -- luacheck: ignore mod
             if event == "release" then return true end
-            keygrabber.stop()
+            capi.keygrabber.stop()
             naughty.destroy(help_notif)
 
             if networks[key] then
