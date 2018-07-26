@@ -871,20 +871,21 @@ Command.register("move.tag.left", function()
 end)
 
 Command.register("move.tag.right", function()
-    local tag = capi.mouse.screen.selected_tag
-    local new_idx = awful.util.cycle(#capi.mouse.screen.tags, tag.index + 1)
+    local scr = capi.mouse.screen
+    local tag = scr.selected_tag
+    local new_idx = awful.util.cycle(#scr.tags, tag.index + 1)
 
     tag.index = new_idx
     tag:view_only()
 end)
 
 Command.register("add.tag.right", function()
-    local screen = capi.mouse.screen
-    local tag = screen.selected_tag
+    local scr = capi.mouse.screen
+    local tag = scr.selected_tag
     local new_idx = tag.index + 1
     local new_tag = awful.tag.add("new", {
         layout = tag.layout,
-        screen = screen,
+        screen = scr,
         gap = 7,
     })
 
@@ -893,8 +894,9 @@ Command.register("add.tag.right", function()
 end)
 
 Command.register("delete.tag.current", function()
-    local nb_tags = #capi.mouse.screen.tags
-    local tag = capi.mouse.screen.selected_tag
+    local scr = capi.mouse.screen
+    local nb_tags = #scr.tags
+    local tag = scr.selected_tag
 
     local confirm_notif = utils.toast("Y / N", {
         title = "Delete this tag ?",
