@@ -883,7 +883,7 @@ Command.register("add.tag.right", function()
     local scr = capi.mouse.screen
     local tag = scr.selected_tag
     local new_idx = tag.index + 1
-    local new_tag = awful.tag.add("new", {
+    local new_tag = awful.tag.add("", {
         layout = tag.layout,
         screen = scr,
         gap = 7,
@@ -897,7 +897,7 @@ Command.register("add.tag.left", function()
     local scr = capi.mouse.screen
     local tag = scr.selected_tag
     local new_idx = tag.index -- insert at current tag index
-    local new_tag = awful.tag.add("new", {
+    local new_tag = awful.tag.add("", {
         layout = tag.layout,
         screen = scr,
         gap = 7,
