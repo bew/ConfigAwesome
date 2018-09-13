@@ -1039,6 +1039,15 @@ km:add({
     end
 })
 
+-- TMP
+km:add({
+    ctrl = { mod = "MA", key = "m" },
+    press = function()
+        local new_screen = capi.screen.primary
+        capi.mouse.coords({x = 10, y = 10})
+    end
+})
+
 -- Move client to screen
 ------------------------------------------
 
