@@ -41,7 +41,7 @@ require("awful.autofocus")
 
 local global = require("global")
 
-local MsgPack = require("MessagePack") -- used for config backup
+local MsgPack = require("mpack") -- used for config backup
 
 --[[ My lib ]]--
 local utils = require("bewlib.utils")
