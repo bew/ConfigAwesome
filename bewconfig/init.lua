@@ -819,6 +819,38 @@ km:add({
 })
 
 
+-- Bind all key numbers to tags.
+-- Be careful: we use keycodes to make it work on any keyboard layout.
+-- This should map on the top row of your keyboard, usually 1 to 9.
+for i = 1, 9 do
+    -- View tag only.
+    km:add({
+        ctrl = { mod = "M", key = "#" .. i + 9 },
+        description = "view tag #" .. i,
+        press = function()
+            local screen = awful.screen.focused()
+            local tag = screen.tags[i]
+            if tag then
+                tag:view_only()
+            end
+        end
+    })
+
+    -- Move client to tag.
+    km:add({
+        ctrl = { mod = "MS", key = "#" .. i + 9 },
+        description = "move focused client to tag #" .. i,
+        press = function()
+            if client.focus then
+                local tag = client.focus.screen.tags[i]
+                if tag then
+                    client.focus:move_to_tag(tag)
+                end
+            end
+        end
+    })
+end
+
 
 -- :rename tag
 -- :rename tag "My Tag"
