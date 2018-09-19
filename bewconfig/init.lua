@@ -1262,14 +1262,10 @@ km:add({
 km:add({
     --ctrl = { mod = "M", key = "t" },
     ctrl = { mod = "M", key = "Return" }, -- fallback, I don't use it
-    press = function () awful.spawn(global.config.apps.term) end,
+    press = function () awful.spawn(global.config.apps.term, {
+        tag = capi.mouse.screen.selected_tag,
+    }) end,
 })
-
----- :spawn term2
---km:add({
---    ctrl = { mod = "MA", key = "t" },
---    press = function () awful.util.spawn(global.config.apps.term2) end,
---})
 
 
 
@@ -1352,7 +1348,9 @@ function applauncher.grabber(mod, key, event) -- luacheck: ignore mod
 
     if app_match.cmd then -- bind is a cmd
 
-        awful.spawn(app_match.cmd)
+        awful.spawn(app_match.cmd, {
+            tag = capi.mouse.screen.selected_tag,
+        })
 
     elseif app_match.func then -- bind is a function
         app_match.func()
