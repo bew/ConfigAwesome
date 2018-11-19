@@ -2029,7 +2029,7 @@ Keymap.new("client"):add({
 }):add({
     ctrl = { mod = "M", key = "o" },
     press = function(_, c)
-        c.opacity = (c.opacity == 1 and theme.client_default_opacity or 1)
+        c.opacity = (c.opacity == 1 and theme.client_some_opacity or 1)
     end
 })
 
