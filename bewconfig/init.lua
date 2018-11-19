@@ -144,19 +144,6 @@ loadFile("cmds/goto")
 
 
 
--- {{{ default tag for current & future screens
-awful.screen.connect_for_each_screen(function (screen)
-    local tag = awful.tag.add("blank", {
-        layout = global.availableLayouts.tile,
-        screen = screen,
-        gap = 7,
-    })
-    tag:view_only()
-end)
--- }}}
-
-
-
 -- Edit the config file
 local function awesome_edit()
     local function spawnInTerm(cmd)
@@ -182,6 +169,14 @@ do
         width = 1500
     }
     capi.screen.connect_signal("added", function(scr)
+        -- update menubar coords
+        local _geo = capi.screen.primary.geometry
+        menubar.geometry = {
+            x = _geo.x + 0,
+            y = _geo.y + 0,
+        }
+    end)
+    capi.screen.connect_signal("removed", function()
         -- update menubar coords
         local _geo = capi.screen.primary.geometry
         menubar.geometry = {
@@ -498,6 +493,19 @@ end)
 
 
 
+-- {{{ default tag for current & future screens
+awful.screen.connect_for_each_screen(function (screen)
+    local tag = awful.tag.add("blank", {
+        layout = global.availableLayouts.tile,
+        screen = screen,
+        gap = 7,
+    })
+    tag:view_only()
+end)
+-- }}}
+
+
+
 -- Create a textclock widget
 local wTime = wibox.widget.textclock(" %H:%M ")
 
@@ -527,17 +535,11 @@ local custom_taglist_update = loadFile('widget/taglist')
 local spacer = wibox.widget.textbox("      ")
 awful.screen.connect_for_each_screen(function(screen)
 
-    screen.my_layout_switcher = awful.widget.layoutbox(screen)
-    screen.my_layout_switcher:buttons(awful.util.table.join(
-    awful.button({ }, 1, function () awful.layout.inc(global.layouts,  1) end),
-    awful.button({ }, 3, function () awful.layout.inc(global.layouts, -1) end)
-    ))
-
     mytaglist[screen] = awful.widget.taglist(screen,
-    awful.widget.taglist.filter.all,
-    mytaglist.buttons,
-    nil,
-    custom_taglist_update
+        awful.widget.taglist.filter.all,
+        mytaglist.buttons,
+        nil,
+        custom_taglist_update
     )
     screen.mypromptbox = awful.widget.prompt()
 
@@ -576,7 +578,6 @@ awful.screen.connect_for_each_screen(function(screen)
             wNetwork,
             wTime,
             wBatteryContainer,
-            screen.my_layout_switcher,
         },
     }
 
