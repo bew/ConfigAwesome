@@ -83,8 +83,9 @@ theme.addIcon( "emergency", "rcReload" )
 
 
 
-theme.client_default_opacity = 1
-theme.client_some_opacity = 0.85
+theme.client_default_opacity = theme.client_opacity_opaque
+theme.client_opacity_trans = 0.85
+theme.client_opacity_opaque = 1
 
 
 

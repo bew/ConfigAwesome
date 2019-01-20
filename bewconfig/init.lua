@@ -2029,7 +2029,9 @@ Keymap.new("client"):add({
 }):add({
     ctrl = { mod = "M", key = "o" },
     press = function(_, c)
-        c.opacity = (c.opacity == 1 and theme.client_some_opacity or 1)
+        local opaque_level = theme.client_opacity_opaque
+        local trans_level = theme.client_opacity_trans
+        c.opacity = (c.opacity == opaque_level and trans_level or opaque_level)
     end
 })
 
