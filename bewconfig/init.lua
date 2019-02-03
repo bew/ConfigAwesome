@@ -1262,7 +1262,7 @@ km:add({
 -- :spawn term
 km:add({
     --ctrl = { mod = "M", key = "t" },
-    ctrl = { mod = "M", key = "Return" }, -- fallback, I don't use it
+    ctrl = { mod = "MC", key = "Return" }, -- fallback, I don't use it
     press = function () awful.spawn(global.config.apps.term, {
         tag = capi.mouse.screen.selected_tag,
     }) end,
@@ -1643,7 +1643,7 @@ end
 km:add({
     ctrl = { key = "XF86AudioRaiseVolume" },
     press = function ()
-        audio_volume_up_show(1)
+        audio_volume_up_show(5)
     end,
 })
 
@@ -1652,7 +1652,7 @@ km:add({
 km:add({
     ctrl = { key = "XF86AudioLowerVolume" },
     press = function ()
-        audio_volume_down_show(1)
+        audio_volume_down_show(5)
     end,
 })
 
@@ -1660,7 +1660,7 @@ km:add({
 km:add({
     ctrl = { mod = "S", key = "XF86AudioRaiseVolume" },
     press = function ()
-        audio_volume_up_show(5)
+        audio_volume_up_show(1)
     end,
 })
 
@@ -1668,7 +1668,7 @@ km:add({
 km:add({
     ctrl = { mod = "S", key = "XF86AudioLowerVolume" },
     press = function ()
-        audio_volume_down_show(5)
+        audio_volume_down_show(1)
     end,
 })
 
@@ -1765,7 +1765,7 @@ end
 km:add({
     ctrl = { key = "XF86MonBrightnessDown" },
     press = function ()
-        brightness_down_show(1)
+        brightness_down_show(5)
     end,
 })
 
@@ -1774,7 +1774,7 @@ km:add({
 km:add({
     ctrl = { key = "XF86MonBrightnessUp" },
     press = function ()
-        brightness_up_show(1)
+        brightness_up_show(5)
     end,
 })
 
@@ -1783,7 +1783,7 @@ km:add({
 km:add({
     ctrl = { mod = "S", key = "XF86MonBrightnessDown" },
     press = function ()
-        brightness_down_show(5)
+        brightness_down_show(1)
     end,
 })
 
@@ -1792,7 +1792,7 @@ km:add({
 km:add({
     ctrl = { mod = "S", key = "XF86MonBrightnessUp" },
     press = function ()
-        brightness_up_show(5)
+        brightness_up_show(1)
     end,
 })
 
