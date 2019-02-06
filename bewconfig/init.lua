@@ -1322,7 +1322,6 @@ applauncher.binds = {
         desc = "MENUBAR",
     },
     [" "] = { cmd = config.apps.term },
-    t = { cmd = config.apps.term2 },
     f = { cmd = config.apps.webrowser },
     v = { cmd = config.apps.webrowser2 },
     d = { cmd = "discord" },
