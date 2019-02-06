@@ -45,8 +45,8 @@ config.default = {
 }
 
 config.apps = {
-    term = "urxvt",
-    term2 = "xterm",
+    term = "alacritty",
+    term2 = "urxvt",
     webrowser = "firefox",
     webrowser2 = "vivaldi-stable",
     termEditor = os.getenv("EDITOR") or "vim",
