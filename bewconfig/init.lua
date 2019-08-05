@@ -773,17 +773,19 @@ km:add({
 km:add({
     ctrl = { mod = "M", key = "Left" },
     press = function() -- TODO: Command.getFunction("goto.tag", { which = Const.PREVIOUS, })
-        Command.run("goto.tag", {
-            which = Const.PREVIOUS,
-        })
+        Command.run("goto.tag", { which = Const.PREVIOUS, })
     end
 })
 km:add({
     ctrl = { mod = "M", key = "j" },
     press = function()
-        Command.run("goto.tag", {
-            which = Const.PREVIOUS,
-        })
+        Command.run("goto.tag", { which = Const.PREVIOUS, })
+    end
+})
+km:add({
+    ctrl = { mod = "M", key = "a" },
+    press = function()
+        Command.run("goto.tag", { which = Const.PREVIOUS, })
     end
 })
 
@@ -792,17 +794,19 @@ km:add({
 km:add({
     ctrl = { mod = "M", key = "Right" },
     press = function()
-        Command.run("goto.tag", {
-            which = Const.NEXT,
-        })
+        Command.run("goto.tag", { which = Const.NEXT, })
     end
 })
 km:add({
     ctrl = { mod = "M", key = "k" },
     press = function()
-        Command.run("goto.tag", {
-            which = Const.NEXT,
-        })
+        Command.run("goto.tag", { which = Const.NEXT, })
+    end
+})
+km:add({
+    ctrl = { mod = "M", key = "z" },
+    press = function()
+        Command.run("goto.tag", { which = Const.NEXT, })
     end
 })
 
@@ -1002,9 +1006,13 @@ km:add({
 })
 
 -- :move tag left
--- :%mtr
+-- :%mtl
 km:add({
     ctrl = { mod = "MS", key = "h" },
+    press = Command.getFunction("move.tag.left"),
+})
+km:add({
+    ctrl = { mod = "MS", key = "a" },
     press = Command.getFunction("move.tag.left"),
 })
 
@@ -1012,6 +1020,10 @@ km:add({
 -- :%mtr
 km:add({
     ctrl = { mod = "MS", key = "l" },
+    press = Command.getFunction("move.tag.right"),
+})
+km:add({
+    ctrl = { mod = "MS", key = "z" },
     press = Command.getFunction("move.tag.right"),
 })
 
@@ -1253,22 +1265,6 @@ km:add({
 --TODO
 -- :goto client 3
 -- :gc3
-
----------------------------------------------------------------
--- Terminal spawn
----------------------------------------------------------------
-
--- FIXME: see ':run'
--- :spawn term
-km:add({
-    --ctrl = { mod = "M", key = "t" },
-    ctrl = { mod = "MC", key = "Return" }, -- fallback, I don't use it
-    press = function () awful.spawn(global.config.apps.term, {
-        tag = capi.mouse.screen.selected_tag,
-    }) end,
-})
-
-
 
 ---------------------------------------------------------------
 -- Clients resize/move
@@ -1992,7 +1988,7 @@ Keymap.new("client"):add({
         }).id
     end
 }):add({
-    ctrl = { mod = "M", key = "a" },
+    ctrl = { mod = "M", key = "t" },
     press = function(_, c)
         c.ontop = not c.ontop
         notif_id.client_ontop = utils.toast("ON TOP : " .. tostring(c.ontop), {
@@ -2019,7 +2015,7 @@ Keymap.new("client"):add({
         }).id
     end
 }):add({
-    ctrl = { mod = "MA", key = "a" },
+    ctrl = { mod = "MA", key = "t" },
     press = function(_, c)
         c.sticky = not c.sticky
         notif_id.client_sticky = utils.toast("STICKY : " .. tostring(c.sticky), {
