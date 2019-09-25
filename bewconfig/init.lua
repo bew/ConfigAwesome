@@ -128,8 +128,8 @@ Scratch.prog = global.config.apps.term
 Scratch.default_options = {
     vert = "bottom",
     horiz = "center",
-    width = 0.75,
-    height = 0.50,
+    width = 0.80,
+    height = 0.80,
     sticky = true,
     ontop = true,
 }
