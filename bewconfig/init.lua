@@ -613,6 +613,17 @@ do
         local perc = Battery.infos.perc
         wBatteryBar.w_bar.value = perc
     end)
+
+    Battery:on("status::changed", function()
+        local perc = Battery.infos.perc
+        local status = Battery.infos.status
+        utils.toast.debug({status = status, perc = perc})
+        if (status == Battery.CHARGING and perc > 30) or (status == Battery.UNKNOWN_STATUS and perc > 80) then
+          wBatteryBar.visible = false
+        else
+          wBatteryBar.visible = true
+        end
+    end)
 end
 
 
