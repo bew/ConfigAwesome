@@ -617,7 +617,7 @@ do
     Battery:on("status::changed", function()
         local perc = Battery.infos.perc
         local status = Battery.infos.status
-        if (status == Battery.CHARGING and perc > 30) or (status == Battery.UNKNOWN_STATUS and perc > 80) then
+        if (status == Battery.CHARGING and perc > 30) or (status == Battery.UNKNOWN_STATUS and perc > 80) or status == Battery.FULL then
           wBatteryBar.visible = false
         else
           wBatteryBar.visible = true
