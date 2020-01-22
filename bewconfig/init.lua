@@ -1003,6 +1003,10 @@ km:add({
     ctrl = { mod = "MS", key = "j" },
     press = Command.getFunction("move.client.left"),
 })
+km:add({
+    ctrl = { mod = "MS", key = "a" },
+    press = Command.getFunction("move.client.left"),
+})
 
 -- :move client tag right
 -- :%mctr
@@ -1014,6 +1018,10 @@ km:add({
     ctrl = { mod = "MS", key = "k" },
     press = Command.getFunction("move.client.right"),
 })
+km:add({
+    ctrl = { mod = "MS", key = "z" },
+    press = Command.getFunction("move.client.right"),
+})
 
 -- :move tag left
 -- :%mtl
@@ -1022,7 +1030,7 @@ km:add({
     press = Command.getFunction("move.tag.left"),
 })
 km:add({
-    ctrl = { mod = "MS", key = "a" },
+    ctrl = { mod = "MC", key = "a" },
     press = Command.getFunction("move.tag.left"),
 })
 
@@ -1033,7 +1041,7 @@ km:add({
     press = Command.getFunction("move.tag.right"),
 })
 km:add({
-    ctrl = { mod = "MS", key = "z" },
+    ctrl = { mod = "MC", key = "z" },
     press = Command.getFunction("move.tag.right"),
 })
 
