@@ -302,158 +302,6 @@ do
     end)
 end
 
-
--- Mini cmus player
----------------------------------------------------------------
---
--- TODO: on mouse:hover on the widget
---  => show player controls & progressbar (as tooltip?)
---
-
-local wMusicCtrl, cmus_show_infos
-do
-    local symbols = {
-        play = "",
-        pause = "",
-        stop = "",
-        --prev = "",
-        --next = "",
-    }
-    -- init: after configuration load, launch a full status update
-
-    local cmus_state
-    local function cmus_state_reset()
-        cmus_state = {
-            status = "N/A",
-            file  = "N/A",
-            duration  = "N/A",
-            running = false,
-        }
-    end
-    local function cmus_state_init()
-        cmus_state_reset()
-
-        -- TODO: start life pulser on cmus
-        --  - if cmus is closed:
-        --    => hide the wMusicCtrl widget
-        --    => stop the life pulser
-    end
-
-    local function cmus_state_update()
-
-        -- Get data from cmus
-        local f = io.popen("cmus-remote -Q")
-        if not f then return end
-
-        for line in f:lines() do
-            for k, v in string.gmatch(line, "([%w]+)[%s](.*)$") do
-                if cmus_state[k] then
-                    cmus_state[k] = v
-                end
-            end
-        end
-        f:close()
-
-        cmus_state.filepath = cmus_state.file
-        cmus_state.file = string.match(cmus_state.filepath, "([^/]*)$")
-    end
-
-    local function cmus_state_as_string()
-        local str
-        if cmus_state.status == "playing" then
-            str = symbols.play .. " " .. cmus_state.file
-        elseif cmus_state.status == "paused" then
-            str = symbols.pause .. " " .. cmus_state.file
-        elseif cmus_state.status == "stopped" then
-            str = symbols.stop .. " " .. cmus_state.file
-        else
-            str = cmus_state.status
-        end
-        return str
-    end
-
-
-    cmus_state_init()
-
-    wMusicCtrl = wibox.widget.textbox("")
-    wMusicCtrl.font = "Awesome 8"
-
-    local function cmus_widget_update()
-        wMusicCtrl.text = cmus_state_as_string()
-
-        if not wMusicCtrl.visible then
-            wMusicCtrl.visible = true
-        end
-    end
-
-    -- set 'global' function to update widget and show status
-    function cmus_show_infos()
-        local str = cmus_state_as_string()
-        utils.toast(str, {title = "Cmus update"})
-
-        cmus_widget_update()
-    end
-
-    Eventemitter.on("cmus", function()
-        cmus_state_update()
-
-        cmus_show_infos()
-    end)
-end
-
-
--- Network infos
-------------------------------------------
-
-local wNetwork
-do
-    -- container
-    wNetwork = wibox.container.background()
-
-    local wStatus = wibox.widget.textbox()
-    wNetwork.widget = wStatus
-
-    local ssid = ""
-    local ip
-    local function update()
-        local text = " NET : "
-
-        if #ssid > 0 then
-            text = text .. ssid .. " "
-        end
-
-        if ip then
-            text = text .. "[IP]"
-        else
-            text = text .. "[NO IP]"
-        end
-
-        wStatus.text = text
-    end
-    update()
-
-    Eventemitter.on("network::dhcp", function(_, args)
-        if not (args.interface == 'wlo1' or args.interface == 'enp0s25') then
-            return
-        end
-
-        local reason = args.reason
-
-        if reason == "BOUND" or reason == "RENEW" then
-            ip = args.new_ip_address
-        else
-            ip = false
-        end
-        if reason == "CARRIER" then
-            ssid = args.ifssid
-        elseif reason == "NOCARRIER" then
-            ssid = ""
-        end
-        update()
-    end)
-end
-
-
 ------------------------------------------------------------------------------------
 -- Emergency widgets
 ------------------------------------------------------------------------------------
@@ -572,10 +420,8 @@ awful.screen.connect_for_each_screen(function(screen)
         {
             layout = wibox.layout.fixed.horizontal,
 
-            wMusicCtrl,
             spacer,
             wibox.widget.systray(),
-            wNetwork,
             wTime,
             wBatteryContainer,
         },
@@ -638,7 +484,7 @@ do
     })
     wBatteryInfos.bg = "#2e7d32"
 
--- populate wBatteryInfos's wibox content
+    -- populate wBatteryInfos's wibox content
     local w_perc = wibox.widget.textbox(Battery.infos.perc .. "%")
     w_perc.font = "terminus 18"
 
@@ -676,11 +522,6 @@ end
 
 
 local notif_id = {}
-
---TODO: Network.init(Network.Wrapper.Wpa({ iface = "wlo1" }))
-local wpa_cli = {
-    cmd = "wpa_cli -i wlo1 "
-}
 
 ------------------------------------------------------------------------------------
 -- {{{ Key bindings
@@ -1102,15 +943,6 @@ km:add({
     end
 })
 
--- TMP
-km:add({
-    ctrl = { mod = "MA", key = "m" },
-    press = function()
-        local new_screen = capi.screen.primary
-        capi.mouse.coords({x = 10, y = 10})
-    end
-})
-
 -- Move client to screen
 ------------------------------------------
 
@@ -1147,14 +979,12 @@ km:add({
 ---------------------------------------------------------------
 
 -- :awesome restart
--- :ar
 km:add({
     ctrl = { mod = "MC", key = "r" },
     press = awesome.restart,
 })
 
 -- :awesome quit
--- :aq
 km:add({
     ctrl = { mod = "MC", key = "q" },
     press = function()
@@ -1336,6 +1166,7 @@ applauncher.binds = {
         desc = "MENUBAR",
     },
     [" "] = { cmd = config.apps.term },
+    t = { cmd = config.apps.term2 },
     f = { cmd = config.apps.webrowser },
     v = { cmd = config.apps.webrowser2 },
     d = { cmd = "discord" },
@@ -1450,16 +1281,8 @@ km:add({
 })
 
 ---------------------------------------------------------------
--- Network management
+-- Network
 ---------------------------------------------------------------
-
--- Main Commands:
--- :net <action> <args>
--- :wifi <action> <args>
-
--- aliases
--- :wifi        (:wifi (enable / check ?))
--- :nowifi      (:wifi disable)
 
 --- network checker
 -- :net check [<host> = google.fr]
@@ -1482,102 +1305,6 @@ km:add({
     end,
 })
 
---- network infos
--- :net info
--- :wifi info
-km:add({
-    ctrl = { mod = "M", key = "n" },
-    press = function()
-        awful.spawn.easy_async(wpa_cli.cmd .. "status", function(stdout)
-
-            if not stdout or stdout == "" then
-                utils.toast("Please start wpa_supplicant", { title = "Wifi is not ACTIVATED" })
-                return
-            end
-
-            local net_now = {
-                status = string.match(stdout, "wpa_state=([%a_]*)"),
-                ip_addr = string.match(stdout, "ip_address=([%d]+%.[%d]+%.[%d]+%.[%d]+)")
-            }
-            notif_id.net_info = utils.toast("\n" .. stdout, {
-                title = net_now.status .. "  -  " .. (net_now.ip_addr and net_now.ip_addr or "NO IP"),
-                replaces_id = notif_id.net_info
-            }).id
-        end)
-    end,
-})
-
---- network selector
--- :wifi connect [interactive]
--- :wifi connect <ssid/id>
-km:add({
-    ctrl = { mod = "MC", key = "n" },
-    press = function()
-
-        -- info on networks
-        local networks = {
-            -- keybind is i
-            i = {
-                name = "Intra Epitech",
-                id = 0
-            },
-            -- keybind is b
-            b = {
-                name = "Bew's GS4",
-                id = 2
-            },
-            s = {
-                name = "Schol@Net",
-                id = 1
-            }
-        }
-
-        -- display help
-        local help_str = "\n"
-        for key, net in pairs(networks) do
-            help_str = help_str .. "[ " .. key .. " ] (id=" .. net.id .. ") - " .. net.name .. "\n"
-        end
-        help_str = help_str .. "\nPress ESCAPE to cancel"
-        local help_notif = utils.toast(help_str, {
-            title = "===== Select network =====",
-            timeout = 0,
-            replaces_id = notif_id.net_selector
-        })
-        notif_id.net_selector = help_notif.id
-
-        -- grab keys
-        capi.keygrabber.run(function(mod, key, event) -- luacheck: ignore mod
-            if event == "release" then return true end
-            capi.keygrabber.stop()
-            naughty.destroy(help_notif)
-
-            if networks[key] then
-                awful.spawn.easy_async(wpa_cli.cmd .. "select_network " .. networks[key].id, function()
-                    notif_id.net_selector = utils.toast("Trying to connect...", {
-                        title = "Network '" .. networks[key].name .. "' selected",
-                        replaces_id = notif_id.net_selector
-                    }).id
-                end)
-            end
-            return true
-        end)
-    end,
-})
-
---- network saved list
--- :wifi list
-km:add({
-    ctrl = { mod = "MS", key = "n" },
-    press = function()
-        awful.spawn.easy_async(wpa_cli.cmd .. "list_networks", function(stdout)
-            notif_id.net_list = utils.toast(stdout, {
-                title = "===== Networks saved list =====",
-                replaces_id = notif_id.net_list
-            }).id
-        end)
-    end,
-})
-
 ---------------------------------------------------------------
 -- Music
 ---------------------------------------------------------------
@@ -1587,12 +1314,6 @@ km:add({
 -- :musik info
 -- :ms
 -- :mi
-km:add({
-    ctrl = { mod = "MC", key = "m" },
-    press = function()
-        cmus_show_infos()
-    end,
-})
 
 ---------------------------------------------------------------
 -- Volume
